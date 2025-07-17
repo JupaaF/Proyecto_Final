@@ -110,3 +110,25 @@ Further Resources:
 2025-07-08 13:01:16,676 - INFO - Iniciando simulación para el caso 'caso0' con solver 1.
 2025-07-08 13:01:22,997 - ERROR - La simulación falló con código de retorno 1.
 2025-07-08 13:01:23,000 - WARNING - El proceso finalizó con errores. Revisa el log 'simulacion.log' para más detalles.
+2025-07-10 14:30:55,025 - INFO - Usando la imagen de Docker: openfoam/openfoam10-paraview510
+2025-07-10 14:30:55,033 - INFO - Iniciando simulación para el caso 'caso0' con solver 1.
+2025-07-10 14:30:55,347 - ERROR - La simulación falló con código de retorno 127.
+2025-07-10 14:30:55,349 - WARNING - El proceso finalizó con errores. Revisa el log 'simulacion.log' para más detalles.
+2025-07-10 14:32:05,452 - INFO - Usando la imagen de Docker: openfoam/openfoam10-paraview510
+2025-07-10 14:32:05,453 - INFO - Iniciando simulación para el caso 'caso0' con solver 1.
+2025-07-16 18:37:36,975 - INFO - Usando la imagen de Docker: openfoam/openfoam10-paraview510
+2025-07-16 18:37:36,978 - INFO - Iniciando simulación para el caso 'caso0' con solver 1.
+2025-07-16 18:37:37,230 - ERROR - La simulación falló con código de retorno 127.
+2025-07-16 18:37:37,232 - WARNING - El proceso finalizó con errores. Revisa el log 'simulacion.log' para más detalles.
+2025-07-16 18:39:10,300 - INFO - Usando la imagen de Docker: openfoam/openfoam10-paraview510
+2025-07-16 18:39:10,301 - INFO - Iniciando simulación para el caso 'caso0' con solver 1.
+2025-07-16 18:39:33,001 - INFO - Simulación completada con éxito.
+2025-07-16 18:39:33,002 - INFO - Proceso finalizado correctamente.
+2025-07-16 18:39:35,890 - INFO - Usando la imagen de Docker: openfoam/openfoam10-paraview510
+2025-07-16 18:39:35,891 - INFO - Iniciando simulación para el caso 'caso0' con solver 1.
+2025-07-16 18:39:49,881 - ERROR - La simulación falló con código de retorno 1.
+2025-07-16 18:39:49,883 - WARNING - El proceso finalizó con errores. Revisa el log 'simulacion.log' para más detalles.
+2025-07-16 18:39:58,079 - INFO - Usando la imagen de Docker: openfoam/openfoam10-paraview510
+2025-07-16 18:39:58,080 - INFO - Iniciando simulación para el caso 'caso0' con solver 0.
+2025-07-16 18:40:06,592 - ERROR - La simulación falló con código de retorno 130.
+2025-07-16 18:40:06,593 - WARNING - El proceso finalizó con errores. Revisa el log 'simulacion.log' para más detalles.

@@ -4,5 +4,6 @@ from pathlib import Path
 # Esto funciona tanto en Windows (C:\Users\username\CasosOpenFOAM) como en Linux (/home/username/CasosOpenFOAM).
 RUTA_LOCAL = Path.home() / "CasosOpenFOAM"
 
-# Crea el directorio si no existe para asegurar que esté disponible.
-RUTA_LOCAL.mkdir(exist_ok=True)
+def create_dir():    
+    # Crea el directorio si no existe para asegurar que esté disponible.
+    RUTA_LOCAL.mkdir(exist_ok=True)

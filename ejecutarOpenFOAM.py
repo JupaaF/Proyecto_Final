@@ -1,4 +1,4 @@
-import os
+
 import subprocess
 import logging
 from pathlib import Path
@@ -117,7 +117,7 @@ def ejecutar_simulacion(nameCase: str, solver: int) -> bool:
 if __name__ == "__main__":
     try:
         # Se llama a la función principal y se comprueba el resultado.
-        success = ejecutar_simulacion("caso0", 1)
+        success = ejecutar_simulacion("caso0", 0)
         if success:
             logging.info("Proceso finalizado correctamente.")
         else:
