@@ -28,14 +28,14 @@ class MainWindow(QMainWindow):
         """Carga la malla y los patches y los añade al plotter."""
         try:
             # Cargar los patches de la malla
-            patch_atmosphere = pv.read('interfaz/atmosphere/atmosphere_0.vtk')
-            patch_inlet = pv.read('interfaz/inlet/inlet_0.vtk')
-            patch_outlet = pv.read('interfaz/outlet/outlet_0.vtk')
-            patch_walls = pv.read('interfaz/walls/walls_0.vtk')
+            patch_atmosphere = pv.read('VTK/atmosphere/atmosphere_0.vtk')
+            patch_inlet = pv.read('VTK/inlet/inlet_0.vtk')
+            patch_outlet = pv.read('VTK/outlet/outlet_0.vtk')
+            patch_walls = pv.read('VTK/walls/walls_0.vtk')
         except FileNotFoundError as e:
             print(f"Error al leer el archivo: {e}. Asegúrate de que las rutas son correctas.")
             return
-
+        
         # Añadir los patches al plotter con colores distintivos
         self.plotter.add_mesh(patch_atmosphere, color='cyan', label='Atmosphere')
         self.plotter.add_mesh(patch_inlet, color='green', label='Inlet')
