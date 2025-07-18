@@ -45,18 +45,7 @@ class MyMainWindow(MainWindow):
         # Creamos las etiquetas para cada cara (ej. "Cara 0", "Cara 1", etc.)
         # face_labels = [f"Cara {i}" for i in range(mesh.n_cells)]
 
-        # Añadimos las etiquetas al plotter.
-        # Considera que para mallas muy densas, esto puede ser muy lento
-        # y las etiquetas pueden superponerse mucho.
-        # self.plotter.add_point_labels(
-        #     cell_centroids,
-        #     face_labels,
-        #     font_size=8,
-        #     point_size=0, # No mostrar los puntos, solo las etiquetas
-        #     always_visible=True, # Intentar que sean siempre visibles (puede no funcionar en mallas densas)
-        #     show_points=False,
-        #     render_points_as_spheres=False
-        # )
+
 
         self.plotter.reset_camera() # Ajustar la cámara para ver toda la malla y las etiquetas
 
@@ -73,8 +62,8 @@ class MyMainWindow(MainWindow):
 if __name__ == '__main__':
     # Es importante establecer la API de Qt si usas QtPy para asegurar la compatibilidad
     # con PyQt5, PyQt6, PySide2 o PySide6
-    os.environ["QT_API"] = "pyqt5" # Cambia a "pyqt6", "pyside2", "pyside6" si usas otra
+    os.environ["QT_API"] = "pyqt6" # Cambia a "pyqt6", "pyside2", "pyside6" si usas otra
 
     app = QtWidgets.QApplication(sys.argv)
     window = MyMainWindow()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
