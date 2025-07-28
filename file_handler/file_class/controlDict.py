@@ -3,7 +3,7 @@ from foamFile import foamFile
 class controlDict(foamFile):
 
     def __init__(self, solver = "interFoam", start_time = 0, end_time = 1, delta_t = 0.01, write_interval = 0.1): #Posiblemente saque los valores
-        super().__init__("system", "controlDict")
+        super().__init__("system", "dictionary", "controlDict")
         self.solver = solver
         self.start_time = start_time
         self.end_time = end_time
@@ -42,7 +42,7 @@ class controlDict(foamFile):
                     """
         
         
-        return self.get_header() + content
+        return self.get_header_location() + content
     
     def modificarArchivo(self,archivo):
         archivo.write(self.__getString__())
