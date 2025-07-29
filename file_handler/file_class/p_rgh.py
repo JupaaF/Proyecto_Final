@@ -2,7 +2,7 @@ from foamFile import foamFile
 
 class p_rgh(foamFile): #en una primera instancia dejamos las dimensiones fijas
 
-    def __init__(self, patchList, patchContent, internalField_value = "uniform (0 0 0)"): #Posiblemente saque los valores
+    def __init__(self, patchList, patchContent, internalField_value = "uniform 0"): #Posiblemente saque los valores
         super().__init__("0", "volScalarField", "p_rgh")
         self.internalField_value = internalField_value
         self.patchList = patchList

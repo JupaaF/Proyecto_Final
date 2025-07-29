@@ -2,7 +2,7 @@ from foamFile import foamFile
 
 class U(foamFile): #en una primera instancia dejamos las dimensiones fijas
 
-    def __init__(self, patchList, patchContent, internalField_value = "uniform (0 0 0)"): #Posiblemente saque los valores
+    def __init__(self, patchList, patchContent, internalField_value): 
         super().__init__("0", "volVectorField", "U")
         self.internalField_value = internalField_value
         self.patchList = patchList

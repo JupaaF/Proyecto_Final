@@ -2,7 +2,7 @@ from foamFile import foamFile
 
 class alpha_water(foamFile): #en una primera instancia dejamos las dimensiones fijas
     
-    def __init__(self, patchList, patchContent, internalField_value = "uniform (0 0 0)"): #Posiblemente saque los valores
+    def __init__(self, patchList, patchContent, internalField_value = "uniform 0"): #Posiblemente saque los valores
         super().__init__("0", "volScalarField", "alpha.water")
         self.internalField_value = internalField_value
         self.patchList = patchList
