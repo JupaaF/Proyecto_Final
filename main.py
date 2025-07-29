@@ -8,9 +8,9 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     
     # Crea una instancia del controlador principal
-    main_controller = MainWindowController()
+    mainController = MainWindowController()
     
     # Le pide al controlador que muestre la ventana que gestiona
-    main_controller.show()
+    mainController.show()
     
     sys.exit(app.exec())
