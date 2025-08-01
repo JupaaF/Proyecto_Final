@@ -1,55 +1,61 @@
-
-# interfaz/controllers/main_window_controller.py
-import os
+import sys
+from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtCore import QFile, QTextStream
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QIODevice
-from initParam import create_dir
 
-# Importamos el controlador del wizard para poder crearlo
-from .simulation_wizard_controller import SimulationWizardController
-
-class MainWindowController:
-    """Controlador para la ventana principal de la aplicación."""
+class MainWindowController(QMainWindow):
     def __init__(self):
+        super().__init__()
+
+        # Cargar la interfaz desde el archivo .ui
         loader = QUiLoader()
-        ui_file_path = os.path.join(os.path.dirname(__file__), "..","ui", "cositas.ui")
-        ui_file = QFile(ui_file_path)
-        ui_file.open(QIODevice.ReadOnly)
-        
-        create_dir()
+        self.ui = loader.load("interfaz/ui/main_window_dock.ui", self)
 
-        # self.widget es la QMainWindow real. La clase en sí no es una ventana.
-        self.widget = loader.load(ui_file)
-        ui_file.close()
+        # Cargar los estilos QSS
+        self.load_styles()
 
-        # Conecta las señales a los métodos de ESTA clase
-        self._connect_signals()
+        # Conectar la acción del menú
+        self.ui.actionModo_Oscuro.triggered.connect(self.toggle_theme)
 
-    def _connect_signals(self):
-        """Conecta todos los widgets a sus funciones correspondientes."""
-        self.widget.nuevaSimulacionButton.clicked.connect(self.open_simulation_wizard)
-        self.widget.documentacionButton.clicked.connect(self.open_documentation)
+        # Establecer el tema inicial (claro por defecto)
+        self.set_theme(dark_mode=False)
 
-    def open_simulation_wizard(self):
-        """Crea y ejecuta el controlador del asistente de simulación."""
-        # Creamos una instancia del controlador del wizard, pasando la ventana principal como padre
-        wizard_controller = SimulationWizardController(parent=self.widget)
-        
-        # El wizard se ejecuta de forma modal. El código se detiene aquí hasta que se cierra.
-        result = wizard_controller.exec()
+        # Conectar los docks al menú "Ver"
+        self.setup_view_menu()
 
-        # Si el usuario hizo clic en "Finalizar" (o Aceptar), recogemos los datos
-        if result:
-            datos = wizard_controller.get_data()
-            print("Asistente finalizado. Datos recogidos:", datos)
-            # Aquí llamarías a la lógica de negocio, por ejemplo:
-            # from logic.simulation_handler import crear_caso_dambreak
-            # crear_caso_dambreak(datos)
+    def load_styles(self):
+        # Cargar tema claro
+        light_theme_file = QFile("interfaz/resources/light_theme.qss")
+        light_theme_file.open(QFile.ReadOnly | QFile.Text)
+        self.light_theme = QTextStream(light_theme_file).readAll()
+        light_theme_file.close()
 
-    def open_documentation(self):
-        print("Botón de documentación presionado.")
-        # Aquí iría la lógica para abrir un diálogo de ayuda o una URL
+        # Cargar tema oscuro
+        dark_theme_file = QFile("interfaz/resources/dark_theme.qss")
+        dark_theme_file.open(QFile.ReadOnly | QFile.Text)
+        self.dark_theme = QTextStream(dark_theme_file).readAll()
+        dark_theme_file.close()
 
-    def show(self):
-        """Muestra el widget que esta clase controla."""
-        self.widget.show()
+    def set_theme(self, dark_mode):
+        if dark_mode:
+            self.ui.setStyleSheet(self.dark_theme)
+            self.ui.actionModo_Oscuro.setChecked(True)
+        else:
+            self.ui.setStyleSheet(self.light_theme)
+            self.ui.actionModo_Oscuro.setChecked(False)
+
+    def toggle_theme(self):
+        # Cambiar al tema opuesto del estado actual del menú
+        self.set_theme(self.ui.actionModo_Oscuro.isChecked())
+
+    def setup_view_menu(self):
+        # Permite mostrar/ocultar los docks desde el menú "Ver"
+        self.ui.menuVer.addAction(self.ui.fileBrowserDock.toggleViewAction())
+        self.ui.menuVer.addAction(self.ui.parameterEditorDock.toggleViewAction())
+        self.ui.menuVer.addAction(self.ui.logDock.toggleViewAction())
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindowController()
+    window.ui.show()
+    sys.exit(app.exec())
