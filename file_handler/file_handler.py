@@ -21,5 +21,8 @@ class fileHandler:
         file_path.touch()  # Crea el archivo vacío
         print(f"Archivo creado (vacío): {file_path}")
         return file_path
+    
+
+        
        
 
