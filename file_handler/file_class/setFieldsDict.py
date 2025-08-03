@@ -2,7 +2,7 @@ from foamFile import foamFile
 
 class setFieldsDict(foamFile):  # por ahora no es editable
 
-    def __init__(self, divSchemes, laplacianSchemes, interpolationSchemes, snGradSchemes, ddtSchemes = 'Euler', gradSchemes = 'Gauss Linear'): #Posiblemente saque los valores
+    def __init__(self): 
         super().__init__("system", "dictionary", "setFieldsDict")
         
 

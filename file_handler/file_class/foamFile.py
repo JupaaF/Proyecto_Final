@@ -3,10 +3,10 @@ from abc import ABC, abstractmethod
 
 class foamFile(ABC):
     
-    def __init__(self, carpeta, clase, nombre):
-        self.carpeta = carpeta
-        self.clase = clase
-        self. nombre = nombre
+    def __init__(self, folder, classType, name):
+        self.folder = folder
+        self.classType = classType
+        self.name = name
 
     def get_header(self):
         return f"""/*--------------------------------*- C++ -*----------------------------------*\
@@ -21,8 +21,8 @@ class foamFile(ABC):
                     {{
                         version     2.0;
                         format      ascii;
-                        class       {self.clase};
-                        object      {self.nombre};
+                        class       {self.classType};
+                        object      {self.name};
                     }}
                     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
                     """
@@ -40,9 +40,9 @@ class foamFile(ABC):
                     {{
                         version     2.0;
                         format      ascii;
-                        class       {self.clase};
-                        location    "{self.carpeta}";
-                        object      {self.nombre};
+                        class       {self.classType};
+                        location    "{self.folder}";
+                        object      {self.name};
                     }}
                     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
                     """

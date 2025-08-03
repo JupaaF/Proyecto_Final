@@ -1,8 +1,8 @@
 from foamFile import foamFile
 
-class fvSolution(foamFile):  # por ahora no es editable
+class fvSolution(foamFile):  # por ahora no es editable <------------
 
-    def __init__(self, divSchemes, laplacianSchemes, interpolationSchemes, snGradSchemes, ddtSchemes = 'Euler', gradSchemes = 'Gauss Linear'): #Posiblemente saque los valores
+    def __init__(self): 
         super().__init__("system", "dictionary", "fvSolution")
         
 

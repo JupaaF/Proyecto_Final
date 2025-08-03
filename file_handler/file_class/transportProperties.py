@@ -2,11 +2,9 @@ from foamFile import foamFile
 
 class transportProperties(foamFile):
 
-    def __init__(self, phasesList, phasesContent, sigma): #Posiblemente saque los valores
+    def __init__(self): 
         super().__init__("constant", "dictionary", "transportProperties")
-        self.phasesList = phasesList
-        self.phasesContent = phasesContent
-        self.sigma = sigma
+        
 
     def __getString__(self):
         phases_str = " ".join(self.phasesList)
@@ -28,7 +26,10 @@ class transportProperties(foamFile):
         return self.get_header() + content
    
 
-    def write_file(self,archivo): 
+    def write_file(self, archivo, phasesList, phasesContent, sigma): 
+        self.phasesList = phasesList
+        self.phasesContent = phasesContent
+        self.sigma = sigma
         archivo.write(self.__getString__())
 
     

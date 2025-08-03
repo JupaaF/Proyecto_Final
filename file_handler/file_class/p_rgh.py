@@ -2,11 +2,9 @@ from foamFile import foamFile
 
 class p_rgh(foamFile): #en una primera instancia dejamos las dimensiones fijas
 
-    def __init__(self, patchList, patchContent, internalField_value = "uniform 0"): #Posiblemente saque los valores
+    def __init__(self): 
         super().__init__("0", "volScalarField", "p_rgh")
-        self.internalField_value = internalField_value
-        self.patchList = patchList
-        self.patchContent = patchContent
+        
 
     def __getString__(self):
         content = f"""              
@@ -32,7 +30,10 @@ class p_rgh(foamFile): #en una primera instancia dejamos las dimensiones fijas
         return self.get_header() + content
    
 
-    def write_file(self,archivo): 
+    def write_file(self,archivo,patchList, patchContent, internalField_value = "uniform 0"): 
+        self.internalField_value = internalField_value
+        self.patchList = patchList
+        self.patchContent = patchContent
         archivo.write(self.__getString__())
 
     

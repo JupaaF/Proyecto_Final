@@ -1,12 +1,9 @@
-from foamFile import foamFile
+from .foamFile import foamFile
 
 class U(foamFile): #en una primera instancia dejamos las dimensiones fijas
 
-    def __init__(self, patchList, patchContent, internalField_value): 
+    def __init__(self): 
         super().__init__("0", "volVectorField", "U")
-        self.internalField_value = internalField_value
-        self.patchList = patchList
-        self.patchContent = patchContent
 
     def __getString__(self):
         content = f"""              
@@ -32,7 +29,12 @@ class U(foamFile): #en una primera instancia dejamos las dimensiones fijas
         return self.get_header() + content
    
 
-    def write_file(self,archivo): 
-        archivo.write(self.__getString__())
+    def write_file(self,filePath ,patchList, patchContent, internalField_value): 
+        self.internalField_value = internalField_value
+        self.patchList = patchList
+        self.patchContent = patchContent
+
+        with open(filePath, "w") as archivo:
+            archivo.write(self.__getString__())
 
     

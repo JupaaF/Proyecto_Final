@@ -2,9 +2,9 @@ from foamFile import foamFile
 
 class turbulenceProperties(foamFile):
 
-    def __init__(self, simulationType): #Posiblemente saque los valores
+    def __init__(self):
         super().__init__("constant", "dictionary", "turbulenceProperties")
-        self.simulationType = simulationType
+        
 
     def __getString__(self):
         
@@ -15,7 +15,8 @@ simulationType       {self.simulationType};
         return self.get_header() + content
    
 
-    def write_file(self,archivo): 
+    def write_file(self,archivo,simulationType): 
+        self.simulationType = simulationType
         archivo.write(self.__getString__())
 
     
