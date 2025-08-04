@@ -9,41 +9,43 @@ class foamFile(ABC):
         self.name = name
 
     def get_header(self):
-        return f"""/*--------------------------------*- C++ -*----------------------------------*\
-                    | =========                 |                                                 |
-                    | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-                    |  \\    /   O peration     | Version:  v2506                                 |
-                    |   \\  /    A nd           | Website:  www.openfoam.com                      |
-                    |    \\/     M anipulation  |                                                 |
-                    \*---------------------------------------------------------------------------*/
+        return f"""
+    /*--------------------------------*- C++ -*---------------------------------*\\
+    | =========                 |                                                |
+    | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+    |  \\    /   O peration     | Version:  v2506                                 |
+    |   \\  /    A nd           | Website:  www.openfoam.com                      |
+    |    \\/     M anipulation  |                                                 |
+    \*---------------------------------------------------------------------------*/
 
-                    FoamFile
-                    {{
-                        version     2.0;
-                        format      ascii;
-                        class       {self.classType};
-                        object      {self.name};
-                    }}
-                    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-                    """
+    FoamFile
+    {{
+        version     2.0;
+        format      ascii;
+        class       {self.classType};
+        object      {self.name};
+    }}
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    """
     
     def get_header_location(self):
-        return f"""/*--------------------------------*- C++ -*----------------------------------*\
-                    | =========                 |                                                 |
-                    | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-                    |  \\    /   O peration     | Version:  v2506                                 |
-                    |   \\  /    A nd           | Website:  www.openfoam.com                      |
-                    |    \\/     M anipulation  |                                                 |
-                    \*---------------------------------------------------------------------------*/
+        return f"""
+    /*--------------------------------*- C++ -*---------------------------------*\\
+    | =========                 |                                                |
+    | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+    |  \\    /   O peration     | Version:  v2506                                 |
+    |   \\  /    A nd           | Website:  www.openfoam.com                      |
+    |    \\/     M anipulation  |                                                 |
+    \*---------------------------------------------------------------------------*/
 
-                    FoamFile
-                    {{
-                        version     2.0;
-                        format      ascii;
-                        class       {self.classType};
-                        location    "{self.folder}";
-                        object      {self.name};
-                    }}
-                    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-                    """
+    FoamFile
+    {{
+        version     2.0;
+        format      ascii;
+        class       {self.classType};
+        location    "{self.folder}";
+        object      {self.name};
+    }}
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    """
     
