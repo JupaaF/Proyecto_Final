@@ -7,24 +7,24 @@ class U(foamFile): #en una primera instancia dejamos las dimensiones fijas
 
     def __getString__(self):
         content = f"""              
-            dimensions      [0 1 -1 0 0 0 0];
+dimensions      [0 1 -1 0 0 0 0];
 
-            internalField   {self.internalField_value};
+internalField   {self.internalField_value};
 
-            boundaryField
-            {{
-            """
+boundaryField
+{{
+"""
         for i in range(len(self.patchList)):
             content += f""" 
-                {self.patchList[i]}
-                {{
-                    {self.patchContent[i]}
-                }}
-            """
+{self.patchList[i]}
+{{
+    {self.patchContent[i]}
+}}
+"""
         
         content += f"""
-            }}
-        """
+    }}
+"""
         
         return self.get_header() + content
    
