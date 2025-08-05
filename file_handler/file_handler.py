@@ -11,7 +11,8 @@ class fileHandler:
         self._create_base_dirs()
         self._create_files()
 
-
+    def get_casePath(self):
+        return self.casePath
 
     def _create_files(self) -> None:
 
