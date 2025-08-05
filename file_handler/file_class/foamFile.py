@@ -48,4 +48,6 @@ class foamFile(ABC):
     }}
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     """
-    
+    @abstractmethod
+    def get_editable_parameters(self) -> dict:
+        pass

@@ -1,44 +1,39 @@
-
-# interfaz/controllers/simulation_wizard_controller.py
-import os
+import sys
+from PySide6.QtWidgets import QWizard, QApplication
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QIODevice
-from PySide6.QtWidgets import QLineEdit, QDoubleSpinBox, QListWidget
 
-class SimulationWizardController:
-    """Controlador para la ventana del asistente de simulación."""
+class SimulationWizardController(QWizard):
+    # Definimos un ID para nuestra página para poder referenciarla sin ambigüedad
+    Page_Intro = 0
+
     def __init__(self, parent=None):
-        loader = QUiLoader()
-        
-        # La ruta se construye relativa a la ubicación de ESTE archivo
-        ui_file_path = os.path.join(os.path.dirname(__file__), "..","ui", "wizard_simulacion.ui")
-        ui_file = QFile(ui_file_path)
-        ui_file.open(QIODevice.ReadOnly)
-        
-        # self.widget es la instancia real de QWizard cargada desde el .ui
-        self.widget = loader.load(ui_file, parent)
-        ui_file.close()
+        super().__init__(parent)
 
-    def exec(self):
-        """Muestra el wizard como un diálogo modal y devuelve si se aceptó o canceló."""
-        return self.widget.exec()
+        # Cargar la PÁGINA desde el archivo .ui
+        loader = QUiLoader()
+        self.intro_page = loader.load("interfaz/ui/wizard_simulacion.ui")
+
+        # Añadir la página cargada al wizard, usando el ID que definimos
+        self.addPage(self.intro_page)
+
+        # Poblar el ComboBox de plantillas
+        self.populate_templates()
+
+        # Configurar el wizard
+        self.setWindowTitle("Asistente de Nueva Simulación")
+        self.setWizardStyle(QWizard.ModernStyle)
+
+    def populate_templates(self):
+        # TODO: Cargar estas plantillas desde una configuración o un directorio
+        templates = [
+            "DamBreak",
+        ]
+        self.intro_page.templateComboBox.addItems(templates)
 
     def get_data(self):
-        """
-        Recoge los datos de los campos del wizard y los devuelve en un diccionario.
-        Se debe llamar a esta función DESPUÉS de que exec() devuelva un resultado exitoso.
-        """
-        # Usamos findChild para obtener los widgets por su 'objectName' de Qt Designer
-        nombre = self.widget.findChild(QLineEdit, "rutaText").text()
-        template = self.widget.findChild(QListWidget, "templateElegido").currentItem().text()
-        end_time = self.widget.findChild(QDoubleSpinBox, "endTimeBox").value()
-        delta_t = self.widget.findChild(QDoubleSpinBox, "deltaTimeBox").value()
-        write_interval = self.widget.findChild(QDoubleSpinBox, "writeIntervalBox").value()
-        
+        """Devuelve los datos de configuración introducidos por el usuario."""
         return {
-            "nombre_simulacion": nombre,
-            "template": template,
-            "endTime": end_time,
-            "deltaT": delta_t,
-            "writeInterval": write_interval
+            "case_name": self.intro_page.caseNameLineEdit.text(),
+            "template": self.intro_page.templateComboBox.currentText()
         }
+

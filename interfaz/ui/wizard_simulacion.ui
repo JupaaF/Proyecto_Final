@@ -1,217 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Wizard</class>
- <widget class="QWizard" name="Wizard">
+ <class>IntroPage</class>
+ <widget class="QWizardPage" name="introPage">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>729</width>
-    <height>487</height>
+    <width>500</width>
+    <height>320</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Wizard</string>
+   <string>WizardPage</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">background-color: rgb(15, 23, 42);</string>
+  <property name="title">
+   <string>Paso 1: Configuración Inicial</string>
   </property>
-  <property name="wizardStyle">
-   <enum>QWizard::WizardStyle::ClassicStyle</enum>
+  <property name="subTitle">
+   <string>Defina el nombre del caso y seleccione una plantilla base para la simulación.</string>
   </property>
-  <property name="options">
-   <set>QWizard::WizardOption::HelpButtonOnRight</set>
-  </property>
-  <widget class="QWizardPage" name="nombreYTemplate">
-   <property name="styleSheet">
-    <string notr="true">color: #000000</string>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="styleSheet">
-         <string notr="true">color: #ffffff</string>
-        </property>
-        <property name="text">
-         <string>Nombre de la simulación</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="rutaText">
-        <property name="styleSheet">
-         <string notr="true">color: #ffffff;
-background-color: rgb(30, 41, 59);</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item alignment="Qt::AlignmentFlag::AlignLeft">
-       <widget class="QLabel" name="label_2">
-        <property name="styleSheet">
-         <string notr="true">color: #ffffff</string>
-        </property>
-        <property name="text">
-         <string>La simulacion se guardara en: </string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_3">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color: #ffffff</string>
-        </property>
-        <property name="text">
-         <string>C:Ejemplo/jiji</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Orientation::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <widget class="QLabel" name="label_4">
-      <property name="styleSheet">
-       <string notr="true">color: #ffffff</string>
-      </property>
-      <property name="text">
-       <string>Template</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QListWidget" name="templateElegido">
-      <property name="styleSheet">
-       <string notr="true">background-color: #1e293b;
-color: #ffffff</string>
-      </property>
-      <item>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="descriptionLabel">
+     <property name="text">
+      <string>Bienvenido al asistente. Asigne un nombre único a su caso y elija una de las plantillas disponibles para comenzar. Los parámetros específicos podrán ser editados más adelante.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_1">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="caseNameLabel">
        <property name="text">
-        <string>DamBreak</string>
+        <string>Nombre del Caso:</string>
        </property>
-      </item>
-      <item>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="caseNameLineEdit">
+       <property name="placeholderText">
+        <string>Ej: mi_simulacion_canal</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="templateLabel">
        <property name="text">
-        <string>Ejemplo2</string>
+        <string>Plantilla de Simulación:</string>
        </property>
-      </item>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWizardPage" name="controlDictPage">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QLabel" name="label_5">
-        <property name="styleSheet">
-         <string notr="true">color: #ffffff</string>
-        </property>
-        <property name="text">
-         <string>endTime</string>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignmentFlag::AlignRight">
-       <widget class="QDoubleSpinBox" name="endTimeBox">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(30, 41, 59);</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item>
-       <widget class="QLabel" name="label_7">
-        <property name="styleSheet">
-         <string notr="true">color: #ffffff</string>
-        </property>
-        <property name="text">
-         <string>deltaT</string>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignmentFlag::AlignRight">
-       <widget class="QDoubleSpinBox" name="deltaTimeBox">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(30, 41, 59);</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
-       <widget class="QLabel" name="label_6">
-        <property name="styleSheet">
-         <string notr="true">color: #ffffff</string>
-        </property>
-        <property name="text">
-         <string>writeInterval</string>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignmentFlag::AlignRight">
-       <widget class="QDoubleSpinBox" name="writeIntervalBox">
-        <property name="styleSheet">
-         <string notr="true">background-color: #1e293b</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <spacer name="verticalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Orientation::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>0</width>
-        <height>100</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item alignment="Qt::AlignmentFlag::AlignLeft">
-     <widget class="QPushButton" name="cargarMallaButton">
-      <property name="styleSheet">
-       <string notr="true">background-color: #1e293b</string>
-      </property>
-      <property name="text">
-       <string>Cargar geometria</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="templateComboBox"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

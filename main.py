@@ -6,7 +6,7 @@ def main():
     """Punto de entrada principal de la aplicación."""
     app = QApplication(sys.argv)
     window = MainWindowController()
-    window.ui.show()
+    window.show()
     sys.exit(app.exec())
 
 if __name__ == "__main__":
