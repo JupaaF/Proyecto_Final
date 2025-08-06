@@ -1,6 +1,7 @@
 from initParam import RUTA_LOCAL
 from pathlib import Path
 from file_handler.file_class.U import U
+from file_handler.file_class.controlDict import controlDict
 
 class fileHandler:
     
@@ -10,6 +11,15 @@ class fileHandler:
         self.files = {}
         self._create_base_dirs()
         self._create_files()
+        ## Crea el archivo controlDict una vez que termina el wizard. Esto se hace
+        ## para que posteriormente podamos transformar la malla .unv a foam y
+        ## posteriormente a .vtk
+
+        ## TODO Tenemos que pasarle los datos del wizard a este constructor
+        ## y con esos datos escribir el archivo
+        ## De momento tiene los valores por defecto
+        with open(self.casePath / "system" / "controlDict", "w") as f:
+            self.files["controlDict"].writeFile(f)
 
     def get_casePath(self):
         return self.casePath
@@ -18,6 +28,10 @@ class fileHandler:
 
         #Logica de template TODO
         self.files["U"] = U()
+
+        ##Agregue este archivo y le agregue el get_editable_parameters()
+        ## al controlDict
+        self.files["controlDict"] = controlDict()
 
         for file in self.files:
             self._create_empty_file(self.files[file])

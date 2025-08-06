@@ -1,9 +1,11 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QTreeView
+from PySide6.QtWidgets import (QApplication, QMainWindow, QDialog, QTreeView, QWidget, 
+                             QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, 
+                             QFormLayout, QGroupBox)
 from PySide6.QtCore import QFile, QTextStream
 from PySide6.QtUiTools import QUiLoader
 from file_handler.file_handler import fileHandler
-from PySide6.QtWidgets import QFileSystemModel 
+from PySide6.QtWidgets import QFileSystemModel
 
 
 # Importar el controlador del asistente
@@ -135,10 +137,80 @@ class MainWindowController(QMainWindow):
             print(f"Abriendo el archivo: {file_path}")
             # self.open_file_in_editor(file_path)
 
-            # TODO: Acá hiría la lógica de escribir el archivo 
+
+            ## Esto muestra los parametros que se muestran en la pantallita de abajo
+            ## segun el archivo que tocaste, use toda la logica de arriba.
+            self.open_parameters_view(file_path)
+
+            # TODO: Acá iría la lógica de escribir el archivo 
 
 
         else:
             # El ítem es un directorio.
             # Puedes simplemente expandirlo o no hacer nada.
             print("Es un directorio, no se abre en el editor.")
+
+    ##De aca para abajo es nuevo. 
+
+    def open_parameters_view(self, file_path:str):
+
+        ##Llamas a la funcion del file handler para que te pase los parametros
+        ## (lo que hablamos ayer)
+        dict_parameters = self.file_handler.get_editable_parameters(file_path)
+
+
+        ##A partir de aca es logica de PyQt, por ahi quedate con que esto genera los campos y botones
+        ## necesarios. Falta mucha logica, esto esta implementado muy por arriba.
+        # 1. Crear un widget contenedor y un layout
+        container = QWidget()
+        layout = QVBoxLayout(container)
+
+        # 2. Crear un QFormLayout para los parámetros
+        form_layout = QFormLayout()
+
+        # 3. Iterar sobre los parámetros y crear widgets
+        for param_name, param_props in dict_parameters.items():
+            label = QLabel(param_props['label'])
+            label.setToolTip(param_props['tooltip'])
+            
+            widget = self._create_widget_for_parameter(param_props)
+            
+            form_layout.addRow(label, widget)
+
+        # 4. Añadir el QFormLayout al layout principal
+        layout.addLayout(form_layout)
+
+        # 6. Limpiar el dock y establecer el nuevo widget
+        # Si el dock ya tiene un widget, lo eliminamos para evitar duplicados.
+        if self.ui.parameterEditorDock.widget():
+            self.ui.parameterEditorDock.widget().deleteLater()
+        
+        self.ui.parameterEditorDock.setWidget(container)
+
+    def _create_widget_for_parameter(self, props):
+        """Crea el widget adecuado según el tipo de parámetro."""
+        widget_type = props.get('type', 'string')
+
+        if widget_type == 'vector':
+            # Para un vector, usamos un QLineEdit simple por ahora.
+            widget = QLineEdit(props.get('default', ''))
+        elif widget_type == 'string':
+            widget = QLineEdit(props.get('default', ''))
+        elif widget_type == 'choice':
+            # Para opciones, usamos un QComboBox.
+            widget = QComboBox()
+            options = props.get('validators', {}).get('options', [])
+            for option in options:
+                # Guardamos el 'name' como dato asociado a cada item.
+                widget.addItem(option['label'], option['name'])
+        elif widget_type == 'list_of_dicts':
+            # Este es un caso complejo. Por ahora, mostraremos un texto.
+            # Más adelante, esto podría ser un botón que abre otro diálogo/editor.
+            widget = QLabel("Editor para 'list_of_dicts' aún no implementado.")
+        else:
+            # Un QLineEdit como fallback para tipos no reconocidos.
+            widget = QLineEdit(props.get('default', ''))
+        
+        return widget
+
+        
