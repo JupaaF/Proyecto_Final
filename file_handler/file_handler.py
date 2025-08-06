@@ -50,7 +50,7 @@ class fileHandler:
         return file_path
     
     def get_editable_parameters(self,filePath) -> dict:
-        file = filePath.split('/')[-1]
+        file = Path(filePath).name
         if file in self.files:
             return self.files[file].get_editable_parameters()
         

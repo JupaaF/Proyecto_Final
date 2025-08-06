@@ -1,4 +1,7 @@
 import sys
+import shutil
+from pathlib import Path
+from dockerFiles.dockerHandler import DockerHandler
 from PySide6.QtWidgets import (QApplication, QMainWindow, QDialog, QTreeView, QWidget, 
                              QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, 
                              QFormLayout, QGroupBox)
@@ -50,9 +53,20 @@ class MainWindowController(QMainWindow):
             # Aquí es donde se llama a file_handler para crear los archivos del caso
             self.file_handler = fileHandler(data["case_name"],data["template"])
             self.show_folder_tree()
+            self.copy_geometry_file(data["mesh_file"])
+            self.docker_handler = DockerHandler(Path(self.file_handler.get_casePath()))
+            self.docker_handler.transformarMalla()
+            
             
         else:
             print("Asistente cancelado por el usuario.")
+
+    def copy_geometry_file(self,meshFile:str) -> None:
+        pathFile = Path(meshFile)
+        pathCase = Path(self.file_handler.get_casePath())
+        pathDestination = pathCase / 'malla.unv'
+        shutil.copy(pathFile,pathDestination)
+
 
     def load_styles(self):
         # Cargar tema claro
