@@ -6,6 +6,7 @@ from PySide6.QtCore import QFile, QTextStream
 from PySide6.QtUiTools import QUiLoader
 from file_handler.file_handler import fileHandler
 from PySide6.QtWidgets import QFileSystemModel
+from interfaz.controllers.widget_geometría import GeometryView
 
 
 # Importar el controlador del asistente
@@ -32,6 +33,13 @@ class MainWindowController(QMainWindow):
 
         # Conectar los docks al menú "Ver"
         self.setup_view_menu()
+
+        # 1. Asegúrate de que tu contenedor `vtkContainer` tenga un layout.
+        #    Esto se hace una sola vez, idealmente en el __init__
+        self.vtk_layout = QVBoxLayout(self.ui.vtkContainer)
+        self.vtk_layout.setContentsMargins(0, 0, 0, 0) # Opcional: elimina los márgenes internos
+        
+        self.show_geometry_visualizer('C:/Users/piliv/OneDrive/Documentos/FACU/PFC/Proyecto_Final/Proyecto_Final-1/VTK')
 
     def open_new_simulation_wizard(self):
         """Abre el asistente para crear una nueva simulación."""
@@ -213,4 +221,20 @@ class MainWindowController(QMainWindow):
         
         return widget
 
+    def show_geometry_visualizer(self,geomFilePath):
+        """
+        Crea o actualiza el dock de visualización con el visualizador de geometría.
+        """
+        # Limpia el layout anterior si es necesario.
+        # Esto elimina los widgets que existían antes.
+        while self.vtk_layout.count():
+            item = self.vtk_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
         
+        # 1. Crea una instancia del visualizador
+        visualizer = GeometryView(geomFilePath)
+        
+        # 2. Asigna el visualizador al layout del contenedor
+        self.vtk_layout.addWidget(visualizer)
+
