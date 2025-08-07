@@ -10,16 +10,15 @@ RUTA_LOCAL = Path.home() / "CasosOpenFOAM" #TODO: hacer el import de esto desde 
 ##Lo mas importante esta en el ultimo metodo get_data(). Vamos para alla
 class SimulationWizardController(QWizard):
     # Definimos IDs para las páginas
-    Page_Intro = 0
-    Page_Mesh_And_Params = 1
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
         # Cargar las PÁGINAS desde los archivos .ui
         loader = QUiLoader()
-        self.page1 = loader.load("src/interface/ui/wizard_page_1_initial_setup.ui")
-        self.page2 = loader.load("src/interface/ui/wizard_page_2_mesh_and_params.ui")
+        ui_path = Path(__file__).parent.parent / "ui"
+        self.page1 = loader.load(str(ui_path / "wizard_page_1_initial_setup.ui"))
+        self.page2 = loader.load(str(ui_path / "wizard_page_2_mesh_and_params.ui"))
 
         # Añadir las páginas al wizard
         self.addPage(self.page1)

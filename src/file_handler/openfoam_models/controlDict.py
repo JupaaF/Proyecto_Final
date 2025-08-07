@@ -1,12 +1,12 @@
-from .foamFile import foamFile
+from .foam_file import FoamFile
 
-class controlDict(foamFile):
+class controlDict(FoamFile):
 
     def __init__(self):
         super().__init__("system", "dictionary", "controlDict")
         
 
-    def __getString__(self):
+    def _get_string(self):
         content = f"""
 application     {self.solver};
 
@@ -31,13 +31,16 @@ timePrecision   6;
 """
         return self.get_header_location() + content
     
-    def writeFile(self,archivo,solver = "interFoam", start_time = 0, end_time = 1, delta_t = 0.01, write_interval = 0.1): #Posiblemente saque los valores
+    def modify_parameters(self,solver,start_time,end_time,delta_t,write_interval):
         self.solver = solver
         self.start_time = start_time
         self.end_time = end_time
         self.delta_t = delta_t
         self.write_interval = write_interval
-        archivo.write(self.__getString__())
+
+    def write_file(self,case_path): 
+        with open(case_path / self.folder / self.name, "w") as f:
+            f.write(self._get_string())
 
     def get_editable_parameters(self):
         return {

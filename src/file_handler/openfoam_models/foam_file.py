@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
 
-class foamFile(ABC):
+class FoamFile(ABC):
     
-    def __init__(self, folder, classType, name):
+    def __init__(self, folder, class_type, name):
         self.folder = folder
-        self.classType = classType
+        self.class_type = class_type
         self.name = name
 
     def get_header(self):
@@ -22,7 +22,7 @@ class foamFile(ABC):
     {{
         version     2.0;
         format      ascii;
-        class       {self.classType};
+        class       {self.class_type};
         object      {self.name};
     }}
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -42,12 +42,13 @@ class foamFile(ABC):
     {{
         version     2.0;
         format      ascii;
-        class       {self.classType};
+        class       {self.class_type};
         location    "{self.folder}";
         object      {self.name};
     }}
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     """
+    
     @abstractmethod
     def get_editable_parameters(self) -> dict:
         pass

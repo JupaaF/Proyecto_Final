@@ -66,15 +66,15 @@ class MainWindowController(QMainWindow):
                 if mesh_file_path.exists():
                     self.copy_geometry_file(mesh_file_path)
             
-            self.docker_handler = DockerHandler(self.file_handler.get_casePath())
-            self.docker_handler.transformarMalla()
+            # self.docker_handler = DockerHandler(self.file_handler.get_case_path())
+            # self.docker_handler.transformarMalla()
         else:
             print("Asistente cancelado por el usuario.")
 
     def copy_geometry_file(self, mesh_file_path: Path) -> None:
         """Copia el archivo de malla al directorio del caso."""
         # Corregido: El método ahora espera un objeto Path.
-        case_path = self.file_handler.get_casePath()
+        case_path = self.file_handler.get_case_path()
         destination_path = case_path / 'malla.unv'
         shutil.copy(mesh_file_path, destination_path)
         print(f"Malla copiada a: {destination_path}")
@@ -111,7 +111,7 @@ class MainWindowController(QMainWindow):
 
     def show_folder_tree(self):
         model = QFileSystemModel()
-        root_path = self.file_handler.get_casePath()
+        root_path = self.file_handler.get_case_path()
         model.setRootPath(str(root_path))
 
         tree_view = QTreeView()

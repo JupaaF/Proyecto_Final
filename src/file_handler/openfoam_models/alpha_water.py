@@ -1,4 +1,4 @@
-from foamFile import foamFile
+from .foam_file import FoamFile
 
 class alpha_water(foamFile): #en una primera instancia dejamos las dimensiones fijas
     

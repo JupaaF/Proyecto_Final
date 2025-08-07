@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from .openfoam_models.U import U
-from .openfoam_models.controlDict import ControlDict
+from .openfoam_models.controlDict import controlDict
 
 class FileHandler:
     
@@ -19,8 +19,7 @@ class FileHandler:
         ## TODO Tenemos que pasarle los datos del wizard a este constructor
         ## y con esos datos escribir el archivo
         ## De momento tiene los valores por defecto
-        with open(self.casePath / "system" / "controlDict", "w") as f:
-            self.files["controlDict"].writeFile(f)
+        # self.files["controlDict"].write_file(self.case_path)
 
     def get_case_path(self) -> Path:
         return self.case_path
@@ -32,20 +31,20 @@ class FileHandler:
 
         ##Agregue este archivo y le agregue el get_editable_parameters()
         ## al controlDict
-        self.files["controlDict"] = ControlDict()
+        self.files["controlDict"] = controlDict()
 
         for file in self.files:
             self._create_empty_file(self.files[file])
 
     def _create_base_dirs(self) -> None:
         """Crea los directorios básicos si no existen"""
-        self.casePath.mkdir(exist_ok=True)
+        self.case_path.mkdir(exist_ok=True)
         for folder in ['0', 'system', 'constant']:
-            (self.casePath / folder).mkdir(exist_ok=True)
+            (self.case_path / folder).mkdir(exist_ok=True)
 
     def _create_empty_file(self, foam_obj) -> str:
         """Crea el archivo vacío en la ubicación correcta"""
-        file_path = self.casePath / foam_obj.folder / foam_obj.name
+        file_path = self.case_path / foam_obj.folder / foam_obj.name
         file_path.touch()  # Crea el archivo vacío
         print(f"Archivo creado (vacío): {file_path}")
         return file_path

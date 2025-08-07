@@ -1,24 +1,24 @@
-from .foamFile import foamFile
+from .foam_file import FoamFile
 
-class U(foamFile): #en una primera instancia dejamos las dimensiones fijas
+class U(FoamFile): #en una primera instancia dejamos las dimensiones fijas
 
     def __init__(self): 
         super().__init__("0", "volVectorField", "U")
 
-    def __getString__(self):
+    def _get_string(self):
         content = f"""              
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   {self.internalField_value};
+internalField   {self.internal_field_value};
 
 boundaryField
 {{
 """
-        for i in range(len(self.patchList)):
+        for i in range(len(self.patch_list)):
             content += f""" 
-{self.patchList[i]}
+{self.patch_list[i]}
 {{
-    {self.patchContent[i]}
+    {self.patch_content[i]}
 }}
 """
         
@@ -28,14 +28,14 @@ boundaryField
         
         return self.get_header() + content
    
+    def modify_parameters(self, patch_list,patch_content,internal_field_value):
+        self.internal_field_value = internal_field_value
+        self.patch_list = patch_list
+        self.patch_content = patch_content 
 
-    def write_file(self,filePath ,patchList, patchContent, internalField_value): 
-        self.internalField_value = internalField_value
-        self.patchList = patchList
-        self.patchContent = patchContent
-
-        with open(filePath, "w") as archivo:
-            archivo.write(self.__getString__())
+    def write_file(self,case_path): 
+        with open(case_path / self.folder / self.name, "w") as f:
+            f.write(self._get_string())
 
     def get_editable_parameters(self):
         return {
