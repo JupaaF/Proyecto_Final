@@ -13,7 +13,7 @@ class FoamFile(ABC):
     /*--------------------------------*- C++ -*---------------------------------*\\
     | =========                 |                                                |
     | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-    |  \\    /   O peration     | Version:  v2506                                 |
+    |  \\    /   O peration     | Version:  v2312                                 |
     |   \\  /    A nd           | Website:  www.openfoam.com                      |
     |    \\/     M anipulation  |                                                 |
     \*---------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ class FoamFile(ABC):
     /*--------------------------------*- C++ -*---------------------------------*\\
     | =========                 |                                                |
     | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-    |  \\    /   O peration     | Version:  v2506                                 |
+    |  \\    /   O peration     | Version:  v2312                                 |
     |   \\  /    A nd           | Website:  www.openfoam.com                      |
     |    \\/     M anipulation  |                                                 |
     \*---------------------------------------------------------------------------*/

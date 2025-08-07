@@ -4,6 +4,11 @@ class controlDict(FoamFile):
 
     def __init__(self):
         super().__init__("system", "dictionary", "controlDict")
+        self.solver = "interFoam"
+        self.start_time = 0
+        self.end_time = 1
+        self.delta_t = 0.01
+        self.write_interval = 0.1
         
 
     def _get_string(self):

@@ -2,6 +2,8 @@ from pathlib import Path
 
 from .openfoam_models.U import U
 from .openfoam_models.controlDict import controlDict
+from .openfoam_models.fvSchemes import fvSchemes
+from .openfoam_models.fvSolution import fvSolution
 
 class FileHandler:
     
@@ -19,7 +21,9 @@ class FileHandler:
         ## TODO Tenemos que pasarle los datos del wizard a este constructor
         ## y con esos datos escribir el archivo
         ## De momento tiene los valores por defecto
-        # self.files["controlDict"].write_file(self.case_path)
+        self.files["controlDict"].write_file(self.case_path)
+        self.files["fvSchemes"].write_file(self.case_path)
+        self.files["fvSolution"].write_file(self.case_path)
 
     def get_case_path(self) -> Path:
         return self.case_path
@@ -28,10 +32,9 @@ class FileHandler:
 
         #Logica de template TODO
         self.files["U"] = U()
-
-        ##Agregue este archivo y le agregue el get_editable_parameters()
-        ## al controlDict
         self.files["controlDict"] = controlDict()
+        self.files["fvSchemes"] = fvSchemes()
+        self.files["fvSolution"] = fvSolution()
 
         for file in self.files:
             self._create_empty_file(self.files[file])
