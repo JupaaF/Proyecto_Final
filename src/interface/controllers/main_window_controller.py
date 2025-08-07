@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import (QApplication, QMainWindow, QDialog, QTreeView, QWidget, 
                              QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, 
-                             QFormLayout, QGroupBox)
+                             QFormLayout, QGroupBox,QMessageBox)
 from PySide6.QtCore import QFile, QTextStream, QUrl
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QDesktopServices
@@ -36,6 +36,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionModo_Oscuro.triggered.connect(self.toggle_theme)
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
         self.ui.actionDocumentacion.triggered.connect(self.open_documentation)
+        self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
 
         self.set_theme(dark_mode=False)
 
@@ -64,7 +65,7 @@ class MainWindowController(QMainWindow):
 
             self.copy_geometry_file(Path(data["mesh_file"]))          
             self.docker_handler = DockerHandler(self.file_handler.get_case_path())
-            self.docker_handler.transformarMalla()
+            self.docker_handler.transformar_malla()
 
         else:
             print("Asistente cancelado por el usuario.")
@@ -76,6 +77,13 @@ class MainWindowController(QMainWindow):
         destination_path = case_path / 'malla.unv'
         shutil.copy(mesh_file_path, destination_path)
         print(f"Malla copiada a: {destination_path}")
+
+    def execute_simulation(self) -> bool:
+        if not hasattr(self,"docker_handler"):
+            QMessageBox.warning(self, "Error de validación", "El nombre del caso no puede estar vacío.")
+            return False
+        
+        self.docker_handler.ejecutar_simulacion()
 
     def load_styles(self):
         # Corregido: Rutas a QSS construidas de forma robusta.

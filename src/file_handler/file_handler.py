@@ -42,7 +42,7 @@ class FileHandler:
     def _create_base_dirs(self) -> None:
         """Crea los directorios básicos si no existen"""
         self.case_path.mkdir(exist_ok=True)
-        for folder in ['0', 'system', 'constant']:
+        for folder in ['0.orig', 'system', 'constant']:
             (self.case_path / folder).mkdir(exist_ok=True)
 
     def _create_empty_file(self, foam_obj) -> str:

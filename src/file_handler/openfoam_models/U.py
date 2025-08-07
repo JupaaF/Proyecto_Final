@@ -3,7 +3,7 @@ from .foam_file import FoamFile
 class U(FoamFile): #en una primera instancia dejamos las dimensiones fijas
 
     def __init__(self): 
-        super().__init__("0", "volVectorField", "U")
+        super().__init__("0.orig", "volVectorField", "U")
 
     def _get_string(self):
         content = f"""              

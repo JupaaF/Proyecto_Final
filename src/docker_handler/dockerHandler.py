@@ -10,31 +10,18 @@ class DockerHandler():
         self.IMAGEN_OPENFOAM = "openfoam/openfoam10-paraview510" # imagen de Docker para ejecutar simulacion de interFoam e icoFoam
 
     
-    def ejecutarSimulacion(self,solver:int) -> bool:
-
-        # --- 3. Selección de Imagen Docker ---
-        if solver in [0, 1]: ##Cambiar por ser numeros magicos. Enum puede que sea lo mas apropiado
-            imagen = self.IMAGEN_OPENFOAM
-        else:
-            imagen = self.IMAGEN_SEDFOAM
-
+    def ejecutar_simulacion(self) -> bool:
+        ruta_script = Path.cwd() / "src" / "docker_handler" / "run_openfoam.sh"
         ruta_docker_volumen = self.case_path.as_posix()
 
-        # La ruta al script ahora debe apuntar a su nueva ubicación dentro de src/docker_handler
-        ruta_script = Path.cwd() / 'src' / 'docker_handler' / 'run_openfoam.sh'
-
         comando_docker = [
-                "docker", "run", "-it", "--rm",
-                    "-v", f"{ruta_docker_volumen}:/case",
-                    "-v", f"{ruta_script.as_posix()}:/run_openfoam.sh", # Monta el script
-                    "--entrypoint", "bash", # Sobrescribe el ENTRYPOINT a bash
-                    imagen,
-                    "/run_openfoam.sh", str(solver) # Pasa el script como argumento a bashs
+            "docker", "run", "-it", "--rm",
+                "-v", f"{ruta_docker_volumen}:/case",
+                "-v", f"{ruta_script.as_posix()}:/run_openfoam.sh", # Monta el script
+                "--entrypoint", "bash", # Sobrescribe el ENTRYPOINT a bash
+                self.IMAGEN_SEDFOAM,
+                "/run_openfoam.sh" # Pasa el script como argumento a bash
         ]
-
-        self.logger.info(f"Iniciando simulación para el caso con solver {solver}.")
-        self.logger.debug(f"Comando a ejecutar: {' '.join(comando_docker)}")
-
         try:
             # Al no usar 'capture_output', la salida del proceso se mostrará en tiempo real en la consola.
             proceso = subprocess.run(
@@ -70,7 +57,7 @@ class DockerHandler():
             self.logger.critical(f"Ocurrió un error inesperado: {e}", exc_info=True)
             raise
 
-    def transformarMalla(self)-> bool:
+    def transformar_malla(self)-> bool:
         ruta_script = Path.cwd() / "src" / "docker_handler" / "run_transformLF.sh"
         ruta_docker_volumen = self.case_path.as_posix()
 

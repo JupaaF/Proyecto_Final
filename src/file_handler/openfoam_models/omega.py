@@ -1,9 +1,9 @@
-from foamFile import foamFile
+from foam_file import FoamFile
 
-class omega(foamFile): #en una primera instancia dejamos las dimensiones fijas
+class omega(FoamFile): #en una primera instancia dejamos las dimensiones fijas
 
     def __init__(self): #Posiblemente saque los valores
-        super().__init__("0", "volScalarField", "omega")
+        super().__init__("0.orig", "volScalarField", "omega")
         
 
     def __getString__(self):
