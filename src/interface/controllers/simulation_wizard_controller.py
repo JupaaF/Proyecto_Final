@@ -1,6 +1,7 @@
 import sys
 from PySide6.QtWidgets import QWizard, QApplication, QFileDialog
 from PySide6.QtUiTools import QUiLoader
+from pathlib import Path
 
 
 ##Esta es la que mas cambio por ahi.
@@ -31,10 +32,16 @@ class SimulationWizardController(QWizard):
 
         # Conectar el botón de examinar malla en la segunda página
         self.page2.browseMeshButton.clicked.connect(self.browse_mesh_file)
+        self.page1.caseNameLineEdit.textEdited.connect(self.checkear_ruta)
 
         # Configurar el wizard
         self.setWindowTitle("Asistente de Nueva Simulación")
         self.setWizardStyle(QWizard.ModernStyle)
+    
+    def checkear_ruta(self):
+        path_route = Path(self.page1.caseNameLineEdit.text())
+        if path_route.exists():
+            print("El archivo ya existe")
 
     def populate_templates(self):
         # TODO: Cargar estas plantillas desde una configuración o un directorio
