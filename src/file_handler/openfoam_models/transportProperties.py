@@ -1,21 +1,24 @@
-from foamFile import foamFile
+from foam_file import FoamFile
 
-class transportProperties(foamFile):
+class transportProperties(FoamFile):
 
     def __init__(self): 
         super().__init__("constant", "dictionary", "transportProperties")
+        self.phases_list = []
+        self.phases_content = []
+        self.sigma = 0.07
         
 
     def __getString__(self):
-        phases_str = " ".join(self.phasesList)
+        phases_str = " ".join(self.phases_list)
         content = f"""              
             phases      ({phases_str});
             """
-        for i in range(len(self.phasesList)):
+        for i in range(len(self.phases_list)):
             content += f""" 
-            {self.phasesList[i]}
+            {self.phases_list[i]}
             {{
-                {self.phasesContent[i]}
+                {self.phases_content[i]}
             }}
             """
         
@@ -24,12 +27,18 @@ class transportProperties(foamFile):
         """
         
         return self.get_header() + content
-   
 
-    def write_file(self, archivo, phasesList, phasesContent, sigma): 
-        self.phasesList = phasesList
-        self.phasesContent = phasesContent
-        self.sigma = sigma
-        archivo.write(self.__getString__())
+    def modify_parameters(self,data:dict):
+        if data.get('phases_list'):
+            self.phases_list = data['phases_list']
+        if data.get('phases_content'):
+            self.phases_content = data['phases_content']
+        if data.get('sigma'):
+            self.sigma = data['sigma']
+
+    def write_file(self,case_path): 
+        with open(case_path / self.folder / self.name, "w") as f:
+            f.write(self._get_string())
+
 
     

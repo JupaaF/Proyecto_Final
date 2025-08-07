@@ -1,14 +1,10 @@
-import sys
 import shutil
 from pathlib import Path
 
-from PySide6.QtWidgets import (QApplication, QMainWindow, QDialog, QTreeView, QWidget, 
-                             QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, 
-                             QFormLayout, QGroupBox,QMessageBox)
-from PySide6.QtCore import QFile, QTextStream, QUrl
+from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout)
+from PySide6.QtCore import QUrl
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QFileSystemModel
 
 
 from scripts.initParam import RUTA_LOCAL, create_dir
@@ -18,35 +14,40 @@ from file_handler.file_handler import FileHandler
 
 from interface.controllers.widget_geometria import GeometryView
 from .simulation_wizard_controller import SimulationWizardController
+from .theme_manager import ThemeManager
+from .file_browser_manager import FileBrowserManager
+from .parameter_editor_manager import ParameterEditorManager
 
 class MainWindowController(QMainWindow):
     def __init__(self):
         super().__init__()
 
         create_dir()
-
+        self.setWindowTitle("Simulacion de OpenFOAM by Marti and Jupa")
         loader = QUiLoader()
 
         ui_path = Path(__file__).parent.parent / "ui" / "main_window_dock.ui"
         self.ui = loader.load(str(ui_path))
         self.setCentralWidget(self.ui)
 
-        self.load_styles()
+        self.theme_manager = ThemeManager(self.ui)
+        self.theme_manager.set_theme(dark_mode=False)
 
         self.ui.actionModo_Oscuro.triggered.connect(self.toggle_theme)
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
         self.ui.actionDocumentacion.triggered.connect(self.open_documentation)
         self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
 
-        self.set_theme(dark_mode=False)
-
         self.setup_view_menu()
 
         # Layout para el visualizador VTK
         self.vtk_layout = QVBoxLayout(self.ui.vtkContainer)
         self.vtk_layout.setContentsMargins(0, 0, 0, 0)
-        
-        
+
+        self.file_handler = None
+        self.docker_handler = None
+        self.file_browser_manager = None
+        self.parameter_editor_manager = None
 
     def open_documentation(self):
         """Abre la documentación en el navegador web."""
@@ -58,14 +59,23 @@ class MainWindowController(QMainWindow):
 
         if wizard.exec() == QDialog.Accepted:
             data = wizard.get_data()
+            self.setWindowTitle(f"Simulacion de OpenFOAM by Marti and Jupa - {data['case_name']}")
 
             self.file_handler = FileHandler(RUTA_LOCAL / data["case_name"], data["template"])
-            self.show_folder_tree()
+            
+            if not self.file_browser_manager:
+                self.file_browser_manager = FileBrowserManager(self.ui.fileBrowserDock, self.file_handler)
+                self.file_browser_manager.file_clicked.connect(self.open_parameters_view)
+                self.ui.fileBrowserDock.setWidget(self.file_browser_manager.get_widget())
+            else:
+                self.file_browser_manager.update_root_path()
+
+            if not self.parameter_editor_manager:
+                self.parameter_editor_manager = ParameterEditorManager(self.ui.parameterEditorDock, self.file_handler, self._get_vtk_patch_names)
 
             self.copy_geometry_file(Path(data["mesh_file"]))          
             self.docker_handler = DockerHandler(self.file_handler.get_case_path())
             self.docker_handler.transformar_malla()
-
             self.show_geometry_visualizer(self.file_handler.get_case_path()/ "VTK/case_0/boundary/")
 
         else:
@@ -73,120 +83,32 @@ class MainWindowController(QMainWindow):
 
     def copy_geometry_file(self, mesh_file_path: Path) -> None:
         """Copia el archivo de malla al directorio del caso."""
-        # Corregido: El método ahora espera un objeto Path.
         case_path = self.file_handler.get_case_path()
         destination_path = case_path / 'malla.unv'
         shutil.copy(mesh_file_path, destination_path)
         print(f"Malla copiada a: {destination_path}")
 
     def execute_simulation(self) -> bool:
-        if not hasattr(self,"docker_handler"):
+        if not hasattr(self,"docker_handler") or self.docker_handler is None:
             QMessageBox.warning(self, "Error de validación", "El nombre del caso no puede estar vacío.")
             return False
         
         self.docker_handler.ejecutar_simulacion()
-
-    def load_styles(self):
-        # Corregido: Rutas a QSS construidas de forma robusta.
-        resources_path = Path(__file__).parent.parent / "resources"
-        
-        light_theme_file = QFile(str(resources_path / "light_theme.qss"))
-        light_theme_file.open(QFile.ReadOnly | QFile.Text)
-        self.light_theme = QTextStream(light_theme_file).readAll()
-        light_theme_file.close()
-
-        dark_theme_file = QFile(str(resources_path / "dark_theme.qss"))
-        dark_theme_file.open(QFile.ReadOnly | QFile.Text)
-        self.dark_theme = QTextStream(dark_theme_file).readAll()
-        dark_theme_file.close()
-
-    def set_theme(self, dark_mode):
-        if dark_mode:
-            self.ui.setStyleSheet(self.dark_theme)
-            self.ui.actionModo_Oscuro.setChecked(True)
-        else:
-            self.ui.setStyleSheet(self.light_theme)
-            self.ui.actionModo_Oscuro.setChecked(False)
-
-    def toggle_theme(self):
-        self.set_theme(self.ui.actionModo_Oscuro.isChecked())
-
-    def setup_view_menu(self):
-        self.ui.menuVer.addAction(self.ui.fileBrowserDock.toggleViewAction())
-        self.ui.menuVer.addAction(self.ui.parameterEditorDock.toggleViewAction())
-        self.ui.menuVer.addAction(self.ui.logDock.toggleViewAction())
-
-    def show_folder_tree(self):
-        model = QFileSystemModel()
-        root_path = self.file_handler.get_case_path()
-        model.setRootPath(str(root_path))
-
-        tree_view = QTreeView()
-        tree_view.setModel(model)
-        tree_view.setRootIndex(model.index(str(root_path)))
-        
-        tree_view.hideColumn(1) 
-        tree_view.hideColumn(2) 
-        tree_view.hideColumn(3) 
-
-        self.ui.fileBrowserDock.setWidget(tree_view)
-        tree_view.clicked.connect(self.handle_file_click)
-            
-    def handle_file_click(self, index):
-        model = index.model()
-        # Corregido: Se convierte el string de la ruta a un objeto Path inmediatamente.
-        file_path = Path(model.filePath(index))
-
-        if not file_path.is_dir():
-            print(f"Abriendo el archivo: {file_path}")
-            self.open_parameters_view(file_path)
-        else:
-            print(f"Es un directorio, no se abre en el editor: {file_path}")
-
+    
     def open_parameters_view(self, file_path: Path):
-        """Muestra los parámetros editables para un archivo dado."""
+        if self.parameter_editor_manager:
+            self.parameter_editor_manager.open_parameters_view(file_path)
 
-        dict_parameters = self.file_handler.get_editable_parameters(file_path)
+    def _get_vtk_patch_names(self) -> list[str]:
+        """Obtiene los nombres de los patches de VTK del directorio boundary."""
+        patch_names = []
+        if self.file_handler:
+            vtk_boundary_path = self.file_handler.get_case_path() / "VTK" / "case_0" / "boundary"
+            if vtk_boundary_path.is_dir():
+                for item in vtk_boundary_path.iterdir():
+                    patch_names.append(Path(item.name).stem)
+        return patch_names
 
-        container = QWidget()
-        layout = QVBoxLayout(container)
-        form_layout = QFormLayout()
-
-        if not dict_parameters:
-            # Si no hay parámetros, muestra un mensaje informativo.
-            form_layout.addRow(QLabel("Este archivo no tiene parámetros editables."))
-        else:
-            for param_name, param_props in dict_parameters.items():
-                label = QLabel(param_props.get('label', param_name))
-                label.setToolTip(param_props.get('tooltip', ''))
-                widget = self._create_widget_for_parameter(param_props)
-                form_layout.addRow(label, widget)
-
-        layout.addLayout(form_layout)
-
-        if self.ui.parameterEditorDock.widget():
-            self.ui.parameterEditorDock.widget().deleteLater()
-        
-        self.ui.parameterEditorDock.setWidget(container)
-
-    def _create_widget_for_parameter(self, props):
-        widget_type = props.get('type', 'string')
-        if widget_type == 'vector':
-            widget = QLineEdit(props.get('default', ''))
-        elif widget_type == 'string':
-            widget = QLineEdit(props.get('default', ''))
-        elif widget_type == 'choice':
-            widget = QComboBox()
-            options = props.get('validators', {}).get('options', [])
-            for option in options:
-                widget.addItem(option['label'], option['name'])
-        elif widget_type == 'list_of_dicts':
-            widget = QLabel("Editor para 'list_of_dicts' aún no implementado.")
-        else:
-            widget = QLineEdit(props.get('default', ''))
-        return widget
-
-    # Mantenido: La firma del método se conserva como estaba.
     def show_geometry_visualizer(self,geomFilePath):
         """
         Crea o actualiza el dock de visualización con el visualizador de geometría.
@@ -198,3 +120,11 @@ class MainWindowController(QMainWindow):
         
         visualizer = GeometryView(geomFilePath)
         self.vtk_layout.addWidget(visualizer)
+
+    def toggle_theme(self):
+        self.theme_manager.set_theme(self.ui.actionModo_Oscuro.isChecked())
+
+    def setup_view_menu(self):
+        self.ui.menuVer.addAction(self.ui.fileBrowserDock.toggleViewAction())
+        self.ui.menuVer.addAction(self.ui.parameterEditorDock.toggleViewAction())
+        self.ui.menuVer.addAction(self.ui.logDock.toggleViewAction())

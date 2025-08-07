@@ -42,7 +42,7 @@ class FileHandler:
     def _create_base_dirs(self) -> None:
         """Crea los directorios básicos si no existen"""
         self.case_path.mkdir(exist_ok=True)
-        for folder in ['0.orig', 'system', 'constant']:
+        for folder in ['0', 'system', 'constant']:
             (self.case_path / folder).mkdir(exist_ok=True)
 
     def _create_empty_file(self, foam_obj) -> str:
@@ -60,3 +60,9 @@ class FileHandler:
         if file_name in self.files:
             return self.files[file_name].get_editable_parameters()
         return {}
+    
+    def modify_parameters(self,file_path:Path, data:dict):
+        file_name = file_path.name
+        if file_name in self.files:
+            return self.files[file_name].modify_parameters()
+        pass

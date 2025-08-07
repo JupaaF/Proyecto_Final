@@ -3,13 +3,15 @@ from .foam_file import FoamFile
 class U(FoamFile): #en una primera instancia dejamos las dimensiones fijas
 
     def __init__(self): 
-        super().__init__("0.orig", "volVectorField", "U")
+        super().__init__("0", "volVectorField", "U")
+        self.patch_list = []
+        self.patch_content = []
 
     def _get_string(self):
         content = f"""              
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   {self.internal_field_value};
+internalField   uniform (0 0 0);
 
 boundaryField
 {{
@@ -28,10 +30,12 @@ boundaryField
         
         return self.get_header() + content
    
-    def modify_parameters(self, patch_list,patch_content,internal_field_value):
-        self.internal_field_value = internal_field_value
-        self.patch_list = patch_list
-        self.patch_content = patch_content 
+    def modify_parameters(self, data:dict):
+
+        if data.get('patch_list'):
+            self.patch_list = data['patch_list']
+        if data.get('patch_content'):
+            self.patch_content = data['patch_content']
 
     def write_file(self,case_path): 
         with open(case_path / self.folder / self.name, "w") as f:
@@ -39,13 +43,6 @@ boundaryField
 
     def get_editable_parameters(self):
         return {
-            'internalField': {
-                'label': 'Campo Interno (Velocidad)',
-                'tooltip': 'Valor inicial de la velocidad en el interior del dominio. Formato: (Ux Uy Uz)',
-                'type': 'vector',
-                'default': '(0 0 0)',
-                'group': 'Valores Iniciales'
-            },
             'boundaryField': {
                 'label': 'Condiciones de Borde',
                 'tooltip': 'Define las condiciones de velocidad en los límites del dominio.',
