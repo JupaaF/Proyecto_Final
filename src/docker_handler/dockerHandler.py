@@ -80,7 +80,7 @@ class DockerHandler():
                 "-v", f"{ruta_script.as_posix()}:/run_transform.sh", # Monta el script
                 "--entrypoint", "bash", # Sobrescribe el ENTRYPOINT a bash
                 self.IMAGEN_SEDFOAM,
-                # "/run_openfoam.sh" # Pasa el script como argumento a bash
+                "/run_transform.sh" # Pasa el script como argumento a bash
         ]
         try:
             # Al no usar 'capture_output', la salida del proceso se mostrará en tiempo real en la consola.

@@ -65,9 +65,8 @@ class MainWindowController(QMainWindow):
                 mesh_file_path = Path(mesh_file_path_str)
                 if mesh_file_path.exists():
                     self.copy_geometry_file(mesh_file_path)
-            
-            # self.docker_handler = DockerHandler(self.file_handler.get_case_path())
-            # self.docker_handler.transformarMalla()
+                    self.docker_handler = DockerHandler(self.file_handler.get_case_path())
+                    self.docker_handler.transformarMalla()
         else:
             print("Asistente cancelado por el usuario.")
 
