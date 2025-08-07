@@ -20,10 +20,13 @@ class DockerHandler():
 
         ruta_docker_volumen = self.case_path.as_posix()
 
+        # La ruta al script ahora debe apuntar a su nueva ubicación dentro de src/docker_handler
+        ruta_script = Path.cwd() / 'src' / 'docker_handler' / 'run_openfoam.sh'
+
         comando_docker = [
                 "docker", "run", "-it", "--rm",
                     "-v", f"{ruta_docker_volumen}:/case",
-                    "-v", f"{Path.cwd() / 'dockerFiles' / 'run_openfoam.sh'}:/run_openfoam.sh", # Monta el script
+                    "-v", f"{ruta_script.as_posix()}:/run_openfoam.sh", # Monta el script
                     "--entrypoint", "bash", # Sobrescribe el ENTRYPOINT a bash
                     imagen,
                     "/run_openfoam.sh", str(solver) # Pasa el script como argumento a bashs
@@ -68,13 +71,13 @@ class DockerHandler():
             raise
 
     def transformarMalla(self)-> bool:
-        ruta_script = Path.cwd() / "dockerFiles" / "run_transform.sh"
+        ruta_script = Path.cwd() / "src" / "docker_handler" / "run_transform.sh"
         ruta_docker_volumen = self.case_path.as_posix()
 
         comando_docker = [
             "docker", "run", "-it", "--rm",
                 "-v", f"{ruta_docker_volumen}:/case",
-                "-v", f"{ruta_script}:/run_transform.sh", # Monta el script
+                "-v", f"{ruta_script.as_posix()}:/run_transform.sh", # Monta el script
                 "--entrypoint", "bash", # Sobrescribe el ENTRYPOINT a bash
                 self.IMAGEN_SEDFOAM,
                 # "/run_openfoam.sh" # Pasa el script como argumento a bash
@@ -113,22 +116,3 @@ class DockerHandler():
             # Captura cualquier otro error inesperado.
             self.logger.critical(f"Ocurrió un error inesperado: {e}", exc_info=True)
             raise
-
-if __name__ == '__main__':
-    # --- 1. Configuración del Logging ---                                                                     
- # Esto se debe hacer una vez al inicio de la aplicación.                                                   
-    logging.basicConfig(                                                                                       
-        level=logging.INFO,                                                                                    
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',                                         
-        handlers=[                                                                                             
-            logging.FileHandler("SimulacionDocker.log"), # Guarda los logs en un archivo                       
-            logging.StreamHandler() # Muestra los logs en la consola                                           
-        ]                                                                                                     
-    )                                                                                                          
-                                                                                                
-    casos_path = Path(r"C:\Users\juanp\CasosOpenFOAM\caso0")      
-
-    handler = DockerHandler(case_path=casos_path)
-    # handler.ejecutarSimulacion(0)     
-    cosas = handler.transformarMalla()
-

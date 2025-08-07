@@ -19,8 +19,8 @@ class SimulationWizardController(QWizard):
 
         # Cargar las PÁGINAS desde los archivos .ui
         loader = QUiLoader()
-        self.page1 = loader.load("interfaz/ui/wizard_page_1_initial_setup.ui")
-        self.page2 = loader.load("interfaz/ui/wizard_page_2_mesh_and_params.ui")
+        self.page1 = loader.load("src/interface/ui/wizard_page_1_initial_setup.ui")
+        self.page2 = loader.load("src/interface/ui/wizard_page_2_mesh_and_params.ui")
 
         # Añadir las páginas al wizard
         self.addPage(self.page1)
@@ -76,4 +76,3 @@ class SimulationWizardController(QWizard):
             "delta_t": self.page2.deltaTLineEdit.text(),
             "write_interval": self.page2.writeIntervalLineEdit.text(),
         }
-

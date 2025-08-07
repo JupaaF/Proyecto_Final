@@ -11,16 +11,20 @@ La aplicación permite a los usuarios configurar y lanzar simulaciones de Dinám
 
 ## Arquitectura
 
-El software está diseñado siguiendo el patrón **Modelo-Vista-Controlador (MVC)**:
+El software está diseñado siguiendo el patrón **Modelo-Vista-Controlador (MVC)**, con una estructura de proyecto organizada para separar las responsabilidades:
 
-*   **Modelo:**
-    *   `dockerFiles/dockerHandler.py`: Gestiona la interacción con el motor de Docker para iniciar, supervisar y detener los contenedores de simulación.
-    *   `file_handler/file_handler.py`: Se encarga de generar dinámicamente los archivos de configuración del caso de OpenFOAM basándose en las plantillas y los parámetros seleccionados por el usuario.
-*   **Vista:**
-    *   `interfaz/ui/`: Contiene los archivos `.ui` de Qt Designer.
-    *   `interfaz/controllers/`: Controladores de PySide6 que cargan las vistas y gestionan los eventos de la GUI.
-*   **Controlador:**
-    *   La lógica principal reside en los controladores de la interfaz (`interfaz/controllers/`), que conectan las acciones del usuario en la Vista con las operaciones del Modelo.
+*   **`src/`**: Contiene todo el código fuente de la aplicación.
+    *   **Modelo:**
+        *   `src/docker_handler/dockerHandler.py`: Gestiona la interacción con el motor de Docker para iniciar, supervisar y detener los contenedores de simulación.
+        *   `src/file_handler/file_handler.py`: Se encarga de generar dinámicamente los archivos de configuración del caso de OpenFOAM.
+        *   `src/file_handler/openfoam_models/`: Clases que representan y manipulan archivos específicos de OpenFOAM (e.g., `controlDict.py`, `U.py`).
+    *   **Vista:**
+        *   `src/interface/ui/`: Contiene los archivos `.ui` de Qt Designer que definen la apariencia de la interfaz.
+    *   **Controlador:**
+        *   `src/interface/controllers/`: Controladores de PySide6 que cargan las vistas, gestionan los eventos de la GUI y conectan las acciones del usuario con la lógica del modelo.
+*   **`main.py`**: Punto de entrada de la aplicación, ubicado en `src/main.py`.
+*   **`scripts/`**: Contiene scripts de utilidad y automatización que no forman parte del núcleo de la aplicación (por ejemplo, para visualización o tareas de mantenimiento).
+*   **`tests/`**: Pruebas unitarias y de integración para asegurar la calidad y el correcto funcionamiento del código.
 
 ## Características
 
@@ -49,7 +53,7 @@ El software está diseñado siguiendo el patrón **Modelo-Vista-Controlador (MVC
     ```
 4.  **Ejecutar la aplicación:**
     ```bash
-    python main.py
+    python src/main.py
     ```
 
 ---
@@ -59,21 +63,21 @@ El software está diseñado siguiendo el patrón **Modelo-Vista-Controlador (MVC
 Esta sección está destinada a proporcionar un resumen rápido para agentes de IA (como Gemini CLI) para facilitar el desarrollo.
 
 *   **Stack tecnológico:** `Python`, `PySide6`, `Docker`, `VTK`, `PyVista`.
-*   **Punto de entrada:** `main.py`.
+*   **Punto de entrada:** `src/main.py`.
 *   **Estructura del proyecto:**
-    *   `main.py`: Inicia la aplicación y muestra la ventana principal.
-    *   `interfaz/`: Contiene todo lo relacionado con la GUI.
+    *   `src/main.py`: Inicia la aplicación y muestra la ventana principal.
+    *   `src/interface/`: Contiene todo lo relacionado con la GUI.
         *   `ui/`: Archivos de diseño de la interfaz (`.ui`).
         *   `controllers/`: Lógica de la interfaz (controladores de la vista). El `main_window_controller.py` es el principal.
-    *   `file_handler/`: Módulo para la creación y manipulación de archivos de casos de OpenFOAM.
+    *   `src/file_handler/`: Módulo para la creación y manipulación de archivos de casos de OpenFOAM.
         *   `file_handler.py`: Orquesta la creación de archivos.
-        *   `file_class/`: Clases que representan y manipulan archivos específicos de OpenFOAM (e.g., `controlDict.py`, `U.py`).
-    *   `dockerFiles/`: Lógica para la interacción con Docker.
+        *   `openfoam_models/`: Clases que representan y manipulan archivos específicos de OpenFOAM (e.g., `controlDict.py`, `U.py`).
+    *   `src/docker_handler/`: Lógica para la interacción con Docker.
         *   `dockerHandler.py`: Clase principal para manejar los contenedores de Docker.
         *   `run_openfoam.sh`, `run_transform.sh`: Scripts que se ejecutan dentro del contenedor.
     *   `VTK/`: Directorio de salida para los archivos de visualización (`.vtk`).
 *   **Flujo de trabajo principal:**
-    1.  El usuario inicia la app (`main.py`).
+    1.  El usuario inicia la app (`python src/main.py`).
     2.  Abre el asistente de simulación desde la ventana principal.
     3.  El usuario introduce los parámetros en el asistente (`simulation_wizard_controller.py`).
     4.  Al finalizar, los datos se usan para generar los archivos del caso a través de `file_handler.py`.

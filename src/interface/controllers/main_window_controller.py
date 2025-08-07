@@ -1,7 +1,7 @@
 import sys
 import shutil
 from pathlib import Path
-from dockerFiles.dockerHandler import DockerHandler
+from docker_handler.dockerHandler import DockerHandler
 from PySide6.QtWidgets import (QApplication, QMainWindow, QDialog, QTreeView, QWidget, 
                              QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, 
                              QFormLayout, QGroupBox)
@@ -9,7 +9,7 @@ from PySide6.QtCore import QFile, QTextStream
 from PySide6.QtUiTools import QUiLoader
 from file_handler.file_handler import fileHandler
 from PySide6.QtWidgets import QFileSystemModel
-from interfaz.controllers.widget_geometría import GeometryView
+from interface.controllers.widget_geometria import GeometryView
 
 
 # Importar el controlador del asistente
@@ -21,7 +21,7 @@ class MainWindowController(QMainWindow):
 
         # Cargar la interfaz desde el archivo .ui
         loader = QUiLoader()
-        self.ui = loader.load("interfaz/ui/main_window_dock.ui")
+        self.ui = loader.load("src/interface/ui/main_window_dock.ui")
         self.setCentralWidget(self.ui)
 
         # Cargar los estilos QSS
@@ -70,13 +70,13 @@ class MainWindowController(QMainWindow):
 
     def load_styles(self):
         # Cargar tema claro
-        light_theme_file = QFile("interfaz/resources/light_theme.qss")
+        light_theme_file = QFile("src/interface/resources/light_theme.qss")
         light_theme_file.open(QFile.ReadOnly | QFile.Text)
         self.light_theme = QTextStream(light_theme_file).readAll()
         light_theme_file.close()
 
         # Cargar tema oscuro
-        dark_theme_file = QFile("interfaz/resources/dark_theme.qss")
+        dark_theme_file = QFile("src/interface/resources/dark_theme.qss")
         dark_theme_file.open(QFile.ReadOnly | QFile.Text)
         self.dark_theme = QTextStream(dark_theme_file).readAll()
         dark_theme_file.close()
@@ -251,4 +251,3 @@ class MainWindowController(QMainWindow):
         
         # 2. Asigna el visualizador al layout del contenedor
         self.vtk_layout.addWidget(visualizer)
-

@@ -1,12 +1,18 @@
-from initParam import RUTA_LOCAL
 from pathlib import Path
-from file_handler.file_class.U import U
-from file_handler.file_class.controlDict import controlDict
+
+# RUTA_LOCAL define el directorio base donde se guardarán los casos de simulación.
+# Se utiliza Path.home() para asegurar que sea compatible con Windows, Linux y macOS.
+RUTA_LOCAL = Path.home() / "CasosOpenFOAM"
+
+from .openfoam_models.U import U
+from .openfoam_models.controlDict import controlDict
 
 class fileHandler:
     
     def __init__(self,casePath:str,template:str=None):
-        self.casePath = Path(RUTA_LOCAL) / casePath
+        # Asegurarse de que el directorio base exista
+        RUTA_LOCAL.mkdir(exist_ok=True)
+        self.casePath = RUTA_LOCAL / casePath
         self.template = template
         self.files = {}
         self._create_base_dirs()
@@ -53,6 +59,3 @@ class fileHandler:
         file = Path(filePath).name
         if file in self.files:
             return self.files[file].get_editable_parameters()
-        
-       
-
