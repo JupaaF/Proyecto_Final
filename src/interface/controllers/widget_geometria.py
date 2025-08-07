@@ -62,7 +62,7 @@ class GeometryView(QWidget):
 
     def load_and_plot_mesh(self, base_folder):
         """
-        Recorre la carpeta indicada, carga los archivos .vtk correspondientes a los patches,
+        Recorre la carpeta indicada, carga los archivos .vtk o .vtp correspondientes a los patches,
         y los añade a la escena con colores aleatorios.
         """
         if not os.path.isdir(base_folder):
@@ -71,9 +71,9 @@ class GeometryView(QWidget):
 
         for root, dirs, files in os.walk(base_folder):
             for file in files:
-                if file.endswith(".vtk"):
+                if file.endswith((".vtk", ".vtp")):
                     filepath = os.path.join(root, file)
-                    patch_name = os.path.basename(root)  # <-----  DEFINE CUAL ES EL PATCH NAME
+                    patch_name, _ = os.path.splitext(file) # <-----  DEFINE CUAL ES EL PATCH NAME
                     try:
                         # Leer el mesh VTK con PyVista
                         mesh = pv.read(filepath)

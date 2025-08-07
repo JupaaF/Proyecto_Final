@@ -58,16 +58,16 @@ class DockerHandler():
             raise
 
     def transformar_malla(self)-> bool:
-        ruta_script = Path.cwd() / "src" / "docker_handler" / "run_transformLF.sh"
+        ruta_script = Path.cwd() / "src" / "docker_handler" / "run_transform.sh"
         ruta_docker_volumen = self.case_path.as_posix()
 
         comando_docker = [
             "docker", "run", "-it", "--rm",
                 "-v", f"{ruta_docker_volumen}:/case",
-                "-v", f"{ruta_script.as_posix()}:/run_transformLF.sh", # Monta el script
+                "-v", f"{ruta_script.as_posix()}:/run_transform.sh", # Monta el script
                 "--entrypoint", "bash", # Sobrescribe el ENTRYPOINT a bash
                 self.IMAGEN_SEDFOAM,
-                "/run_transformLF.sh" # Pasa el script como argumento a bash
+                "/run_transform.sh" # Pasa el script como argumento a bash
         ]
         try:
             # Al no usar 'capture_output', la salida del proceso se mostrará en tiempo real en la consola.

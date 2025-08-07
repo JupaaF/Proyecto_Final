@@ -46,8 +46,7 @@ class MainWindowController(QMainWindow):
         self.vtk_layout = QVBoxLayout(self.ui.vtkContainer)
         self.vtk_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Mantenido: La llamada al visualizador de geometría se conserva como estaba.
-        self.show_geometry_visualizer('C:/Users/piliv/OneDrive/Documentos/FACU/PFC/Proyecto_Final/Proyecto_Final-1/VTK')
+        
 
     def open_documentation(self):
         """Abre la documentación en el navegador web."""
@@ -66,6 +65,8 @@ class MainWindowController(QMainWindow):
             self.copy_geometry_file(Path(data["mesh_file"]))          
             self.docker_handler = DockerHandler(self.file_handler.get_case_path())
             self.docker_handler.transformar_malla()
+
+            self.show_geometry_visualizer(self.file_handler.get_case_path()/ "VTK/case_0/boundary/")
 
         else:
             print("Asistente cancelado por el usuario.")
