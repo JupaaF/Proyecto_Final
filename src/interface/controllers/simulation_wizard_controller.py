@@ -64,6 +64,7 @@ class SimulationWizardController(QWizard):
         if file_path:
             # Si el usuario selecciona un archivo, actualiza el QLineEdit
             self.page2.meshPathLineEdit.setText(file_path)
+            
 
 
 ##Aca se define el diccionario donde se le pasa toda la info desde el wizard a la mainWindow
