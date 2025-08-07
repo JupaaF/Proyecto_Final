@@ -1,18 +1,13 @@
 from pathlib import Path
 
-# RUTA_LOCAL define el directorio base donde se guardarán los casos de simulación.
-# Se utiliza Path.home() para asegurar que sea compatible con Windows, Linux y macOS.
-RUTA_LOCAL = Path.home() / "CasosOpenFOAM"
-
 from .openfoam_models.U import U
-from .openfoam_models.controlDict import controlDict
+from .openfoam_models.controlDict import ControlDict
 
-class fileHandler:
+class FileHandler:
     
-    def __init__(self,casePath:str,template:str=None):
+    def __init__(self,case_path:Path,template:str=None):
         # Asegurarse de que el directorio base exista
-        RUTA_LOCAL.mkdir(exist_ok=True)
-        self.casePath = RUTA_LOCAL / casePath
+        self.case_path = case_path
         self.template = template
         self.files = {}
         self._create_base_dirs()
@@ -27,8 +22,8 @@ class fileHandler:
         with open(self.casePath / "system" / "controlDict", "w") as f:
             self.files["controlDict"].writeFile(f)
 
-    def get_casePath(self):
-        return self.casePath
+    def get_case_path(self) -> Path:
+        return self.case_path
 
     def _create_files(self) -> None:
 
@@ -37,7 +32,7 @@ class fileHandler:
 
         ##Agregue este archivo y le agregue el get_editable_parameters()
         ## al controlDict
-        self.files["controlDict"] = controlDict()
+        self.files["controlDict"] = ControlDict()
 
         for file in self.files:
             self._create_empty_file(self.files[file])
@@ -55,7 +50,11 @@ class fileHandler:
         print(f"Archivo creado (vacío): {file_path}")
         return file_path
     
-    def get_editable_parameters(self,filePath) -> dict:
-        file = Path(filePath).name
-        if file in self.files:
-            return self.files[file].get_editable_parameters()
+    def get_editable_parameters(self, file_path: Path) -> dict:
+        """
+        Devuelve los parámetros editables para un archivo dado, identificado por su objeto Path.
+        """
+        file_name = file_path.name
+        if file_name in self.files:
+            return self.files[file_name].get_editable_parameters()
+        return {}
