@@ -1,14 +1,12 @@
 import sys
-from PySide6.QtWidgets import QWizard, QApplication, QFileDialog
+from PySide6.QtWidgets import QWizard, QApplication, QFileDialog, QMessageBox
 from PySide6.QtUiTools import QUiLoader
 from pathlib import Path
 
 
+RUTA_LOCAL = Path.home() / "CasosOpenFOAM" #TODO: hacer el import de esto desde initParam.py
+
 ##Esta es la que mas cambio por ahi.
-
-##Le agregue la segunda pagina. Todavia no hice los checkeos de si tienen el mismo nombre
-## las carpetas
-
 ##Lo mas importante esta en el ultimo metodo get_data(). Vamos para alla
 class SimulationWizardController(QWizard):
     # Definimos IDs para las páginas
@@ -30,18 +28,22 @@ class SimulationWizardController(QWizard):
         # Poblar el ComboBox de plantillas en la primera página
         self.populate_templates()
 
+        self.page1.caseNameLineEdit.textEdited.connect(self.check_file_path)
+
         # Conectar el botón de examinar malla en la segunda página
         self.page2.browseMeshButton.clicked.connect(self.browse_mesh_file)
-        self.page1.caseNameLineEdit.textEdited.connect(self.checkear_ruta)
+        
 
         # Configurar el wizard
         self.setWindowTitle("Asistente de Nueva Simulación")
         self.setWizardStyle(QWizard.ModernStyle)
     
-    def checkear_ruta(self):
-        path_route = Path(self.page1.caseNameLineEdit.text())
+    def check_file_path(self):
+        path_route = Path(RUTA_LOCAL / self.page1.caseNameLineEdit.text())
         if path_route.exists():
-            print("El archivo ya existe")
+            QMessageBox.warning(self, "Error de validación", "El archivo ya existe. Por favor, elige un nombre diferente.")
+        else:
+            pass
 
     def populate_templates(self):
         # TODO: Cargar estas plantillas desde una configuración o un directorio
