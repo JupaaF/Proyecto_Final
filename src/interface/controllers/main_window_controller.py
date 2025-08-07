@@ -1,44 +1,44 @@
 import sys
 import shutil
 from pathlib import Path
-from docker_handler.dockerHandler import DockerHandler
+
 from PySide6.QtWidgets import (QApplication, QMainWindow, QDialog, QTreeView, QWidget, 
                              QVBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, 
                              QFormLayout, QGroupBox)
-from PySide6.QtCore import QFile, QTextStream
+from PySide6.QtCore import QFile, QTextStream, QUrl
 from PySide6.QtUiTools import QUiLoader
-# Corregido: Importa el nombre de clase correcto
-from file_handler.file_handler import FileHandler
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileSystemModel
-from interface.controllers.widget_geometria import GeometryView
-# from scripts.initParam import RUTA_LOCAL
 
-RUTA_LOCAL = Path.home() / "CasosOpenFOAM"
-# Importar el controlador del asistente
+
+from scripts.initParam import RUTA_LOCAL, create_dir
+
+from docker_handler.dockerHandler import DockerHandler
+from file_handler.file_handler import FileHandler
+
+from interface.controllers.widget_geometria import GeometryView
 from .simulation_wizard_controller import SimulationWizardController
 
 class MainWindowController(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Cargar la interfaz desde el archivo .ui
+        create_dir()
+
         loader = QUiLoader()
-        # Corregido: La ruta a los archivos .ui ahora parte de la raíz del proyecto.
+
         ui_path = Path(__file__).parent.parent / "ui" / "main_window_dock.ui"
         self.ui = loader.load(str(ui_path))
         self.setCentralWidget(self.ui)
 
-        # Cargar los estilos QSS
         self.load_styles()
 
-        # Conectar acciones del menú
         self.ui.actionModo_Oscuro.triggered.connect(self.toggle_theme)
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
+        self.ui.actionDocumentacion.triggered.connect(self.open_documentation)
 
-        # Establecer el tema inicial (claro por defecto)
         self.set_theme(dark_mode=False)
 
-        # Conectar los docks al menú "Ver"
         self.setup_view_menu()
 
         # Layout para el visualizador VTK
@@ -48,25 +48,24 @@ class MainWindowController(QMainWindow):
         # Mantenido: La llamada al visualizador de geometría se conserva como estaba.
         self.show_geometry_visualizer('C:/Users/piliv/OneDrive/Documentos/FACU/PFC/Proyecto_Final/Proyecto_Final-1/VTK')
 
+    def open_documentation(self):
+        """Abre la documentación en el navegador web."""
+        QDesktopServices.openUrl(QUrl("https://github.com/JupaaF/Proyecto_Final"))
+
     def open_new_simulation_wizard(self):
         """Abre el asistente para crear una nueva simulación."""
         wizard = SimulationWizardController(self)
+
         if wizard.exec() == QDialog.Accepted:
             data = wizard.get_data()
 
-            # Corregido: Se usa el nombre de clase correcto `FileHandler`.
             self.file_handler = FileHandler(RUTA_LOCAL / data["case_name"], data["template"])
             self.show_folder_tree()
 
-            
-            # Corregido: Se convierte el string de la ruta a un objeto Path.
-            mesh_file_path_str = data.get("mesh_file")
-            if mesh_file_path_str:
-                mesh_file_path = Path(mesh_file_path_str)
-                if mesh_file_path.exists():
-                    self.copy_geometry_file(mesh_file_path)
-                    self.docker_handler = DockerHandler(self.file_handler.get_case_path())
-                    self.docker_handler.transformarMalla()
+            self.copy_geometry_file(Path(data["mesh_file"]))          
+            self.docker_handler = DockerHandler(self.file_handler.get_case_path())
+            self.docker_handler.transformarMalla()
+
         else:
             print("Asistente cancelado por el usuario.")
 
@@ -137,7 +136,7 @@ class MainWindowController(QMainWindow):
 
     def open_parameters_view(self, file_path: Path):
         """Muestra los parámetros editables para un archivo dado."""
-        # Corregido: Se pasa el objeto Path directamente.
+
         dict_parameters = self.file_handler.get_editable_parameters(file_path)
 
         container = QWidget()

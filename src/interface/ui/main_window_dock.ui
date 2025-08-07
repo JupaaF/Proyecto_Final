@@ -66,6 +66,7 @@
      <string>Ver</string>
     </property>
     <addaction name="actionModo_Oscuro"/>
+    <addaction name="actionRestaurar_Docks"/>
    </widget>
    <addaction name="menuArchivo"/>
    <addaction name="menuSimulacion"/>
@@ -218,6 +219,15 @@
     <string>Modo Oscuro</string>
    </property>
   </action>
+  <action name="actionRestaurar_Docks">
+   <property name="text">
+    <string>Restaurar Docks</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
  </widget>
  <resources/>
  <connections/>

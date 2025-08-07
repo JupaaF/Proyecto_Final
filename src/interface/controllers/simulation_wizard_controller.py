@@ -4,7 +4,7 @@ from PySide6.QtUiTools import QUiLoader
 from pathlib import Path
 
 
-RUTA_LOCAL = Path.home() / "CasosOpenFOAM" #TODO: hacer el import de esto desde initParam.py
+from scripts.initParam import RUTA_LOCAL
 
 ##Esta es la que mas cambio por ahi.
 ##Lo mas importante esta en el ultimo metodo get_data(). Vamos para alla
@@ -27,8 +27,6 @@ class SimulationWizardController(QWizard):
         # Poblar el ComboBox de plantillas en la primera página
         self.populate_templates()
 
-        self.page1.caseNameLineEdit.textEdited.connect(self.check_file_path)
-
         # Conectar el botón de examinar malla en la segunda página
         self.page2.browseMeshButton.clicked.connect(self.browse_mesh_file)
         
@@ -36,13 +34,48 @@ class SimulationWizardController(QWizard):
         # Configurar el wizard
         self.setWindowTitle("Asistente de Nueva Simulación")
         self.setWizardStyle(QWizard.ModernStyle)
-    
-    def check_file_path(self):
-        path_route = Path(RUTA_LOCAL / self.page1.caseNameLineEdit.text())
-        if path_route.exists():
-            QMessageBox.warning(self, "Error de validación", "El archivo ya existe. Por favor, elige un nombre diferente.")
-        else:
-            pass
+
+    def validateCurrentPage(self):
+        """
+        Valida la página actual antes de pasar a la siguiente.
+        Se asegura de que el nombre del caso no esté vacío y que no exista previamente.
+        """
+        # Si estamos en la primera página, validamos el nombre del caso
+        if self.currentPage() is self.page1:
+            case_name = self.page1.caseNameLineEdit.text()
+
+            # Validar que el nombre del caso no esté vacío
+            if not case_name:
+                QMessageBox.warning(self, "Error de validación", "El nombre del caso no puede estar vacío.")
+                return False
+
+            # Validar que el nombre del caso no contenga caracteres inválidos
+            invalid_chars = '<>:"/\|?*'
+            if any(char in case_name for char in invalid_chars):
+                QMessageBox.warning(
+                    self, 
+                    "Error de validación", 
+                    f"El nombre del caso contiene caracteres inválidos. Por favor, evita: {invalid_chars}"
+                )
+                return False
+
+            # Validar que la ruta no exista
+            path_route = Path(RUTA_LOCAL / case_name)
+            if path_route.exists():
+                QMessageBox.warning(
+                    self, 
+                    "Error de validación", 
+                    f"La carpeta del caso '{case_name}' ya existe en la ruta:\n{path_route}\n\nPor favor, elige un nombre diferente."
+                )
+                return False
+        
+        if self.currentPage() is self.page2:
+            mesh_file = self.page2.meshPathLineEdit.text()
+            if not mesh_file:
+                QMessageBox.warning(self, "Error de validación", "Una malla es necesaria para la simulación.")
+                return False
+        # Si la validación es exitosa, permite continuar
+        return super().validateCurrentPage()
 
     def populate_templates(self):
         # TODO: Cargar estas plantillas desde una configuración o un directorio
