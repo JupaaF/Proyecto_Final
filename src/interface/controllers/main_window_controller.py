@@ -71,8 +71,7 @@ class MainWindowController(QMainWindow):
         wizard = SimulationWizardController(self)
         if wizard.exec() == QDialog.Accepted:
             self._handle_wizard_accepted(wizard.get_data())
-        else:
-            self.ui.statusBar.showMessage("Creación de simulación cancelada.", 5000)
+        
 
     def _handle_wizard_accepted(self, data: dict):
         """Procesa los datos del asistente y configura la simulación."""
@@ -82,13 +81,11 @@ class MainWindowController(QMainWindow):
             return
 
         self.setWindowTitle(f"{DEFAULT_WINDOW_TITLE} - {case_name}")
-        self.ui.statusBar.showMessage(f"Creando caso: {case_name}...", 5000)
 
         self._initialize_file_handler(case_name, data["template"])
         self._setup_managers()
         self._setup_case_environment(Path(data["mesh_file"]))
 
-        self.ui.statusBar.showMessage(f"Caso '{case_name}' creado y listo para simular.", 10000)
 
     def _initialize_file_handler(self, case_name: str, template: str):
         """Inicializa el manejador de archivos para el caso."""
@@ -111,7 +108,6 @@ class MainWindowController(QMainWindow):
         self._copy_geometry_file(mesh_file_path)
         
         self.docker_handler = DockerHandler(self.file_handler.get_case_path())
-        self.ui.statusBar.showMessage("Transformando malla con Docker...", 5000)
         
         self.docker_handler.transformar_malla()
         
@@ -122,7 +118,7 @@ class MainWindowController(QMainWindow):
         vtk_path = self.file_handler.get_case_path() / "VTK" / "case_0" / "boundary"
         if vtk_path.exists():
             self.show_geometry_visualizer(vtk_path)
-            self.ui.statusBar.showMessage("Malla transformada y visualizada.", 5000)
+
         else:
             QMessageBox.warning(self, "Error de Malla", "No se pudo generar la malla. Revisa la configuración y el archivo de geometría.")
 
@@ -131,10 +127,8 @@ class MainWindowController(QMainWindow):
         try:
             destination_path = self.file_handler.get_case_path() / 'malla.unv'
             shutil.copy(mesh_file_path, destination_path)
-            self.ui.statusBar.showMessage(f"Malla copiada a: {destination_path}", 5000)
         except IOError as e:
             QMessageBox.critical(self, "Error de Archivo", f"No se pudo copiar el archivo de malla: {e}")
-            self.ui.statusBar.showMessage("Error al copiar la malla.", 5000)
 
     def execute_simulation(self):
         """Ejecuta la simulación si la configuración es válida."""
@@ -142,9 +136,7 @@ class MainWindowController(QMainWindow):
             QMessageBox.warning(self, "Error de Simulación", "No hay una simulación configurada. Por favor, cree un nuevo caso primero.")
             return
         
-        self.ui.statusBar.showMessage("Ejecutando simulación...", 10000)
         self.docker_handler.ejecutar_simulacion()
-        self.ui.statusBar.showMessage("Simulación completada.", 5000)
 
     def open_parameters_view(self, file_path: Path):
         """Abre la vista de parámetros para un archivo específico."""

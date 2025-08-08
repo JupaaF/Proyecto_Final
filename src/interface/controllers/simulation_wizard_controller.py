@@ -4,7 +4,7 @@ from PySide6.QtUiTools import QUiLoader
 from pathlib import Path
 
 
-from scripts.initParam import RUTA_LOCAL
+from config import RUTA_LOCAL
 
 ##Esta es la que mas cambio por ahi.
 ##Lo mas importante esta en el ultimo metodo get_data(). Vamos para alla
