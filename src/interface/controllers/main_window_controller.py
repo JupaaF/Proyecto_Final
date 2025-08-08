@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout)
-from PySide6.QtCore import QUrl, QTimer
+from PySide6.QtCore import QUrl, QTimer,  QObject, QThread, Signal, QRunnable, Slot
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QDesktopServices
 
@@ -108,8 +108,8 @@ class MainWindowController(QMainWindow):
         self._copy_geometry_file(mesh_file_path)
         
         self.docker_handler = DockerHandler(self.file_handler.get_case_path())
-        
-        self.docker_handler.transformar_malla()
+
+        self.docker_handler.execute_script_in_docker("run_transform.sh")
         
         QTimer.singleShot(1000, self._check_mesh_and_visualize)
 
@@ -136,7 +136,7 @@ class MainWindowController(QMainWindow):
             QMessageBox.warning(self, "Error de Simulación", "No hay una simulación configurada. Por favor, cree un nuevo caso primero.")
             return
         
-        self.docker_handler.ejecutar_simulacion()
+        self.docker_handler.execute_script_in_docker("run_openfoam.sh")
 
     def open_parameters_view(self, file_path: Path):
         """Abre la vista de parámetros para un archivo específico."""
