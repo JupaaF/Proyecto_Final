@@ -1,84 +1,68 @@
 from pathlib import Path
-from typing import Dict, Any
 
-from .openfoam_models.foam_file import FoamFile
 from .openfoam_models.U import U
 from .openfoam_models.controlDict import controlDict
 from .openfoam_models.fvSchemes import fvSchemes
 from .openfoam_models.fvSolution import fvSolution
 
 class FileHandler:
-    """Manages the creation, modification, and access of OpenFOAM case files."""
-
-    def __init__(self, case_path: Path, template: str = None):
-        """
-        Initializes the FileHandler for a given case.
-
-        Args:
-            case_path: The absolute path to the simulation case directory.
-            template: The name of the template to use (currently not implemented).
-        """
+    
+    def __init__(self,case_path:Path,template:str=None):
+        # Asegurarse de que el directorio base exista
         self.case_path = case_path
-        self.template = template  # TODO: Implement template logic
-        self.files: Dict[str, FoamFile] = {}
-        
-        self._initialize_file_objects()
-        self.create_case_files()
+        self.template = template
+        self.files = {}
+        self._create_base_dirs()
+        self._create_files()
+        ## Crea el archivo controlDict una vez que termina el wizard. Esto se hace
+        ## para que posteriormente podamos transformar la malla .unv a foam y
+        ## posteriormente a .vtk
+
+        ## TODO Tenemos que pasarle los datos del wizard a este constructor
+        ## y con esos datos escribir el archivo
+        ## De momento tiene los valores por defecto
+        self.files["controlDict"].write_file(self.case_path)
+        self.files["fvSchemes"].write_file(self.case_path)
+        self.files["fvSolution"].write_file(self.case_path)
 
     def get_case_path(self) -> Path:
-        """Returns the root path of the case directory."""
         return self.case_path
 
-    def _initialize_file_objects(self) -> None:
-        """Initializes the objects representing each OpenFOAM file."""
-        # Based on the template, different files would be initialized.
-        self.files = {
-            "U": U(),
-            "controlDict": controlDict(),
-            "fvSchemes": fvSchemes(),
-            "fvSolution": fvSolution(),
-        }
+    def _create_files(self) -> None:
 
-    def create_case_files(self) -> None:
-        """
-        Creates the basic directory structure and writes all initialized OpenFOAM files.
-        This should be called after the user confirms the initial setup.
-        """
-        self._create_base_dirs()
-        for file_obj in self.files.values():
-            file_obj.write_file(self.case_path)
+        #Logica de template TODO
+        self.files["U"] = U()
+        self.files["controlDict"] = controlDict()
+        self.files["fvSchemes"] = fvSchemes()
+        self.files["fvSolution"] = fvSolution()
+
+        for file in self.files:
+            self._create_empty_file(self.files[file])
 
     def _create_base_dirs(self) -> None:
-        """Creates the essential directories for an OpenFOAM case (0, system, constant)."""
+        """Crea los directorios básicos si no existen"""
         self.case_path.mkdir(exist_ok=True)
         for folder in ['0', 'system', 'constant']:
             (self.case_path / folder).mkdir(exist_ok=True)
 
-    def get_editable_parameters(self, file_path: Path) -> Dict[str, Any]:
+    def _create_empty_file(self, foam_obj) -> str:
+        """Crea el archivo vacío en la ubicación correcta"""
+        file_path = self.case_path / foam_obj.folder / foam_obj.name
+        file_path.touch()  # Crea el archivo vacío
+        print(f"Archivo creado (vacío): {file_path}")
+        return file_path
+    
+    def get_editable_parameters(self, file_path: Path) -> dict:
         """
-        Retrieves the editable parameters for a given file.
-
-        Args:
-            file_path: The path to the file whose parameters are requested.
-
-        Returns:
-            A dictionary of editable parameters, or an empty dict if the file is not found.
+        Devuelve los parámetros editables para un archivo dado, identificado por su objeto Path.
         """
         file_name = file_path.name
         if file_name in self.files:
             return self.files[file_name].get_editable_parameters()
         return {}
-
-    def modify_parameters(self, file_path: Path, new_params: Dict[str, Any]) -> None:
-        """
-        Modifies the parameters of a specific file and rewrites it.
-
-        Args:
-            file_path: The path to the file to be modified.
-            new_params: A dictionary with the new parameters to apply.
-        """
+    
+    def modify_parameters(self,file_path:Path, data:dict):
         file_name = file_path.name
         if file_name in self.files:
-            file_obj = self.files[file_name]
-            file_obj.modify_parameters(new_params)
-            file_obj.write_file(self.case_path) # Rewrite the file with updated parameters
+            return self.files[file_name].modify_parameters()
+        pass
