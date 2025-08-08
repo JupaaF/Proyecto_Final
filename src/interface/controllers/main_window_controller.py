@@ -108,7 +108,7 @@ class MainWindowController(QMainWindow):
         self._copy_geometry_file(mesh_file_path)
         
         self.docker_handler = DockerHandler(self.file_handler.get_case_path())
-        
+         
         self.docker_handler.transformar_malla()
         
         QTimer.singleShot(1000, self._check_mesh_and_visualize)
