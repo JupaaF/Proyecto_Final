@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout)
-from PySide6.QtCore import QUrl, QTimer
+from PySide6.QtCore import QUrl, QTimer,  QObject, QThread, Signal, QRunnable, Slot
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QDesktopServices
 
@@ -105,11 +105,17 @@ class MainWindowController(QMainWindow):
 
     def _setup_case_environment(self, mesh_file_path: Path):
         """Copia la geometría, inicializa Docker y muestra la malla."""
-        self._copy_geometry_file(mesh_file_path)
-        
+
         self.docker_handler = DockerHandler(self.file_handler.get_case_path())
-         
-        self.docker_handler.transformar_malla()
+
+        if mesh_file_path.suffix == '.unv':
+            # Es un .unv
+            self._copy_geometry_file(mesh_file_path)
+            self.docker_handler.execute_script_in_docker("run_transform_UNV.sh")
+        else:
+            #Es un blockMeshDict
+            self._copy_geometry_file(mesh_file_path)
+            self.docker_handler.execute_script_in_docker("run_transform_blockMeshDict.sh")
         
         QTimer.singleShot(1000, self._check_mesh_and_visualize)
 
@@ -122,13 +128,47 @@ class MainWindowController(QMainWindow):
         else:
             QMessageBox.warning(self, "Error de Malla", "No se pudo generar la malla. Revisa la configuración y el archivo de geometría.")
 
-    def _copy_geometry_file(self, mesh_file_path: Path):
-        """Copia el archivo de malla al directorio del caso."""
+    # def _copy_geometry_file(self, mesh_file_path: Path):
+    #     """Copia el archivo de malla al directorio del caso."""
+    #     try:
+    #         destination_path = self.file_handler.get_case_path() / 'malla.unv'
+    #         shutil.copy(mesh_file_path, destination_path)
+    #     except IOError as e:
+    #         QMessageBox.critical(self, "Error de Archivo", f"No se pudo copiar el archivo de malla: {e}")
+
+
+    def _copy_geometry_file(self, mesh_file_path: Path) -> bool:
+        """
+        Copia el archivo de malla al directorio del caso, colocándolo en la
+        ubicación correcta según su tipo (UNV o blockMeshDict).
+        """
         try:
-            destination_path = self.file_handler.get_case_path() / 'malla.unv'
-            shutil.copy(mesh_file_path, destination_path)
+            case_path = self.file_handler.get_case_path()
+
+            if mesh_file_path.suffix == '.unv':
+                destination_path = case_path / 'malla.unv'
+                shutil.copy(mesh_file_path, destination_path)
+            elif mesh_file_path.name == 'blockMeshDict':
+                system_path = case_path / 'system'
+                # Asegura que el directorio 'system' exista
+                system_path.mkdir(exist_ok=True)
+                destination_path = system_path / 'blockMeshDict'
+                shutil.copy(mesh_file_path, destination_path)
+            else:
+                QMessageBox.critical(self, "Error de Archivo",
+                                    "Tipo de archivo de malla no soportado.")
+                return False
+
+            return True
+        except FileNotFoundError:
+            QMessageBox.critical(self, "Error de Archivo",
+                                f"No se pudo encontrar el archivo: {mesh_file_path}")
+            return False
         except IOError as e:
-            QMessageBox.critical(self, "Error de Archivo", f"No se pudo copiar el archivo de malla: {e}")
+            QMessageBox.critical(self, "Error de Archivo",
+                                f"No se pudo copiar el archivo de malla: {e}")
+            return False
+
 
     def execute_simulation(self):
         """Ejecuta la simulación si la configuración es válida."""
@@ -136,7 +176,7 @@ class MainWindowController(QMainWindow):
             QMessageBox.warning(self, "Error de Simulación", "No hay una simulación configurada. Por favor, cree un nuevo caso primero.")
             return
         
-        self.docker_handler.ejecutar_simulacion()
+        self.docker_handler.execute_script_in_docker("run_openfoam.sh")
 
     def open_parameters_view(self, file_path: Path):
         """Abre la vista de parámetros para un archivo específico."""

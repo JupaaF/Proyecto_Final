@@ -90,8 +90,9 @@ class SimulationWizardController(QWizard):
         file_path, _ = QFileDialog.getOpenFileName(
             self, 
             "Seleccionar Malla", 
-            "", # Directorio inicial
-            "UNV Files (*.unv)"
+            ""
+            # , # Directorio inicial
+            # "UNV Files (*.unv)"      ------> le saqué el filtro .unv
         )
         if file_path:
             # Si el usuario selecciona un archivo, actualiza el QLineEdit
