@@ -2,10 +2,11 @@
 import shutil
 from pathlib import Path
 
-from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout)
+from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout, QFileDialog)
 from PySide6.QtCore import QUrl, QTimer,  QObject, QThread, Signal, QRunnable, Slot
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QDesktopServices
+import json # New import
 
 from config import RUTA_LOCAL, create_dir
 from docker_handler.dockerHandler import DockerHandler
@@ -59,8 +60,10 @@ class MainWindowController(QMainWindow):
         """Conecta las señales de los widgets a los slots correspondientes."""
         self.ui.actionModo_Oscuro.triggered.connect(self.toggle_theme)
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
+        self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
         self.ui.actionDocumentacion.triggered.connect(self.open_documentation)
         self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
+        self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
 
     def open_documentation(self):
         """Abre la documentación en el navegador web."""
@@ -71,6 +74,46 @@ class MainWindowController(QMainWindow):
         wizard = SimulationWizardController(self)
         if wizard.exec() == QDialog.Accepted:
             self._handle_wizard_accepted(wizard.get_data())
+
+    def open_load_simulation_dialog(self):
+        """Abre un diálogo para cargar una simulación existente."""
+        case_dir_path = QFileDialog.getExistingDirectory(self, "Seleccionar Carpeta de Simulación", str(RUTA_LOCAL))
+
+        if case_dir_path:
+            case_path = Path(case_dir_path)
+            json_path = case_path / FileHandler.JSON_PARAMS_FILE
+
+            if not json_path.exists():
+                QMessageBox.warning(self, "Error al Cargar", "La carpeta seleccionada no contiene un archivo de parámetros válido (parameters.json).")
+                return
+
+            try:
+                with open(json_path, 'r') as f:
+                    saved_data = json.load(f)
+                loaded_template = saved_data.get("template")
+                if not loaded_template:
+                    QMessageBox.warning(self, "Error al Cargar", "El archivo parameters.json no especifica un template.")
+                    return
+
+                # Initialize FileHandler with the loaded template
+                self._initialize_file_handler(case_path.name, loaded_template)
+                self._setup_managers() # Re-setup managers with the new file_handler
+                self.file_handler.load_all_parameters_from_json() # Load parameters from the JSON
+
+                self.setWindowTitle(f"{DEFAULT_WINDOW_TITLE} - {case_path.name}")
+                self.docker_handler = DockerHandler(self.file_handler.get_case_path())
+                QMessageBox.information(self, "Cargar Simulación", "Simulación cargada exitosamente.")
+
+                # Refresh UI elements
+                if self.parameter_editor_manager and self.parameter_editor_manager.current_file_path:
+                    self.parameter_editor_manager.open_parameters_view(self.parameter_editor_manager.current_file_path)
+                else:
+                    # If no file was previously open, open a default one or just refresh the file browser
+                    self.file_browser_manager.update_root_path()
+
+
+            except Exception as e:
+                QMessageBox.critical(self, "Error al Cargar", f"Error al cargar la simulación: {e}")
         
 
     def _handle_wizard_accepted(self, data: dict):
@@ -93,15 +136,12 @@ class MainWindowController(QMainWindow):
 
     def _setup_managers(self):
         """Configura los manejadores de la interfaz (navegador de archivos y editor)."""
-        if not self.file_browser_manager:
-            self.file_browser_manager = FileBrowserManager(self.ui.fileBrowserDock, self.file_handler)
-            self.file_browser_manager.file_clicked.connect(self.open_parameters_view)
-            self.ui.fileBrowserDock.setWidget(self.file_browser_manager.get_widget())
-        else:
-            self.file_browser_manager.update_root_path()
+        # Always re-create managers to ensure they are linked to the new file_handler
+        self.file_browser_manager = FileBrowserManager(self.ui.fileBrowserDock, self.file_handler)
+        self.file_browser_manager.file_clicked.connect(self.open_parameters_view)
+        self.ui.fileBrowserDock.setWidget(self.file_browser_manager.get_widget())
 
-        if not self.parameter_editor_manager:
-            self.parameter_editor_manager = ParameterEditorManager(self.ui.parameterEditorDock, self.file_handler, self._get_vtk_patch_names)
+        self.parameter_editor_manager = ParameterEditorManager(self.ui.parameterEditorDock, self.file_handler, self._get_vtk_patch_names)
 
     def _setup_case_environment(self, mesh_file_path: Path):
         """Copia la geometría, inicializa Docker y muestra la malla."""
@@ -116,7 +156,8 @@ class MainWindowController(QMainWindow):
             #Es un blockMeshDict
             self._copy_geometry_file(mesh_file_path)
             self.docker_handler.execute_script_in_docker("run_transform_blockMeshDict.sh")
-        
+        print("Se crearon los objetcsunv4")
+        self.file_handler.create_case_files()
         QTimer.singleShot(1000, self._check_mesh_and_visualize)
 
     def _check_mesh_and_visualize(self):
@@ -177,6 +218,14 @@ class MainWindowController(QMainWindow):
             return
         
         self.docker_handler.execute_script_in_docker("run_openfoam.sh")
+
+    def save_all_parameters_action(self):
+        """Guarda todos los parámetros editables en un archivo JSON."""
+        if self.file_handler:
+            self.file_handler.save_all_parameters_to_json()
+            QMessageBox.information(self, "Guardar Parámetros", "¡Parámetros guardados exitosamente!")
+        else:
+            QMessageBox.warning(self, "Guardar Parámetros", "No hay una simulación activa para guardar parámetros.")
 
     def open_parameters_view(self, file_path: Path):
         """Abre la vista de parámetros para un archivo específico."""

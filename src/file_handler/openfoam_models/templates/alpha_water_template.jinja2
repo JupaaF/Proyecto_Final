@@ -1,0 +1,18 @@
+{# Plantilla Jinja2 para el archivo 'alpha.water' de OpenFOAM #}
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform {{ internalField }};
+
+boundaryField
+{
+    {% for patch in boundaryField %}
+    {{ patch.patchName }}
+    {
+        type            {{ patch.type }};
+        {% if patch.value is defined %}
+        value           uniform {{ patch.value }};
+        {% endif %}
+    }
+    {% endfor %}
+}

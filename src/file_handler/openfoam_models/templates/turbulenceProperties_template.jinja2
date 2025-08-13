@@ -1,0 +1,12 @@
+{# Plantilla Jinja2 para el archivo 'turbulenceProperties' de OpenFOAM #}
+
+simulationType       {{ simulation_type }};
+
+RAS
+{
+    RASModel        kEpsilon;
+
+    turbulence      on;
+
+    printCoeffs     on;
+}

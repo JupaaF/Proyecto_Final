@@ -1,0 +1,12 @@
+{# Plantilla Jinja2 para el archivo 'transportProperties' de OpenFOAM #}
+
+phases      ({% for phase in phases %}{{ phase.name }}{% if not loop.last %} {% endif %}{% endfor %});
+
+{% for phase in phases %}
+{{ phase.name }}
+{
+{{ phase.content }}
+}
+{% endfor %}
+
+sigma       {{ sigma }};

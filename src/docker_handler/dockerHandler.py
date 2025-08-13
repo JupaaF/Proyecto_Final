@@ -19,13 +19,15 @@ class DockerHandler():
         Returns:
             bool: True si el comando se ejecutó con éxito, False en caso de error.
         """
+        
         # Ruta del script en tu sistema de archivos local
         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
         
         # Nombre con el que el script será montado dentro del contenedor
         script_in_container = f"/{script_name}"
-
+        
         ruta_docker_volumen = self.case_path.as_posix()
+        
 
         docker_command = [
             "docker", "run", "-it", "--rm",
@@ -35,13 +37,16 @@ class DockerHandler():
             self.IMAGEN_SEDFOAM,
             script_in_container # Pasa el nombre del script montado como argumento
         ]
+        
 
         try:
             self.logger.info(f"Iniciando ejecución de {script_name} en {self.IMAGEN_SEDFOAM}...")
+            print("Se crearon los objetcsdoc6")
             process = subprocess.run(
                 docker_command,
                 check=True
             )
+            print("Se crearon los objetcsdoc7")
             self.logger.info(f"Script {script_name} completado con éxito.")
             if process.stdout:
                 self.logger.debug(f"Salida estándar (stdout):\n{process.stdout}")

@@ -1,50 +1,43 @@
+from pathlib import Path
 from .foam_file import FoamFile
+from jinja2 import Environment, FileSystemLoader
 
 class controlDict(FoamFile):
 
     def __init__(self):
-        super().__init__("system", "dictionary", "controlDict")
-        self.solver = "interFoam"
-        self.start_time = 0
-        self.end_time = 1
-        self.delta_t = 0.01
-        self.write_interval = 0.1
+        super().__init__(name="controlDict", folder="system", class_type="dictionary")
         
+        template_dir = Path(__file__).parent / 'templates'
+        self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
 
+        # Valores por defecto
+        self.solver = "interFoam"
+        self.startTime = 0
+        self.endTime = 1
+        self.deltaT = 0.01
+        self.writeInterval = 0.1
+        
     def _get_string(self):
-        content = f"""
-application     {self.solver};
-
-startFrom       startTime;
-startTime       {self.start_time};
-
-stopAt          endTime;
-endTime         {self.end_time};
-
-deltaT          {self.delta_t};
-
-writeControl    runTime;
-writeInterval   {self.write_interval};
-
-purgeWrite      0;
-writeFormat     ascii;
-writePrecision  6;
-writeCompression off;
-
-timeFormat      general;
-timePrecision   6;
-"""
-        return self.get_header_location() + content
+        template = self.jinja_env.get_template("controlDict_template.jinja2")
+        context = {
+            'solver': self.solver,
+            'startTime': self.startTime,
+            'endTime': self.endTime,
+            'deltaT': self.deltaT,
+            'writeInterval': self.writeInterval
+        }
+        content = template.render(context)
+        return self.get_header() + content
     
-    def modify_parameters(self,solver,start_time,end_time,delta_t,write_interval):
-        self.solver = solver
-        self.start_time = start_time
-        self.end_time = end_time
-        self.delta_t = delta_t
-        self.write_interval = write_interval
+    def update_parameters(self, params: dict):
+        for key, value in params.items():
+            setattr(self, key, value)
 
-    def write_file(self,case_path): 
-        with open(case_path / self.folder / self.name, "w") as f:
+    def write_file(self, case_path: Path): 
+        output_dir = case_path / self.folder
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_path = output_dir / self.name
+        with open(output_path, "w") as f:
             f.write(self._get_string())
 
     def get_editable_parameters(self):
@@ -53,35 +46,35 @@ timePrecision   6;
                 'label': 'Solver',
                 'tooltip': 'El solver de OpenFOAM a utilizar (ej. interFoam, simpleFoam).',
                 'type': 'string',
-                'default': 'interFoam',
+                'current': self.solver,
                 'group': 'Configuración General'
             },
             'startTime': {
                 'label': 'Tiempo de Inicio (startTime)',
                 'tooltip': 'El tiempo de inicio de la simulación.',
-                'type': 'string',
-                'default': '0',
+                'type': 'float',
+                'current': self.startTime,
                 'group': 'Control de Tiempo'
             },
             'endTime': {
                 'label': 'Tiempo Final (endTime)',
                 'tooltip': 'El tiempo en el que la simulación se detendrá.',
-                'type': 'string',
-                'default': '1',
+                'type': 'float',
+                'current': self.endTime,
                 'group': 'Control de Tiempo'
             },
             'deltaT': {
                 'label': 'Paso de Tiempo (deltaT)',
                 'tooltip': 'El intervalo de tiempo entre cada paso de la simulación.',
-                'type': 'string',
-                'default': '0.01',
+                'type': 'float',
+                'current': self.deltaT,
                 'group': 'Control de Tiempo'
             },
             'writeInterval': {
                 'label': 'Intervalo de Escritura (writeInterval)',
                 'tooltip': 'La frecuencia con la que se guardan los resultados.',
-                'type': 'string',
-                'default': '0.1',
+                'type': 'float',
+                'current': self.writeInterval,
                 'group': 'Control de Tiempo'
             }
         }

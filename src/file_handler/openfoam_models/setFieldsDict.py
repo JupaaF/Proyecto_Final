@@ -1,34 +1,68 @@
-from foamFile import foamFile
+from pathlib import Path
+from .foam_file import FoamFile
+from jinja2 import Environment, FileSystemLoader
 
-class setFieldsDict(foamFile):  # por ahora no es editable
-
-    def __init__(self): 
-        super().__init__("system", "dictionary", "setFieldsDict")
+class setFieldsDict(FoamFile):
+    """
+    Representa el archivo 'setFieldsDict' de OpenFOAM.
+    """
+    def __init__(self):
+        super().__init__(name="setFieldsDict", folder="system", class_type="dictionary")
         
+        template_dir = Path(__file__).parent / 'templates'
+        self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
+        
+        # Valores por defecto para la caja
+        self.box_min = {'x': 0, 'y': 0, 'z': -1}
+        self.box_max = {'x': 0.1461, 'y': 0.292, 'z': 1}
 
-    def __getString__(self):
-        content = f"""            
-defaultFieldValues
-(
-    volScalarFieldValue alpha.water 0
-);
-
-regions
-(
-    boxToCell
-    {{
-        box (0 0 -1) (0.1461 0.292 1);
-        fieldValues
-        (
-            volScalarFieldValue alpha.water 1
-        );
-    }}
-);
-
-"""    
+    def _get_string(self) -> str:
+        """
+        Genera el contenido del archivo renderizando la plantilla Jinja2.
+        """
+        template = self.jinja_env.get_template("setFieldsDict_template.jinja2")
+        context = {
+            'box_min': self.box_min,
+            'box_max': self.box_max
+        }
+        content = template.render(context)
         return self.get_header() + content
-    
-    def write_file(self,archivo):
-        archivo.write(self.__getString__())
 
-    
+    def update_parameters(self, params: dict):
+        """
+        Actualiza los parámetros desde un diccionario.
+        """
+        for key, value in params.items():
+            setattr(self, key, value)
+
+    def write_file(self, case_path: Path):
+        """
+        Escribe el contenido generado en la ruta del caso especificada.
+        """
+        output_dir = case_path / self.folder
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        output_path = output_dir / self.name
+        with open(output_path, "w") as f:
+            f.write(self._get_string())
+
+    def get_editable_parameters(self):
+        """
+        Devuelve un diccionario con los parámetros editables y sus valores actuales.
+        """
+        return {
+            'box_min': {
+                'label': 'Caja Mínima (x y z)',
+                'tooltip': 'Coordenadas mínimas de la caja para setFields.',
+                'type': 'vector',
+                'current': self.box_min,
+                'group': 'Región de Inicialización',
+            },
+            'box_max': {
+                'label': 'Caja Máxima (x y z)',
+                'tooltip': 'Coordenadas máximas de la caja para setFields.',
+                'type': 'vector',
+                'current': self.box_max,
+                'group': 'Región de Inicialización',
+            }
+        }

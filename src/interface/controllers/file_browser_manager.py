@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from PySide6.QtWidgets import QTreeView,QWidget, QFileSystemModel
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import Signal, QObject, Qt
 
 class FileBrowserManager(QObject):
     file_clicked = Signal(Path)
@@ -21,6 +21,7 @@ class FileBrowserManager(QObject):
 
         self.tree_view.setModel(model)
         self.tree_view.setRootIndex(model.index(str(root_path)))
+        model.setHeaderData(0, Qt.Horizontal, "")
         
         self.tree_view.hideColumn(1) 
         self.tree_view.hideColumn(2) 

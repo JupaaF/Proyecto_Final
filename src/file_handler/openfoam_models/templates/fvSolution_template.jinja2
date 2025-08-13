@@ -1,0 +1,65 @@
+{# Plantilla Jinja2 para el archivo 'fvSolution' de OpenFOAM #}
+
+solvers
+{
+    "alpha.water.*"
+    {
+        nAlphaCorr      2;
+        nAlphaSubCycles 1;
+        cAlpha          1;
+
+        MULESCorr       yes;
+        nLimiterIter    5;
+
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       {{ alpha_water_tolerance }};
+        relTol          {{ alpha_water_relTol }};
+    }
+
+    "pcorr.*"
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-5;
+        relTol          0;
+    }
+
+    p_rgh
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       {{ p_rgh_tolerance }};
+        relTol          {{ p_rgh_relTol }};
+    }
+
+    p_rghFinal
+    {
+        $p_rgh;
+        relTol          0;
+    }
+
+    U
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       {{ U_tolerance }};
+        relTol          {{ U_relTol }};
+    }
+}
+
+PIMPLE
+{
+    momentumPredictor   no;
+    nOuterCorrectors    {{ nOuterCorrectors }};
+    nCorrectors         {{ nCorrectors }};
+    nNonOrthogonalCorrectors {{ nNonOrthogonalCorrectors }};
+}
+
+relaxationFactors
+{
+    equations
+    {
+        ".*" 1;
+    }
+}

@@ -1,0 +1,22 @@
+{# Plantilla Jinja2 para el archivo 'U' de OpenFOAM #}
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform ({{internalField.x}} {{internalField.y}} {{internalField.z}});
+
+boundaryField
+{
+    {# Itera sobre la lista de condiciones de borde pasadas desde Python #}
+    {% for patch in boundaryField %}
+    {{ patch.patchName }}
+    {
+        type            {{ patch.type }};
+        
+        {# Ejemplo de lógica condicional dentro de la plantilla #}
+        {# Solo añade la línea 'value' si está definida en el patch #}
+        {% if patch.value is defined %}
+        value           uniform ({{ patch.value.x }} {{ patch.value.y }} {{ patch.value.z }});
+        {% endif %}
+    }
+    {% endfor %}
+}

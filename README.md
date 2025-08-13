@@ -32,6 +32,7 @@ El software está diseñado siguiendo el patrón **Modelo-Vista-Controlador (MVC
 *   **Basado en Plantillas:** El usuario puede elegir entre una serie de casos de estudio preconfigurados.
 *   **Independencia de la Instalación:** El único prerrequisito es tener Docker instalado y en funcionamiento.
 *   **Visualización de Resultados:** Integra librerías como `VTK` y `PyVista` para el análisis de los datos generados.
+*   **Cargar y Guardar Simulaciones:** Permite a los usuarios guardar la configuración de una simulación y cargarla más tarde para continuar trabajando en ella.
 
 ## Prerrequisitos
 
@@ -41,7 +42,7 @@ El software está diseñado siguiendo el patrón **Modelo-Vista-Controlador (MVC
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone https://github.com/tu-usuario/Proyecto_Final.git
+    git clone https://github.com/JupaaF/Proyecto_Final.git
     ```
 2.  **Navegar al directorio del proyecto:**
     ```bash
@@ -74,7 +75,7 @@ Esta sección está destinada a proporcionar un resumen rápido para agentes de 
         *   `openfoam_models/`: Clases que representan y manipulan archivos específicos de OpenFOAM (e.g., `controlDict.py`, `U.py`).
     *   `src/docker_handler/`: Lógica para la interacción con Docker.
         *   `dockerHandler.py`: Clase principal para manejar los contenedores de Docker.
-        *   `run_openfoam.sh`, `run_transform.sh`: Scripts que se ejecutan dentro del contenedor.
+        *   `run_openfoam.sh`, `run_transform_UNV.sh`, `run_transform_blockMeshDict.sh`: Scripts que se ejecutan dentro del contenedor.
     *   `VTK/`: Directorio de salida para los archivos de visualización (`.vtk`).
 *   **Flujo de trabajo principal:**
     1.  El usuario inicia la app (`python src/main.py`).

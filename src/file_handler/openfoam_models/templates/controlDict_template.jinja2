@@ -1,0 +1,22 @@
+{# Plantilla Jinja2 para el archivo 'controlDict' de OpenFOAM #}
+
+application     {{ solver }};
+
+startFrom       startTime;
+startTime       {{ startTime }};
+
+stopAt          endTime;
+endTime         {{ endTime }};
+
+deltaT          {{ deltaT }};
+
+writeControl    runTime;
+writeInterval   {{ writeInterval }};
+
+purgeWrite      0;
+writeFormat     ascii;
+writePrecision  6;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;

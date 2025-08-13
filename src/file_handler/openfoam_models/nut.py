@@ -1,39 +1,97 @@
-from foamFile import foamFile
+from pathlib import Path
+from .foam_file import FoamFile
+from jinja2 import Environment, FileSystemLoader
 
-class nut(foamFile): #en una primera instancia dejamos las dimensiones fijas
-
-    def __init__(self): #Posiblemente saque los valores
-        super().__init__("0", "volScalarField", "nut")
+class nut(FoamFile):
+    """
+    Representa el archivo 'nut' (viscosidad turbulenta) de OpenFOAM.
+    """
+    def __init__(self):
+        super().__init__(name="nut", folder="0", class_type="volScalarField")
         
-
-    def __getString__(self):
-        content = f"""              
-            dimensions      [0 2 -1 0 0 0 0];
-
-            internalField   {self.internalField_value};
-
-            boundaryField
-            {{
-            """
-        for i in range(len(self.patchList)):
-            content += f""" 
-                {self.patchList[i]}
-                {{
-                    {self.patchContent[i]}
-                }}
-            """
+        template_dir = Path(__file__).parent / 'templates'
+        self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
-        content += f"""
-            }}
+        # Valores por defecto
+        self.internalField = 0
+        self.boundaryField = []
+
+    def _get_string(self) -> str:
         """
-        
-        return self.get_header_location() + content
-   
+        Genera el contenido del archivo renderizando la plantilla Jinja2.
+        """
+        template = self.jinja_env.get_template("nut_template.jinja2")
+        context = {
+            'internalField': self.internalField,
+            'boundaryField': self.boundaryField
+        }
+        content = template.render(context)
+        return self.get_header() + content
 
-    def write_file(self,archivo, patchList, patchContent, internalField_value = "uniform (0 0 0)"): 
-        self.internalField_value = internalField_value
-        self.patchList = patchList
-        self.patchContent = patchContent
-        archivo.write(self.__getString__())
+    def update_parameters(self, params: dict):
+        """
+        Actualiza los parámetros desde un diccionario.
+        """
+        for key, value in params.items():
+            setattr(self, key, value)
+
+    def write_file(self, case_path: Path):
+        """
+        Escribe el contenido generado en la ruta del caso especificada.
+        """
+        output_dir = case_path / self.folder
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        output_path = output_dir / self.name
+        with open(output_path, "w") as f:
+            f.write(self._get_string())
+
+    def get_editable_parameters(self):
+        """
+        Devuelve un diccionario con los parámetros editables y sus valores actuales.
+        """
+        return {
+            'internalField': {
+                'label': 'Campo Interno (nut)',
+                'tooltip': 'Define el valor inicial de la viscosidad turbulenta.',
+                'type': 'float',
+                'current': self.internalField,
+                'group': 'Campo Interno',
+            },
+            'boundaryField': {
+                'label': 'Condiciones de Borde',
+                'tooltip': 'Define las condiciones de nut en los límites del dominio.',
+                'type': 'list_of_dicts',
+                'current': self.boundaryField,
+                'group': 'Condiciones de Borde',
+                'schema': {
+                    'patchName': 'string',
+                    'type': {
+                        'type': 'choice',
+                        'default': 'nutkWallFunction',
+                        'options': [
+                            {
+                                'name': 'nutkWallFunction',
+                                'label': 'Función de Pared (nutkWallFunction)',
+                                'requires_value': True,
+                                'value_schema': {'type': 'float', 'label': 'Valor'}
+                            },
+                            {
+                                'name': 'fixedValue',
+                                'label': 'Valor Fijo',
+                                'requires_value': True,
+                                'value_schema': {'type': 'float', 'label': 'Valor de nut'}
+                            },
+                            {
+                                'name': 'zeroGradient',
+                                'label': 'Gradiente Cero',
+                                'requires_value': False
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
 
     

@@ -1,0 +1,18 @@
+{# Plantilla Jinja2 para el archivo 'p_rgh' de OpenFOAM #}
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform {{ internalField }};
+
+boundaryField
+{
+    {% for patch in boundaryField %}
+    {{ patch.patchName }}
+    {
+        type            {{ patch.type }};
+        {% if patch.value is defined %}
+        value           uniform {{ patch.value }};
+        {% endif %}
+    }
+    {% endfor %}
+}

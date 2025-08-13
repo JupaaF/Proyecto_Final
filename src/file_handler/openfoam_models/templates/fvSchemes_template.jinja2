@@ -1,0 +1,32 @@
+{# Plantilla Jinja2 para el archivo 'fvSchemes' de OpenFOAM #}
+
+ddtSchemes
+{
+    default     {{ ddtSchemes }};
+}
+
+gradSchemes
+{
+    default     {{ gradSchemes }};
+}
+
+divSchemes
+{
+    default     none;
+    div(phi,U)  {{ divSchemes }};
+}
+
+laplacianSchemes
+{
+    default     {{ laplacianSchemes }};
+}
+
+interpolationSchemes
+{
+    default     {{ interpolationSchemes }};
+}
+
+snGradSchemes
+{
+    default     {{ snGradSchemes }};
+}
