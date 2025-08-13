@@ -34,7 +34,7 @@ class ParameterEditorManager:
             for param_name, param_props in dict_parameters.items():
                 label = QLabel(param_props.get('label', param_name))
                 label.setToolTip(param_props.get('tooltip', ''))
-                widget = self._create_widget_for_parameter(param_props)
+                widget = self._create_widget_for_parameter(param_props) ##Esta funcion esta al fondo, se encarga de devolver el widget correspondiente al tipo de dato
                 form_layout.addRow(label, widget)
                 self.parameter_widgets[param_name] = (widget, param_props)
 

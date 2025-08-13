@@ -30,10 +30,10 @@ class MainWindowController(QMainWindow):
         self._setup_ui()
         self._connect_signals()
 
-        self.file_handler = None
-        self.docker_handler = None
-        self.file_browser_manager = None
-        self.parameter_editor_manager = None
+        self.file_handler = None ## Modelo
+        self.docker_handler = None ## Modelo
+        self.file_browser_manager = None ## Controlador
+        self.parameter_editor_manager = None ## Controlador
 
     def _initialize_app(self):
         """Inicializa la configuración básica de la aplicación."""
@@ -49,21 +49,27 @@ class MainWindowController(QMainWindow):
         self.setCentralWidget(self.ui)
 
         self.theme_manager = ThemeManager(self.ui)
-        self.theme_manager.set_theme(dark_mode=False)
+        self.theme_manager.set_theme(dark_mode=True)
 
         self.vtk_layout = QVBoxLayout(self.ui.vtkContainer)
         self.vtk_layout.setContentsMargins(0, 0, 0, 0)
         
         self.setup_view_menu()
 
+    def setup_view_menu(self):
+        """Configura el menú 'Ver' para mostrar/ocultar los docks."""
+        self.ui.menuVer.addAction(self.ui.fileBrowserDock.toggleViewAction())
+        self.ui.menuVer.addAction(self.ui.parameterEditorDock.toggleViewAction())
+        self.ui.menuVer.addAction(self.ui.logDock.toggleViewAction())
+
     def _connect_signals(self):
         """Conecta las señales de los widgets a los slots correspondientes."""
-        self.ui.actionModo_Oscuro.triggered.connect(self.toggle_theme)
+        self.ui.actionDocumentacion.triggered.connect(self.open_documentation)
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
         self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
-        self.ui.actionDocumentacion.triggered.connect(self.open_documentation)
         self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
         self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
+        self.ui.actionModo_Oscuro.triggered.connect(self.toggle_theme)
 
     def open_documentation(self):
         """Abre la documentación en el navegador web."""
@@ -74,6 +80,20 @@ class MainWindowController(QMainWindow):
         wizard = SimulationWizardController(self)
         if wizard.exec() == QDialog.Accepted:
             self._handle_wizard_accepted(wizard.get_data())
+
+    def _handle_wizard_accepted(self, data: dict):
+        """Procesa los datos del asistente y configura la simulación."""
+        case_name = data.get("case_name")
+        if not case_name:
+            QMessageBox.warning(self, "Error de Creación", "El nombre del caso no puede estar vacío.")
+            return
+
+        self.setWindowTitle(f"{DEFAULT_WINDOW_TITLE} - {case_name}")
+
+        self._initialize_file_handler(case_name, data["template"])
+        self._setup_managers()
+        self._setup_case_environment(Path(data["mesh_file"]))
+        self.file_handler.create_case_files()
 
     def open_load_simulation_dialog(self):
         """Abre un diálogo para cargar una simulación existente."""
@@ -116,18 +136,7 @@ class MainWindowController(QMainWindow):
                 QMessageBox.critical(self, "Error al Cargar", f"Error al cargar la simulación: {e}")
         
 
-    def _handle_wizard_accepted(self, data: dict):
-        """Procesa los datos del asistente y configura la simulación."""
-        case_name = data.get("case_name")
-        if not case_name:
-            QMessageBox.warning(self, "Error de Creación", "El nombre del caso no puede estar vacío.")
-            return
 
-        self.setWindowTitle(f"{DEFAULT_WINDOW_TITLE} - {case_name}")
-
-        self._initialize_file_handler(case_name, data["template"])
-        self._setup_managers()
-        self._setup_case_environment(Path(data["mesh_file"]))
 
 
     def _initialize_file_handler(self, case_name: str, template: str):
@@ -157,7 +166,7 @@ class MainWindowController(QMainWindow):
             self._copy_geometry_file(mesh_file_path)
             self.docker_handler.execute_script_in_docker("run_transform_blockMeshDict.sh")
         print("Se crearon los objetcsunv4")
-        self.file_handler.create_case_files()
+
         QTimer.singleShot(1000, self._check_mesh_and_visualize)
 
     def _check_mesh_and_visualize(self):
@@ -256,8 +265,3 @@ class MainWindowController(QMainWindow):
         """Cambia entre el tema claro y oscuro."""
         self.theme_manager.set_theme(self.ui.actionModo_Oscuro.isChecked())
 
-    def setup_view_menu(self):
-        """Configura el menú 'Ver' para mostrar/ocultar los docks."""
-        self.ui.menuVer.addAction(self.ui.fileBrowserDock.toggleViewAction())
-        self.ui.menuVer.addAction(self.ui.parameterEditorDock.toggleViewAction())
-        self.ui.menuVer.addAction(self.ui.logDock.toggleViewAction())
