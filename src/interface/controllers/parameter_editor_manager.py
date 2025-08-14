@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel, 
-                             QLineEdit, QComboBox, QHBoxLayout, QGroupBox)
+                             QLineEdit, QComboBox, QHBoxLayout, QGroupBox, QMessageBox)
 from PySide6.QtGui import QIntValidator, QDoubleValidator, QFont
 
 class ParameterEditorManager:
@@ -16,7 +16,8 @@ class ParameterEditorManager:
     def open_parameters_view(self, file_path: Path):
         # Auto-save the previous file's parameters before opening a new one
         if self.current_file_path and self.current_file_path != file_path:
-            self.save_parameters()
+            if not self.save_parameters():
+                return # Abort opening new file if save fails
 
         self.current_file_path = file_path
         self.parameter_widgets = {}
@@ -34,8 +35,7 @@ class ParameterEditorManager:
             for param_name, param_props in dict_parameters.items():
                 label = QLabel(param_props.get('label', param_name))
                 label.setToolTip(param_props.get('tooltip', ''))
-                widget = self._create_widget_for_parameter(param_props) ##Esta funcion esta al fondo, se encarga de devolver el widget correspondiente al tipo de dato
-                ## logica de manejo de widgets segun el parametro
+                widget = self._create_widget_for_parameter(param_props)
                 form_layout.addRow(label, widget)
                 self.parameter_widgets[param_name] = (widget, param_props)
 
@@ -47,34 +47,52 @@ class ParameterEditorManager:
         
         self.parent_widget.setWidget(container)
 
-    def save_parameters(self):
+    def save_parameters(self) -> bool:
         if not self.current_file_path:
-            return
+            return True
 
         new_params = {}
         for param_name, (widget, props) in self.parameter_widgets.items():
             widget_type = props.get('type', 'string')
-            if widget_type == 'vector':
-                new_params[param_name] = self._get_vector_from_widget(widget)
-            elif widget_type == 'list_of_dicts':
-                new_params[param_name] = self._get_list_of_dicts_from_widget(widget)
-            elif widget_type == 'choice':
-                new_params[param_name] = widget.currentData()
-            elif widget_type == 'integer':
-                new_params[param_name] = int(widget.text())
-            elif widget_type == 'float':
-                new_params[param_name] = float(widget.text()) ## TODO Bug casillero vacio
-            else: # string
-                new_params[param_name] = widget.text()
+            try:
+                if widget_type == 'vector':
+                    new_params[param_name] = self._get_vector_from_widget(widget)
+                elif widget_type == 'list_of_dicts':
+                    new_params[param_name] = self._get_list_of_dicts_from_widget(widget)
+                elif widget_type == 'choice':
+                    new_params[param_name] = widget.currentData()
+                elif widget_type == 'integer':
+                    text_value = widget.text().strip()
+                    if not text_value:
+                        QMessageBox.warning(self.parent_widget, "Valor Inválido", f"El campo para '{props.get('label', param_name)}' no puede estar vacío.")
+                        return False
+                    new_params[param_name] = int(text_value)
+                elif widget_type == 'float':
+                    text_value = widget.text().strip()
+                    if not text_value:
+                        QMessageBox.warning(self.parent_widget, "Valor Inválido", f"El campo para '{props.get('label', param_name)}' no puede estar vacío.")
+                        return False
+                    new_params[param_name] = float(text_value)
+                else: # string
+                    new_params[param_name] = widget.text()
+            except ValueError:
+                QMessageBox.warning(self.parent_widget, "Valor Inválido", f"El valor para '{props.get('label', param_name)}' no es un número válido.")
+                return False
 
-        self.file_handler.modify_parameters(self.current_file_path, new_params)
+        if new_params:
+            self.file_handler.modify_parameters(self.current_file_path, new_params)
+        
+        return True
 
     def _get_vector_from_widget(self, vector_widget):
         layout = vector_widget.layout()
+        x = layout.itemAt(0).widget().text()
+        y = layout.itemAt(1).widget().text()
+        z = layout.itemAt(2).widget().text()
         return {
-            'x': float(layout.itemAt(0).widget().text()),
-            'y': float(layout.itemAt(1).widget().text()),
-            'z': float(layout.itemAt(2).widget().text())
+            'x': float(x),
+            'y': float(y),
+            'z': float(z)
         }
 
     def _get_list_of_dicts_from_widget(self, container_widget):
