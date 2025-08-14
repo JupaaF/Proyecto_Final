@@ -67,9 +67,7 @@ class FileHandler:
         Creates the basic directory structure and writes all initialized OpenFOAM files.
         This should be called after the user confirms the initial setup.
         """
-        print("Se crearon los objetcs5")
         self._create_base_dirs()
-        print("Se crearon los objetcs6")
         for file_obj in self.files.values():
             print(f"Se creo el archivo {file_obj.name}")
             file_obj.write_file(self.case_path)
@@ -98,7 +96,6 @@ class FileHandler:
     def modify_parameters(self, file_path: Path, new_params: Dict[str, Any]) -> None:
         """
         Modifies the parameters of a specific file and rewrites it.
-
         Args:
             file_path: The path to the file to be modified.
             new_params: A dictionary with the new parameters to apply.

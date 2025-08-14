@@ -35,6 +35,7 @@ class ParameterEditorManager:
                 label = QLabel(param_props.get('label', param_name))
                 label.setToolTip(param_props.get('tooltip', ''))
                 widget = self._create_widget_for_parameter(param_props) ##Esta funcion esta al fondo, se encarga de devolver el widget correspondiente al tipo de dato
+                ## logica de manejo de widgets segun el parametro
                 form_layout.addRow(label, widget)
                 self.parameter_widgets[param_name] = (widget, param_props)
 
@@ -62,7 +63,7 @@ class ParameterEditorManager:
             elif widget_type == 'integer':
                 new_params[param_name] = int(widget.text())
             elif widget_type == 'float':
-                new_params[param_name] = float(widget.text())
+                new_params[param_name] = float(widget.text()) ## TODO Bug casillero vacio
             else: # string
                 new_params[param_name] = widget.text()
 
@@ -122,6 +123,7 @@ class ParameterEditorManager:
         return vector_widget
 
     def _create_widget_for_parameter(self, props):
+        ## logica de manejo de widgets segun el parametro
         widget_type = props.get('type', 'string')
         current_value = props.get('current', '')
 

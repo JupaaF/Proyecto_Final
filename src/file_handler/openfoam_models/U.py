@@ -18,7 +18,6 @@ class U(FoamFile):
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
-        
         # Inicializa los parámetros con valores por defecto
         self.internalField = {'x': 0, 'y': 0, 'z': 0}
         self.boundaryField = []
@@ -110,8 +109,7 @@ class U(FoamFile):
                                     'name':'value',
                                     'type': 'vector', 
                                     'label': 'Valor en la entrada',
-                                    'requires_value': False
-                                    
+                                    'requires_value': False ##TODO logica inletValue                                    
                                 }
                             },
                             {

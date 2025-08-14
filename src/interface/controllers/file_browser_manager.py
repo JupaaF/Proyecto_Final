@@ -34,10 +34,7 @@ class FileBrowserManager(QObject):
         file_path = Path(model.filePath(index))
 
         if not file_path.is_dir():
-            print(f"Abriendo el archivo: {file_path}")
             self.file_clicked.emit(file_path)
-        else:
-            print(f"Es un directorio, no se abre en el editor: {file_path}")
 
     def get_widget(self) -> QTreeView:
         return self.tree_view

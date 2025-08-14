@@ -25,6 +25,7 @@ DEFAULT_WINDOW_TITLE = f"{APP_NAME} by Marti and Jupa"
 class MainWindowController(QMainWindow):
     def __init__(self):
         super().__init__()
+
         self._initialize_app()
         self._setup_ui()
         self._connect_signals()
@@ -36,6 +37,8 @@ class MainWindowController(QMainWindow):
 
     def _initialize_app(self):
         """Inicializa la configuración básica de la aplicación."""
+
+        ##Por si queremos agregar otras cosas
         create_dir()
 
     def _setup_ui(self):
@@ -115,6 +118,7 @@ class MainWindowController(QMainWindow):
                 self._initialize_file_handler(case_path.name, loaded_template)
                 self._setup_managers() # Re-setup managers with the new file_handler
                 self.file_handler.load_all_parameters_from_json() # Load parameters from the JSON
+                self.file_handler.create_case_files()
 
                 self.setWindowTitle(f"{DEFAULT_WINDOW_TITLE} - {case_path.name}")
                 self.docker_handler = DockerHandler(self.file_handler.get_case_path())
@@ -132,18 +136,6 @@ class MainWindowController(QMainWindow):
                 QMessageBox.critical(self, "Error al Cargar", f"Error al cargar la simulación: {e}")
         
 
-    def _handle_wizard_accepted(self, data: dict):
-        """Procesa los datos del asistente y configura la simulación."""
-        case_name = data.get("case_name")
-        if not case_name:
-            QMessageBox.warning(self, "Error de Creación", "El nombre del caso no puede estar vacío.")
-            return
-
-        self.setWindowTitle(f"{DEFAULT_WINDOW_TITLE} - {case_name}")
-
-        self._initialize_file_handler(case_name, data["template"])
-        self._setup_managers()
-        self._setup_case_environment(Path(data["mesh_file"]))
 
 
     def _initialize_file_handler(self, case_name: str, template: str):
@@ -172,7 +164,6 @@ class MainWindowController(QMainWindow):
             #Es un blockMeshDict
             self._copy_geometry_file(mesh_file_path)
             self.docker_handler.execute_script_in_docker("run_transform_blockMeshDict.sh")
-        print("Se crearon los objetcsunv4")
 
         QTimer.singleShot(1000, self._check_mesh_and_visualize)
 
