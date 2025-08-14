@@ -76,6 +76,8 @@ class MainWindowController(QMainWindow):
 
     def open_new_simulation_wizard(self):
         """Abre el asistente para crear una nueva simulación."""
+        if not self._prompt_save_changes():
+            return # Abort if user cancels
         
         # Se crea una instancia temporal del DockerHandler para la verificación
         docker_handler = DockerHandler(Path("."))
@@ -104,7 +106,8 @@ class MainWindowController(QMainWindow):
 
     def open_load_simulation_dialog(self):
         """Abre un diálogo para cargar una simulación existente."""
-        
+        if not self._prompt_save_changes():
+            return # Abort if user cancels
         
         # Se crea una instancia temporal del DockerHandler para la verificación
         docker_handler = DockerHandler(Path("."))
@@ -237,10 +240,19 @@ class MainWindowController(QMainWindow):
             QMessageBox.warning(self, "Error de Simulación", "No hay una simulación configurada. Por favor, cree un nuevo caso primero.")
             return
         
+        if self.parameter_editor_manager:
+            if not self.parameter_editor_manager.save_parameters():
+                return
+        
         self.docker_handler.execute_script_in_docker("run_openfoam.sh")
 
     def save_all_parameters_action(self):
         """Guarda todos los parámetros editables en un archivo JSON."""
+
+        if self.parameter_editor_manager:
+            if not self.parameter_editor_manager.save_parameters():
+                return
+
         if self.file_handler:
             self.file_handler.save_all_parameters_to_json()
             QMessageBox.information(self, "Guardar Parámetros", "¡Parámetros guardados exitosamente!")
@@ -271,6 +283,27 @@ class MainWindowController(QMainWindow):
         visualizer = GeometryView(geom_file_path)
         self.vtk_layout.addWidget(visualizer)
         """Crea o actualiza el visualizador de geometría."""
+
+    def _prompt_save_changes(self) -> bool:
+        """ 
+        Prompts the user to save changes if there are any. 
+        Returns True if the action should continue, False if it should be aborted.
+        """
+        if self.parameter_editor_manager and self.parameter_editor_manager.current_file_path:
+            reply = QMessageBox.question(self,
+                                         "Guardar Cambios",
+                                         "¿Desea guardar los cambios en los parámetros actuales?",
+                                         QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+                                         QMessageBox.Cancel)
+
+            if reply == QMessageBox.Save:
+                if not self.parameter_editor_manager.save_parameters():
+                    return False
+            elif reply == QMessageBox.Cancel:
+                return False
+            # If Discard, proceed without saving
+        
+        return True
 
     def setup_view_menu(self):
         """Configura el menú 'Ver' para mostrar/ocultar los docks."""

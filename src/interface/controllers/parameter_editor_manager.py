@@ -62,21 +62,13 @@ class ParameterEditorManager:
                 elif widget_type == 'choice':
                     new_params[param_name] = widget.currentData()
                 elif widget_type == 'integer':
-                    text_value = widget.text().strip()
-                    if not text_value:
-                        QMessageBox.warning(self.parent_widget, "Valor Inválido", f"El campo para '{props.get('label', param_name)}' no puede estar vacío.")
-                        return False
-                    new_params[param_name] = int(text_value)
+                    new_params[param_name] = int(widget.text())
                 elif widget_type == 'float':
-                    text_value = widget.text().strip()
-                    if not text_value:
-                        QMessageBox.warning(self.parent_widget, "Valor Inválido", f"El campo para '{props.get('label', param_name)}' no puede estar vacío.")
-                        return False
-                    new_params[param_name] = float(text_value)
+                    new_params[param_name] = float(widget.text())
                 else: # string
                     new_params[param_name] = widget.text()
             except ValueError:
-                QMessageBox.warning(self.parent_widget, "Valor Inválido", f"El valor para '{props.get('label', param_name)}' no es un número válido.")
+                QMessageBox.warning(self.parent_widget, "Valor Inválido", f"Existen valores invalidos. Por favor revise los parametros")
                 return False
 
         if new_params:
