@@ -76,6 +76,14 @@ class MainWindowController(QMainWindow):
 
     def open_new_simulation_wizard(self):
         """Abre el asistente para crear una nueva simulación."""
+        
+        # Se crea una instancia temporal del DockerHandler para la verificación
+        docker_handler = DockerHandler(Path("."))
+        
+        if not docker_handler.is_docker_running():
+            QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución o no se encontró. Por favor, inicia Docker Desktop para crear una nueva simulación. ❌")
+            return
+
         wizard = SimulationWizardController(self)
         if wizard.exec() == QDialog.Accepted:
             self._handle_wizard_accepted(wizard.get_data())
@@ -96,6 +104,15 @@ class MainWindowController(QMainWindow):
 
     def open_load_simulation_dialog(self):
         """Abre un diálogo para cargar una simulación existente."""
+        
+        
+        # Se crea una instancia temporal del DockerHandler para la verificación
+        docker_handler = DockerHandler(Path("."))
+        
+        if not docker_handler.is_docker_running():
+            QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución o no se encontró. Por favor, inicia Docker Desktop para crear una nueva simulación.")
+            return
+        
         case_dir_path = QFileDialog.getExistingDirectory(self, "Seleccionar Carpeta de Simulación", str(RUTA_LOCAL))
 
         if case_dir_path:
@@ -156,6 +173,10 @@ class MainWindowController(QMainWindow):
 
         self.docker_handler = DockerHandler(self.file_handler.get_case_path())
 
+        # TODO: el problema de esto es que se crea igual la carpeta system
+        # if not self.docker_handler.is_docker_running():
+        #     QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución o no se encontró. Por favor, inicia Docker Desktop e inténtalo de nuevo.")
+
         if mesh_file_path.suffix == '.unv':
             # Es un .unv
             self._copy_geometry_file(mesh_file_path)
@@ -174,16 +195,8 @@ class MainWindowController(QMainWindow):
             self.show_geometry_visualizer(vtk_path)
 
         else:
-            QMessageBox.warning(self, "Error de Malla", "No se pudo generar la malla. Revisa la configuración y el archivo de geometría.")
-
-    # def _copy_geometry_file(self, mesh_file_path: Path):
-    #     """Copia el archivo de malla al directorio del caso."""
-    #     try:
-    #         destination_path = self.file_handler.get_case_path() / 'malla.unv'
-    #         shutil.copy(mesh_file_path, destination_path)
-    #     except IOError as e:
-    #         QMessageBox.critical(self, "Error de Archivo", f"No se pudo copiar el archivo de malla: {e}")
-
+            QMessageBox.warning(self, "Error de Malla/Docker", "No se pudo generar la malla. Revisa la configuración y el archivo de geometría. Recuerda ejecutar Docker.")
+            return False
 
     def _copy_geometry_file(self, mesh_file_path: Path) -> bool:
         """

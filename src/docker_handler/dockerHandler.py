@@ -8,6 +8,7 @@ class DockerHandler():
         self.logger = logging.getLogger(__name__)
         self.IMAGEN_SEDFOAM = "cbonamy/sedfoam_2312_ubuntu" # imagen de Docker para ejecutar simulacion de SedFOAM 
         # self.IMAGEN_OPENFOAM = "openfoam/openfoam10-paraview510" # imagen de Docker para ejecutar simulacion de interFoam e icoFoam
+        
 
     def execute_script_in_docker(self, script_name: str) -> bool:
         """
@@ -67,7 +68,33 @@ class DockerHandler():
         except Exception as e:
             self.logger.critical(f"Ocurrió un error inesperado durante la ejecución de {script_name}: {e}", exc_info=True)
             raise
-
+        
+    def is_docker_running(self) -> bool:
+        """
+        Verifica si el servicio de Docker está en ejecución.
+        
+        Returns:
+            bool: True si Docker está corriendo y es accesible, False en caso contrario.
+        """
+        try:
+            # El comando 'docker info' es ligero y no crea contenedores
+            subprocess.run(
+                ["docker", "info"],
+                check=True,
+                stdout=subprocess.DEVNULL, # No necesitamos ver la salida
+                stderr=subprocess.DEVNULL  # No necesitamos ver los errores
+            )
+            # Docker está corriendo
+            return True
+        except FileNotFoundError:
+            # El comando 'docker' no se encontró en el PATH
+            return False
+        except subprocess.CalledProcessError:
+            # El comando 'docker info' falló, lo que indica que el servicio no está activo
+            return False
+        except Exception:
+            # Captura cualquier otro error inesperado
+            return False
     
     # ----------------------------------------------------------------------------------
     # Estos ya no se usan, se generalizaron con la función de arriba, los dejo por las dudas igual:
