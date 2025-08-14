@@ -14,7 +14,6 @@ from file_handler.file_handler import FileHandler
 
 from .widget_geometria import GeometryView
 from .simulation_wizard_controller import SimulationWizardController
-from .theme_manager import ThemeManager
 from .file_browser_manager import FileBrowserManager
 from .parameter_editor_manager import ParameterEditorManager
 
@@ -48,9 +47,6 @@ class MainWindowController(QMainWindow):
         self.ui = loader.load(str(ui_path))
         self.setCentralWidget(self.ui)
 
-        self.theme_manager = ThemeManager(self.ui)
-        self.theme_manager.set_theme(dark_mode=False)
-
         self.vtk_layout = QVBoxLayout(self.ui.vtkContainer)
         self.vtk_layout.setContentsMargins(0, 0, 0, 0)
         
@@ -58,7 +54,6 @@ class MainWindowController(QMainWindow):
 
     def _connect_signals(self):
         """Conecta las señales de los widgets a los slots correspondientes."""
-        self.ui.actionModo_Oscuro.triggered.connect(self.toggle_theme)
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
         self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
         self.ui.actionDocumentacion.triggered.connect(self.open_documentation)
@@ -243,7 +238,6 @@ class MainWindowController(QMainWindow):
         return []
 
     def show_geometry_visualizer(self, geom_file_path: Path):
-        """Crea o actualiza el visualizador de geometría."""
         while self.vtk_layout.count():
             item = self.vtk_layout.takeAt(0)
             if widget := item.widget():
@@ -251,10 +245,7 @@ class MainWindowController(QMainWindow):
         
         visualizer = GeometryView(geom_file_path)
         self.vtk_layout.addWidget(visualizer)
-
-    def toggle_theme(self):
-        """Cambia entre el tema claro y oscuro."""
-        self.theme_manager.set_theme(self.ui.actionModo_Oscuro.isChecked())
+        """Crea o actualiza el visualizador de geometría."""
 
     def setup_view_menu(self):
         """Configura el menú 'Ver' para mostrar/ocultar los docks."""
