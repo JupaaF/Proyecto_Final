@@ -30,7 +30,9 @@ class FileHandler:
             template: The name of the template to use (currently not implemented).
         """
         self.case_path = case_path
-        self.template = template  # TODO: Implement template logic
+        # TODO: The template logic is not fully implemented.
+        # As per user request, this feature is on hold.
+        self.template = template
         self.files: Dict[str, FoamFile] = {}
         
         self._initialize_file_objects()
@@ -69,7 +71,6 @@ class FileHandler:
         """
         self._create_base_dirs()
         for file_obj in self.files.values():
-            print(f"Se creo el archivo {file_obj.name}")
             file_obj.write_file(self.case_path)
 
     def _create_base_dirs(self) -> None:
