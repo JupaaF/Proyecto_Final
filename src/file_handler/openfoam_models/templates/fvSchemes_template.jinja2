@@ -12,13 +12,17 @@ gradSchemes
 
 divSchemes
 {
-    default     none;
-    div(phi,U)  {{ divSchemes }};
+    {% if divSchemes == 'damBreak' %}
+    div(rhoPhi,U)   Gauss linearUpwind grad(U);
+    div(phi,alpha)  Gauss vanLeer;
+    div(phirb,alpha) Gauss linear;
+    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+    {% endif %}
 }
 
 laplacianSchemes
 {
-    default     {{ laplacianSchemes }};
+    default     linear {{snGradSchemes}};
 }
 
 interpolationSchemes
