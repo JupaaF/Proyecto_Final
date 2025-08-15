@@ -68,59 +68,31 @@ class U(FoamFile):
             'boundaryField': {
                 'label': 'Condiciones de Borde',
                 'tooltip': 'Define las condiciones de velocidad en los límites del dominio.',
-                'type': 'list_of_dicts',
+                'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
                 'schema': {
                     'patchName': 'string',
                     'type': {
                         'type': 'choice',
-                        'default': 'fixedValue',
+                        'default': 'noSlip',
                         'options': [
-                            {
-                                'name': 'fixedValue',
-                                'label': 'Valor Fijo',
-                                'requires_value': True,
-                                'value_schema': 
-                                {
-                                    'name':'value',
-                                    'type': 'vector', 
-                                    'label': 'Valor de Velocidad',
-                                    'requires_value': False
-                                    
-                                }
-                            },
                             {
                                 'name': 'noSlip',
                                 'label': 'Sin Deslizamiento',
-                                'requires_value': False
-                            },
-                            {
-                                'name': 'zeroGradient',
-                                'label': 'Gradiente Cero',
-                                'requires_value': False
-                            },
-                            {
-                                'name': 'inletOutlet',
-                                'label': 'Entrada/Salida',
-                                'requires_value': True,
-                                'value_schema': 
-                                {
-                                    'name':'value',
-                                    'type': 'vector', 
-                                    'label': 'Valor en la entrada',
-                                    'requires_value': False ##TODO logica inletValue                                    
-                                }
+                                'parameters':[]
                             },
                             {
                                 'name': 'pressureInletOutletVelocity',
                                 'label': 'Salida/Entrada por Presión',
-                                'requires_value': False
-                            },
-                            {
-                                'name': 'slip',
-                                'label': 'Deslizamiento',
-                                'requires_value': False
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'vector',
+                                        'label': 'Ni idea',
+                                        'default': {'x':0,'y':0,'z':0}
+                                    }
+                                ]
                             }
                         ]
                     }

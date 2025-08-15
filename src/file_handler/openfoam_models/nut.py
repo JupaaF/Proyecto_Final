@@ -73,19 +73,26 @@ class nut(FoamFile):
                             {
                                 'name': 'nutkWallFunction',
                                 'label': 'Función de Pared (nutkWallFunction)',
-                                'requires_value': True,
-                                'value_schema': {'type': 'float', 'label': 'Valor'}
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'Ni idea',
+                                        'default': 0
+                                    }
+                                ]
                             },
                             {
-                                'name': 'fixedValue',
-                                'label': 'Valor Fijo',
-                                'requires_value': True,
-                                'value_schema': {'type': 'float', 'label': 'Valor de nut'}
-                            },
-                            {
-                                'name': 'zeroGradient',
-                                'label': 'Gradiente Cero',
-                                'requires_value': False
+                                'name': 'calculated',
+                                'label': 'Calculado',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'Ni idea',
+                                        'default': 0
+                                    }
+                                ]
                             }
                         ]
                     }

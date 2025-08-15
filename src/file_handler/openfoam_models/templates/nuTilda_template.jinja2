@@ -1,7 +1,7 @@
-{# Plantilla Jinja2 para el archivo 'U' de OpenFOAM #}
-dimensions      [0 1 -1 0 0 0 0];
+{# Plantilla Jinja2 para el archivo 'nuTilda' de OpenFOAM #}
+dimensions      [0 2 -1 0 0 0 0];
 
-internalField   uniform ({{internalField.x}} {{internalField.y}} {{internalField.z}});
+internalField   uniform {{internalField}};
 
 boundaryField
 {
