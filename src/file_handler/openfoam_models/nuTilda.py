@@ -1,26 +1,33 @@
 from pathlib import Path
 from .foam_file import FoamFile
+# Para que este script funcione, se debe instalar Jinja2:
+# pip install Jinja2
 from jinja2 import Environment, FileSystemLoader
 
-class k(FoamFile):
+class U(FoamFile):
     """
-    Representa el archivo 'k' (energía cinética turbulenta) de OpenFOAM.
+    Representa el archivo 'U' (velocidad) de OpenFOAM, utilizando el motor
+    de plantillas Jinja2 para generar su contenido.
+
+    Este enfoque externaliza completamente la estructura del archivo a una
+    plantilla, permitiendo que el código Python se centre únicamente en la
+    preparación de los datos.
     """
     def __init__(self):
-        super().__init__(name="k", folder="0", class_type="volScalarField")
+        super().__init__(name="nuTilda", folder="0", class_type="volScalarField")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
-        
-        # Valores por defecto
-        self.internalField = 0.01
+        # Inicializa los parámetros con valores por defecto
+        self.internalField = 0
         self.boundaryField = []
 
     def _get_string(self) -> str:
         """
-        Genera el contenido del archivo renderizando la plantilla Jinja2.
+        Genera el contenido del archivo 'U' renderizando la plantilla Jinja2
+        con los datos de la instancia.
         """
-        template = self.jinja_env.get_template("k_template.jinja2")
+        template = self.jinja_env.get_template("nuTilda_template.jinja2")
         context = {
             'internalField': self.internalField,
             'boundaryField': self.boundaryField
@@ -52,15 +59,15 @@ class k(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (k)',
-                'tooltip': 'Define el valor inicial de la energía cinética turbulenta.',
+                'label': 'Campo Interno (alpha.water)',
+                'tooltip': 'Define el valor inicial de alpha.water en todo el dominio (0 a 1).',
                 'type': 'float',
                 'current': self.internalField,
                 'group': 'Campo Interno',
             },
             'boundaryField': {
                 'label': 'Condiciones de Borde',
-                'tooltip': 'Define las condiciones de k en los límites del dominio.',
+                'tooltip': 'Define las condiciones de alpha.water en los límites del dominio.',
                 'type': 'list_of_dicts',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
@@ -68,19 +75,12 @@ class k(FoamFile):
                     'patchName': 'string',
                     'type': {
                         'type': 'choice',
-                        'default': 'kqRWallFunction',
+                        'default': 'zeroGradient',
                         'options': [
                             {
-                                'name': 'kqRWallFunction',
-                                'label': 'Función de Pared (kqRWallFunction)',
-                                'parameters' : [
-                                    {
-                                        'name': 'value',
-                                        'type': 'float',
-                                        'label': 'Ni idea',
-                                        'default': 0
-                                    }
-                                ]
+                                'name': 'zeroGradient',
+                                'label': 'Gradiente Cero',
+                                'parameters': []
                             },
                             {
                                 'name': 'inletOutlet',
@@ -105,6 +105,5 @@ class k(FoamFile):
                 }
             }
         }
-
-
     
+

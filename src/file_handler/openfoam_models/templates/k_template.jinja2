@@ -1,18 +1,31 @@
 {# Plantilla Jinja2 para el archivo 'k' de OpenFOAM #}
-
 dimensions      [0 2 -2 0 0 0 0];
 
-internalField   uniform {{ internalField }};
+internalField   uniform {{internalField}};
 
 boundaryField
 {
+    {# Itera sobre la lista de condiciones de borde pasadas desde Python #}
     {% for patch in boundaryField %}
     {{ patch.patchName }}
     {
         type            {{ patch.type }};
-        {% if patch.value is defined %}
-        value           uniform {{ patch.value }};
+        
+        {# Itera sobre todos los parámetros del patch y los escribe #}
+        {% for key, value in patch.items() %}
+        {% if key not in ['patchName', 'type'] %}
+        {% if value is mapping %}
+        {{ key }}           uniform ({{ value.x }} {{ value.y }} {{ value.z }});
+        {% else %}
+        {{ key }}           uniform {{ value }};
         {% endif %}
+        {% endif %}
+        {% endfor %}
     }
     {% endfor %}
+    defaultFaces
+    {
+        type            empty;
+    }
+
 }

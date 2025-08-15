@@ -72,21 +72,27 @@ class alpha_water(FoamFile):
                         'default': 'zeroGradient',
                         'options': [
                             {
-                                'name': 'fixedValue',
-                                'label': 'Valor Fijo',
-                                'requires_value': True,
-                                'value_schema': {'type': 'float', 'label': 'Valor de Alpha'}
-                            },
-                            {
                                 'name': 'zeroGradient',
                                 'label': 'Gradiente Cero',
-                                'requires_value': False
+                                'parameters': []
                             },
                             {
                                 'name': 'inletOutlet',
-                                'label': 'Entrada/Salida',
-                                'requires_value': True,
-                                'value_schema': {'type': 'float', 'label': 'Valor en la entrada'}
+                                'label': 'Valor Fijo',
+                                'parameters' : [
+                                    {
+                                        'name': 'inletValue',
+                                        'type': 'float',
+                                        'label': 'inletValue',
+                                        'default': 0
+                                    },
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'default': 0
+                                    }
+                                ]
                             }
                         ]
                     }

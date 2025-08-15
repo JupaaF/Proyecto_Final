@@ -61,7 +61,7 @@ class p_rgh(FoamFile):
             'boundaryField': {
                 'label': 'Condiciones de Borde para Presión',
                 'tooltip': 'Define las condiciones de presión modificada en los límites.',
-                'type': 'list_of_dicts',
+                'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
                 'schema': {
@@ -73,18 +73,26 @@ class p_rgh(FoamFile):
                             {
                                 'name': 'fixedFluxPressure',
                                 'label': 'Presión con Flujo Fijo (fixedFluxPressure)',
-                                'requires_value': False
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'Ni idea',
+                                        'default': 0
+                                    }
+                                ]
                             },
                             {
-                                'name': 'zeroGradient',
-                                'label': 'Gradiente Cero (zeroGradient)',
-                                'requires_value': False
-                            },
-                            {
-                                'name': 'fixedValue',
-                                'label': 'Valor Fijo (fixedValue)',
-                                'requires_value': True,
-                                'value_schema': {'type': 'float', 'label': 'Valor'}
+                                'name': 'totalPressure',
+                                'label': 'Presion total',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'Ni idea',
+                                        'default': 0
+                                    }
+                                ]
                             }
                         ]
                     }
