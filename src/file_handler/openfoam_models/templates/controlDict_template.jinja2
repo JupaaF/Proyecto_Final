@@ -1,6 +1,6 @@
 {# Plantilla Jinja2 para el archivo 'controlDict' de OpenFOAM #}
 
-application     {{ solver }};
+application     {{ application }};
 
 startFrom       startTime;
 startTime       {{ startTime }};
@@ -13,10 +13,31 @@ deltaT          {{ deltaT }};
 writeControl    runTime;
 writeInterval   {{ writeInterval }};
 
-purgeWrite      0;
-writeFormat     ascii;
+{% if purgeWrite is not none %}
+purgeWrite      {{purgeWrite}};
+{% endif %}
+{% if writeFormat is not none %}
+writeFormat      {{writeFormat}};
+{% endif %}
+
 writePrecision  6;
-writeCompression off;
+writeCompression {{writeCompression}};
 
 timeFormat      general;
 timePrecision   6;
+
+{% if runTimeModifiable is not none %}
+runTimeModifiable      {{runTimeModifiable}};
+{% endif %}
+{% if adjustTimeStep is not none %}
+adjustTimeStep      {{adjustTimeStep}};
+{% endif %}
+{% if maxCo is not none %}
+maxCo      {{maxCo}};
+{% endif %}
+{% if maxAlphaCo is not none %}
+maxAlphaCo      {{maxAlphaCo}};
+{% endif %}
+{% if maxAlphaCo is not none %}
+maxDeltaT      {{maxDeltaT}};
+{% endif %}

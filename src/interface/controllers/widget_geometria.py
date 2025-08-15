@@ -2,7 +2,7 @@ import sys
 import os
 import random
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QScrollArea, QCheckBox
+    QApplication, QMainWindow, QVBoxLayout, QPushButton, QWidget, QLabel, QHBoxLayout, QScrollArea, QCheckBox
 )
 import pyvista as pv
 from pyvistaqt import QtInteractor
@@ -22,6 +22,11 @@ class GeometryView(QWidget):
         self.sidebar_widget = QWidget()
         self.sidebar_layout = QVBoxLayout(self.sidebar_widget)
         self.sidebar_layout.addWidget(QLabel("Patches:"))
+
+        # --- Agregar botón de deselección ---
+        self.deselect_button = QPushButton("Deseleccionar todos")
+        self.deselect_button.clicked.connect(self.deselect_all_patches)
+        self.sidebar_layout.addWidget(self.deselect_button)
 
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -164,7 +169,22 @@ class GeometryView(QWidget):
 
         # Conecta evento de movimiento:
         self.plotter.iren.add_observer("MouseMoveEvent", on_mouse_move)
-
+    
+    def deselect_all_patches(self):
+        """Deselecciona todos los patches seleccionados."""
+        for patch_name in list(self.selected_patches):  # Usamos list() para crear una copia
+            actor = self.actors.get(patch_name)
+            if actor:
+                # Restaurar color original
+                actor.GetProperty().SetColor(self.original_colors[patch_name])
+        
+        # Limpiar el conjunto de seleccionados
+        self.selected_patches.clear()
+        
+        # Actualizar el label
+        self.info_label.setText("Patches seleccionados: ninguno")
+        self.plotter.render()
+        
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()

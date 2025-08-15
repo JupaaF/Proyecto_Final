@@ -137,6 +137,10 @@ class MainWindowController(QMainWindow):
                 # Initialize FileHandler with the loaded template
                 self._initialize_file_handler(case_path.name, loaded_template)
                 self._setup_managers() # Re-setup managers with the new file_handler
+                
+                #Search for VTK directory
+                self._check_mesh_and_visualize()
+
                 self.file_handler.load_all_parameters_from_json() # Load parameters from the JSON
                 self.file_handler.create_case_files()
 
