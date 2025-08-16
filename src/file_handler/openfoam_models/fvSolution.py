@@ -9,47 +9,40 @@ class fvSolution(FoamFile):
 
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
-
+        self.selected_solver = []
         # Valores por defecto
-        self.selected_solver = 'damBreak'
-        self.alpha_water_tolerance = 1e-8
-        self.alpha_water_relTol = 0
-        self.p_rgh_tolerance = 1e-07
-        self.p_rgh_relTol = 0.05
-        self.U_tolerance = 1e-06
-        self.U_relTol = 0
-        self.nOuterCorrectors = 1
-        self.nCorrectors = 3
-        self.nNonOrthogonalCorrectors = 0
+        # self.selected_solver = 'damBreak'
+        # self.alpha_water_tolerance = 1e-8
+        # self.alpha_water_relTol = 0
+        # self.p_rgh_tolerance = 1e-07
+        # self.p_rgh_relTol = 0.05
+        # self.U_tolerance = 1e-06
+        # self.U_relTol = 0
+        # self.nOuterCorrectors = 1
+        # self.nCorrectors = 3
+        # self.nNonOrthogonalCorrectors = 0
 
     def _get_string(self):
         template = self.jinja_env.get_template("fvSolution_template.jinja2")
         context = {
-            'alpha_water_tolerance': self.alpha_water_tolerance,
-            'alpha_water_relTol': self.alpha_water_relTol,
-            'p_rgh_tolerance': self.p_rgh_tolerance,
-            'p_rgh_relTol': self.p_rgh_relTol,
-            'U_tolerance': self.U_tolerance,
-            'U_relTol': self.U_relTol,
-            'nOuterCorrectors': self.nOuterCorrectors,
-            'nCorrectors': self.nCorrectors,
-            'nNonOrthogonalCorrectors': self.nNonOrthogonalCorrectors
+            'selected_solver' : self.selected_solver
+            # 'alpha_water_tolerance': self.alpha_water_tolerance,
+            # 'alpha_water_relTol': self.alpha_water_relTol,
+            # 'p_rgh_tolerance': self.p_rgh_tolerance,
+            # 'p_rgh_relTol': self.p_rgh_relTol,
+            # 'U_tolerance': self.U_tolerance,
+            # 'U_relTol': self.U_relTol,
+            # 'nOuterCorrectors': self.nOuterCorrectors,
+            # 'nCorrectors': self.nCorrectors,
+            # 'nNonOrthogonalCorrectors': self.nNonOrthogonalCorrectors
         }
         content = template.render(context)
         return self.get_header() + content
 
     def update_parameters(self, params: dict):
         for key, value in params.items():
-            if key == 'selected_solver':
-                self.desenrrolar_dict(value)
-                continue
             setattr(self, key, value)
 
-    def desenrrolar_dict(self,diccionario):
-
-        for key,value in diccionario.items():
-            setattr(self, key, value)
-        
     def write_file(self, case_path: Path):
         output_dir = case_path / self.folder
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -76,16 +69,14 @@ class fvSolution(FoamFile):
                                 'label': 'alpha.water Tolerancia',
                                 'tooltip': 'Tolerancia para el solver alpha.water.',
                                 'type': 'float',
-                                'current': self.alpha_water_tolerance,
+                                'default': 1e-8,
                             }
                         ]
                     },
                     {
                         'name': 'pressureInletOutletVelocity',
                         'label': 'Salida/Entrada por Presión',
-                        'parameters' : [
-                            
-                        ]
+                        'parameters' : []
                     }
                 ]
                 }

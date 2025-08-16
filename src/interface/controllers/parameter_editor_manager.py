@@ -81,12 +81,17 @@ class ParameterEditorManager:
 
     def _get_choice_with_options_from_widget(self,widget,props):
 
-        params = {}
+        params = []
         layout = widget.layout()
-        params['solver_selected'] = layout.itemAt(0).widget().currentData()
+        primer = {
+            'param_name' : 'solver_selected',
+            'value' : layout.itemAt(0).widget().currentData()
+        }
+        params.append(primer)
+
         param_props = props.get('options')
         for option in param_props:
-            if params['solver_selected'] == option.get('name'):
+            if layout.itemAt(0).widget().currentData() == option.get('name'):
                 param_props = option.get('parameters')
                 break
         
@@ -118,7 +123,11 @@ class ParameterEditorManager:
                     value = self._get_vector_from_widget(box)
 
             if value is not None:
-                params[param.get('name')] = value
+                dicc = {
+                    'param_name' : param.get('name'),
+                    'value' : value
+                }
+                params.append(dicc)
             i +=1
         
         return params
@@ -290,6 +299,10 @@ class ParameterEditorManager:
                     if option.get('name') == selected_type_name:
                         parameters_to_create = option.get('parameters', [])
                         break
+
+                flag = False
+                if len(current_value) > 0:
+                    flag = current_value[0].get('value') == selected_type_name
                 
                 # 3. Crear y añadir los nuevos widgets (lógica explícita, no recursiva)
                 for param_props in parameters_to_create:
@@ -298,8 +311,14 @@ class ParameterEditorManager:
                     param_type = param_props.get('type', 'string')
                     label = param_props.get('label', param_name)
                     
+                    if flag:
+                        for parametro_actual in current_value:
+                            if parametro_actual.get('param_name') == param_name:
+                                current = parametro_actual.get('value')
+                                break
                     # Determinar el valor a mostrar: el actual del patch o el default del parámetro
-                    value_for_widget = param_props.get('current')
+                    value_for_widget = current if flag else param_props.get('default')
+                    
 
                     # Lógica de creación de widgets duplicada aquí
                     if param_type == 'vector':
