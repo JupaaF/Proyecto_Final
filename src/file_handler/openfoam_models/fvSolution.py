@@ -11,7 +11,7 @@ class fvSolution(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
 
         # Valores por defecto
-        self.selected_solver
+        self.selected_solver = 'damBreak'
         self.alpha_water_tolerance = 1e-8
         self.alpha_water_relTol = 0
         self.p_rgh_tolerance = 1e-07
@@ -40,8 +40,16 @@ class fvSolution(FoamFile):
 
     def update_parameters(self, params: dict):
         for key, value in params.items():
+            if key == 'selected_solver':
+                self.desenrrolar_dict(value)
+                continue
             setattr(self, key, value)
 
+    def desenrrolar_dict(self,diccionario):
+
+        for key,value in diccionario.items():
+            setattr(self, key, value)
+        
     def write_file(self, case_path: Path):
         output_dir = case_path / self.folder
         output_dir.mkdir(parents=True, exist_ok=True)

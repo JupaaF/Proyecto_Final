@@ -59,6 +59,8 @@ class ParameterEditorManager:
                     new_params[param_name] = self._get_vector_from_widget(widget)
                 elif widget_type == 'patches':
                     new_params[param_name] = self._get_patches_from_widget(widget,props)
+                elif widget_type == 'choice_with_options':
+                    new_params[param_name] = self._get_choice_with_options_from_widget(widget,props)
                 elif widget_type == 'choice':
                     new_params[param_name] = widget.currentData()
                 elif widget_type == 'integer':
@@ -75,6 +77,52 @@ class ParameterEditorManager:
             self.file_handler.modify_parameters(self.current_file_path, new_params)
         
         return True
+
+
+    def _get_choice_with_options_from_widget(self,widget,props):
+
+        params = {}
+        layout = widget.layout()
+        params['solver_selected'] = layout.itemAt(0).widget().currentData()
+        param_props = props.get('options')
+        for option in param_props:
+            if params['solver_selected'] == option.get('name'):
+                param_props = option.get('parameters')
+                break
+        
+        i = 1
+
+        for param in param_props:
+
+            box = layout.itemAt(i).widget()
+            box_layout = box.layout()
+            box = box_layout.itemAt(1).widget()
+
+            value = None
+
+            if isinstance(box, QComboBox):
+                value = box.currentData()
+            elif isinstance(box, QLineEdit):
+                text_value = box.text()
+                try:
+                    if param.get('type') == 'float':
+                        value = float(text_value)
+                    elif param.get('type') == 'integer':
+                        value = int(text_value)
+                    else:
+                        value = text_value
+                except ValueError:
+                    value = text_value 
+            else: 
+                if hasattr(self, '_get_vector_from_widget'):
+                    value = self._get_vector_from_widget(box)
+
+            if value is not None:
+                params[param.get('name')] = value
+            i +=1
+        
+        return params
+      
 
     def _get_vector_from_widget(self, vector_widget):
         layout = vector_widget.layout()
@@ -213,6 +261,88 @@ class ParameterEditorManager:
                 index = widget.findData(current_value)
                 if index != -1:
                     widget.setCurrentIndex(index)
+
+        elif widget_type == 'choice_with_options':
+
+            container_widget = QWidget()
+            container_layout = QVBoxLayout(container_widget)
+            container_layout.setContentsMargins(0, 0, 0, 0)
+
+            combobox = QComboBox()
+            options = props.get('options', [])
+            if isinstance(options, list):
+                for option in options:
+                    if isinstance(option, dict):
+                        combobox.addItem(option.get('label', option.get('name')), option.get('name'))
+            
+            container_layout.addWidget(combobox)
+
+            choice_options = props.get('options')
+            
+            def show_parameters(index):
+                while container_layout.count() > 1:
+                    container_layout.removeItem(container_layout.itemAt(1))
+
+                selected_type_name = combobox.itemData(index)
+                parameters_to_create = []
+
+                for option in choice_options:
+                    if option.get('name') == selected_type_name:
+                        parameters_to_create = option.get('parameters', [])
+                        break
+                
+                # 3. Crear y añadir los nuevos widgets (lógica explícita, no recursiva)
+                for param_props in parameters_to_create:
+                    param_widget = None
+                    param_name = param_props.get('name')
+                    param_type = param_props.get('type', 'string')
+                    label = param_props.get('label', param_name)
+                    
+                    # Determinar el valor a mostrar: el actual del patch o el default del parámetro
+                    value_for_widget = param_props.get('current')
+
+                    # Lógica de creación de widgets duplicada aquí
+                    if param_type == 'vector':
+                        param_widget = self._create_vector_widget(value_for_widget)
+                    elif param_type == 'string':
+                        param_widget = QLineEdit(str(value_for_widget or ''))
+                    elif param_type == 'float':
+                        param_widget = QLineEdit(str(value_for_widget or 0.0))
+                        param_widget.setValidator(QDoubleValidator())
+                    elif param_type == 'integer':
+                        param_widget = QLineEdit(str(value_for_widget or 0))
+                        param_widget.setValidator(QIntValidator())
+                    elif param_type == 'choice':
+                        param_widget = QComboBox()
+                        options = param_props.get('options', [])
+                        for option in options:
+                            if isinstance(option, dict):
+                                param_widget.addItem(option.get('label'), option.get('name'))
+                            else:
+                                param_widget.addItem(str(option), option)
+                        if value_for_widget:
+                            idx = param_widget.findData(value_for_widget)
+                            if idx != -1:
+                                param_widget.setCurrentIndex(idx)
+                    else:
+                        # Opción por defecto para tipos no reconocidos
+                        param_widget = QLineEdit(str(value_for_widget or ''))
+
+                    if param_widget:
+                        temp_widget = QWidget()
+                        label = QLabel(label)
+                        hlayout = QHBoxLayout(temp_widget)
+                        hlayout.addWidget(label)
+                        hlayout.addWidget(param_widget)
+                        container_layout.addWidget(temp_widget)
+                
+            combobox.currentIndexChanged.connect(show_parameters)
+            
+            show_parameters(combobox.currentIndex())
+
+
+            return container_widget
+            
 
         elif widget_type == 'patches':
             container_widget = QWidget()
