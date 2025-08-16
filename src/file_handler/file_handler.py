@@ -11,7 +11,7 @@ from .openfoam_models.alpha_water import alpha_water
 from .openfoam_models.g import g
 from .openfoam_models.k import k
 from .openfoam_models.nut import nut
-from .openfoam_models.omega import omega
+from .openfoam_models.epsilon import epsilon
 from .openfoam_models.p_rgh import p_rgh
 from .openfoam_models.setFieldsDict import setFieldsDict
 from .openfoam_models.transportProperties import transportProperties
@@ -55,7 +55,7 @@ class FileHandler:
             "g": g(),
             "k": k(),
             "nut": nut(),
-            "omega": omega(),
+            "epsilon": epsilon(),
             "p_rgh": p_rgh(),
             "setFieldsDict": setFieldsDict(),
             "transportProperties": transportProperties(),
@@ -104,9 +104,11 @@ class FileHandler:
         if file_name in self.files:
             file_obj = self.files[file_name]
             file_obj.update_parameters(new_params)
-            file_obj.write_file(self.case_path) # Rewrite the file with updated parameters
+            # file_obj.write_file(self.case_path) # Rewrite the file with updated parameters
 
-
+    def write_files(self):
+        for _,file_obj in self.files.items():
+            file_obj.write_file(self.case_path)
 
     def save_all_parameters_to_json(self) -> None:
         """Saves all editable parameters from all FoamFile objects to a single JSON file."""

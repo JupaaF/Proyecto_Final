@@ -4,7 +4,7 @@ from .foam_file import FoamFile
 # pip install Jinja2
 from jinja2 import Environment, FileSystemLoader
 
-class U(FoamFile):
+class epsilon(FoamFile):
     """
     Representa el archivo 'U' (velocidad) de OpenFOAM, utilizando el motor
     de plantillas Jinja2 para generar su contenido.
@@ -68,7 +68,7 @@ class U(FoamFile):
             'boundaryField': {
                 'label': 'Condiciones de Borde',
                 'tooltip': 'Define las condiciones de alpha.water en los límites del dominio.',
-                'type': 'list_of_dicts',
+                'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
                 'schema': {

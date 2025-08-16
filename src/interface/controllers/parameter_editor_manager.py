@@ -57,8 +57,8 @@ class ParameterEditorManager:
             try:
                 if widget_type == 'vector':
                     new_params[param_name] = self._get_vector_from_widget(widget)
-                elif widget_type == 'list_of_dicts':
-                    new_params[param_name] = self._get_list_of_dicts_from_widget(widget)
+                elif widget_type == 'patches':
+                    new_params[param_name] = self._get_patches_from_widget(widget,props)
                 elif widget_type == 'choice':
                     new_params[param_name] = widget.currentData()
                 elif widget_type == 'integer':
@@ -86,12 +86,15 @@ class ParameterEditorManager:
             'y': float(y),
             'z': float(z)
         }
-
-    def _get_list_of_dicts_from_widget(self, container_widget):
+    
+    def _get_patches_from_widget(self, container_widget, props_schema):
         patches = []
         layout = container_widget.layout()
+
         for i in range(layout.count()):
             groupbox = layout.itemAt(i).widget()
+            if not groupbox: continue
+
             patch_name_label = groupbox.findChild(QLabel)
             if not patch_name_label: continue
             patch_name = patch_name_label.text()
@@ -100,17 +103,63 @@ class ParameterEditorManager:
             if not form_layout: continue
 
             type_combo = form_layout.itemAt(0, QFormLayout.FieldRole).widget()
-            value_widget = form_layout.itemAt(1, QFormLayout.FieldRole).widget()
+            selected_type_name = type_combo.currentData()
 
             patch_data = {
                 'patchName': patch_name,
-                'type': type_combo.currentData()
+                'type': selected_type_name
             }
 
-            if value_widget.isVisible():
-                patch_data['value'] = self._get_vector_from_widget(value_widget)
-            
+            parameters_schema = []
+            type_options = props_schema.get('schema', {}).get('type', {}).get('options', [])
+            for option in type_options:
+                if option.get('name') == selected_type_name:
+                    parameters_schema = option.get('parameters', [])
+                    break
+
+            for idx, param_info in enumerate(parameters_schema):
+                param_name = param_info.get('name')
+                param_type = param_info.get('type')
+                
+                # --- INICIO DE LA CORRECCIÓN ---
+                
+                # 1. Obtenemos el QLayoutItem de forma segura
+                item = form_layout.itemAt(idx + 1, QFormLayout.FieldRole)
+
+                # 2. Comprobamos si el item existe antes de intentar obtener su widget
+                if item is None or item.widget() is None:
+                    # Si no hay widget en esta posición, lo informamos (opcional)
+                    # y continuamos con el siguiente parámetro.
+                    print(f"Advertencia: No se encontró un widget para el parámetro '{param_name}' en el patch '{patch_name}'.")
+                    continue
+
+                widget = item.widget()
+                
+                # --- FIN DE LA CORRECCIÓN ---
+                
+                value = None
+                if isinstance(widget, QComboBox):
+                    value = widget.currentData()
+                elif isinstance(widget, QLineEdit):
+                    text_value = widget.text()
+                    try:
+                        if param_type == 'float':
+                            value = float(text_value)
+                        elif param_type == 'integer':
+                            value = int(text_value)
+                        else:
+                            value = text_value
+                    except ValueError:
+                        value = text_value 
+                else: 
+                    if hasattr(self, '_get_vector_from_widget'):
+                        value = self._get_vector_from_widget(widget)
+
+                if value is not None:
+                    patch_data[param_name] = value
+
             patches.append(patch_data)
+            
         return patches
 
     def _create_vector_widget(self, current_value):
@@ -165,7 +214,7 @@ class ParameterEditorManager:
                 if index != -1:
                     widget.setCurrentIndex(index)
 
-        elif widget_type == 'list_of_dicts':
+        elif widget_type == 'patches':
             container_widget = QWidget()
             container_layout = QVBoxLayout(container_widget)
             container_layout.setContentsMargins(0, 0, 0, 0)
@@ -190,27 +239,71 @@ class ParameterEditorManager:
 
                 type_combo = QComboBox()
                 type_options = props.get('schema', {}).get('type', {}).get('options', [])
-                type_combo.addItem("-- Seleccionar Tipo --")
                 for option in type_options:
                     type_combo.addItem(option.get('label'), option.get('name'))
                 
                 patch_form_layout.addRow("Tipo:", type_combo)
 
-                value_label = QLabel("Valor:")
-                value_input_widget = self._create_vector_widget(patch_data.get('value', {}))
-                patch_form_layout.addRow(value_label, value_input_widget)
-                value_label.hide()
-                value_input_widget.hide()
+                index = type_combo.findData(props.get('schema', {}).get('type', {}).get('default'))
+                if index != -1:
+                    type_combo.setCurrentIndex(index)
 
                 def update_value_input_visibility(index):
+                    """
+                    Limpia los widgets de parámetros antiguos y crea dinámicamente
+                    los nuevos según la opción seleccionada en el QComboBox.
+                    """
+                    # 1. Limpiar los widgets de parámetros anteriores
+                    while patch_form_layout.rowCount() > 1:
+                        patch_form_layout.removeRow(1)
+
+                    # 2. Encontrar la lista de parámetros para la opción seleccionada
                     selected_type_name = type_combo.itemData(index)
-                    requires_value = False
+                    parameters_to_create = []
                     for option in type_options:
                         if option.get('name') == selected_type_name:
-                            requires_value = option.get('requires_value', False)
+                            parameters_to_create = option.get('parameters', [])
                             break
-                    value_label.setVisible(requires_value)
-                    value_input_widget.setVisible(requires_value)
+                    
+                    # 3. Crear y añadir los nuevos widgets (lógica explícita, no recursiva)
+                    for param_props in parameters_to_create:
+                        param_widget = None
+                        param_name = param_props.get('name')
+                        param_type = param_props.get('type', 'string')
+                        label = param_props.get('label', param_name)
+                        
+                        # Determinar el valor a mostrar: el actual del patch o el default del parámetro
+                        value_for_widget = patch_data.get(param_name, param_props.get('default'))
+
+                        # Lógica de creación de widgets duplicada aquí
+                        if param_type == 'vector':
+                            param_widget = self._create_vector_widget(value_for_widget)
+                        elif param_type == 'string':
+                            param_widget = QLineEdit(str(value_for_widget or ''))
+                        elif param_type == 'float':
+                            param_widget = QLineEdit(str(value_for_widget or 0.0))
+                            param_widget.setValidator(QDoubleValidator())
+                        elif param_type == 'integer':
+                            param_widget = QLineEdit(str(value_for_widget or 0))
+                            param_widget.setValidator(QIntValidator())
+                        elif param_type == 'choice':
+                            param_widget = QComboBox()
+                            options = param_props.get('options', [])
+                            for option in options:
+                                if isinstance(option, dict):
+                                    param_widget.addItem(option.get('label'), option.get('name'))
+                                else:
+                                    param_widget.addItem(str(option), option)
+                            if value_for_widget:
+                                idx = param_widget.findData(value_for_widget)
+                                if idx != -1:
+                                    param_widget.setCurrentIndex(idx)
+                        else:
+                            # Opción por defecto para tipos no reconocidos
+                            param_widget = QLineEdit(str(value_for_widget or ''))
+
+                        if param_widget:
+                            patch_form_layout.addRow(label, param_widget)
                 
                 type_combo.currentIndexChanged.connect(update_value_input_visibility)
 
@@ -222,6 +315,8 @@ class ParameterEditorManager:
                         if index != -1:
                             type_combo.setCurrentIndex(index)
 
+                update_value_input_visibility(type_combo.currentIndex())
+                
                 container_layout.addWidget(patch_groupbox)
 
             for patch_name in patch_names:

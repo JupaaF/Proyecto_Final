@@ -5,7 +5,7 @@ from pathlib import Path
 from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout, QFileDialog)
 from PySide6.QtCore import QUrl, QTimer,  QObject, QThread, Signal, QRunnable, Slot
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QKeySequence
 import json # New import
 
 from config import RUTA_LOCAL, create_dir
@@ -68,6 +68,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
         self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
         self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
+        self.ui.actionGuardar_Parametros.setShortcut(QKeySequence.Save)
 
 
     def open_documentation(self):
@@ -247,6 +248,8 @@ class MainWindowController(QMainWindow):
         if self.parameter_editor_manager:
             if not self.parameter_editor_manager.save_parameters():
                 return
+            else:
+                self.file_handler.write_files()
         
         self.docker_handler.execute_script_in_docker("run_openfoam.sh")
 
@@ -256,6 +259,8 @@ class MainWindowController(QMainWindow):
         if self.parameter_editor_manager:
             if not self.parameter_editor_manager.save_parameters():
                 return
+            else:
+                self.file_handler.write_files()
 
         if self.file_handler:
             self.file_handler.save_all_parameters_to_json()
@@ -303,6 +308,8 @@ class MainWindowController(QMainWindow):
             if reply == QMessageBox.Save:
                 if not self.parameter_editor_manager.save_parameters():
                     return False
+                else:
+                    self.file_handler.write_files()
             elif reply == QMessageBox.Cancel:
                 return False
             # If Discard, proceed without saving

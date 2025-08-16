@@ -61,7 +61,7 @@ class nut(FoamFile):
             'boundaryField': {
                 'label': 'Condiciones de Borde',
                 'tooltip': 'Define las condiciones de nut en los límites del dominio.',
-                'type': 'list_of_dicts',
+                'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
                 'schema': {
