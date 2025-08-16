@@ -11,6 +11,7 @@ class fvSolution(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
 
         # Valores por defecto
+        self.selected_solver
         self.alpha_water_tolerance = 1e-8
         self.alpha_water_relTol = 0
         self.p_rgh_tolerance = 1e-07
@@ -48,69 +49,105 @@ class fvSolution(FoamFile):
         with open(output_path, "w") as f:
             f.write(self._get_string())
 
+
     def get_editable_parameters(self):
         return {
-            'alpha_water_tolerance': {
-                'label': 'alpha.water Tolerancia',
-                'tooltip': 'Tolerancia para el solver alpha.water.',
-                'type': 'float',
-                'current': self.alpha_water_tolerance,
-                'group': 'Solvers'
-            },
-            'alpha_water_relTol': {
-                'label': 'alpha.water Rel. Tolerancia',
-                'tooltip': 'Tolerancia relativa para el solver alpha.water.',
-                'type': 'float',
-                'current': self.alpha_water_relTol,
-                'group': 'Solvers'
-            },
-            'p_rgh_tolerance': {
-                'label': 'p_rgh Tolerancia',
-                'tooltip': 'Tolerancia para el solver p_rgh.',
-                'type': 'float',
-                'current': self.p_rgh_tolerance,
-                'group': 'Solvers'
-            },
-            'p_rgh_relTol': {
-                'label': 'p_rgh Rel. Tolerancia',
-                'tooltip': 'Tolerancia relativa para el solver p_rgh.',
-                'type': 'float',
-                'current': self.p_rgh_relTol,
-                'group': 'Solvers'
-            },
-            'U_tolerance': {
-                'label': 'U Tolerancia',
-                'tooltip': 'Tolerancia para el solver U.',
-                'type': 'float',
-                'current': self.U_tolerance,
-                'group': 'Solvers'
-            },
-            'U_relTol': {
-                'label': 'U Rel. Tolerancia',
-                'tooltip': 'Tolerancia relativa para el solver U.',
-                'type': 'float',
-                'current': self.U_relTol,
-                'group': 'Solvers'
-            },
-            'nOuterCorrectors': {
-                'label': 'PIMPLE nOuterCorrectors',
-                'tooltip': 'Número de correctores externos en el algoritmo PIMPLE.',
-                'type': 'integer',
-                'current': self.nOuterCorrectors,
-                'group': 'PIMPLE'
-            },
-            'nCorrectors': {
-                'label': 'PIMPLE nCorrectors',
-                'tooltip': 'Número de correctores internos en el algoritmo PIMPLE.',
-                'type': 'integer',
-                'current': self.nCorrectors,
-                'group': 'PIMPLE'
-            },
-            'nNonOrthogonalCorrectors': {
-                'label': 'PIMPLE nNonOrthogonalCorrectors',
-                'tooltip': 'Número de correctores no ortogonales en el algoritmo PIMPLE.',
-                'type': 'integer',
-                'current': self.nNonOrthogonalCorrectors,
-                'group': 'PIMPLE'
+            'selected_solver': {
+                'label': 'Condiciones de Borde',
+                'tooltip': 'Define las condiciones de velocidad en los límites del dominio.', #cambiar
+                'type': 'choice_with_options',
+                'current': self.selected_solver,
+                'group': 'Condiciones de Borde',
+                'options': [
+                    {
+                        'name': 'damBreak',
+                        'label': 'Sin Deslizamiento',
+                        'parameters':[
+                            {
+                                'name': 'alpha_water_tolerance',
+                                'label': 'alpha.water Tolerancia',
+                                'tooltip': 'Tolerancia para el solver alpha.water.',
+                                'type': 'float',
+                                'current': self.alpha_water_tolerance,
+                            }
+                        ]
+                    },
+                    {
+                        'name': 'pressureInletOutletVelocity',
+                        'label': 'Salida/Entrada por Presión',
+                        'parameters' : [
+                            
+                        ]
+                    }
+                ]
+                }
             }
-        }
+        
+    
+
+    # def get_editable_parameters(self):
+    #     return {
+    #         'alpha_water_tolerance': {
+    #             'label': 'alpha.water Tolerancia',
+    #             'tooltip': 'Tolerancia para el solver alpha.water.',
+    #             'type': 'float',
+    #             'current': self.alpha_water_tolerance,
+    #             'group': 'Solvers'
+    #         },
+    #         'alpha_water_relTol': {
+    #             'label': 'alpha.water Rel. Tolerancia',
+    #             'tooltip': 'Tolerancia relativa para el solver alpha.water.',
+    #             'type': 'float',
+    #             'current': self.alpha_water_relTol,
+    #             'group': 'Solvers'
+    #         },
+    #         'p_rgh_tolerance': {
+    #             'label': 'p_rgh Tolerancia',
+    #             'tooltip': 'Tolerancia para el solver p_rgh.',
+    #             'type': 'float',
+    #             'current': self.p_rgh_tolerance,
+    #             'group': 'Solvers'
+    #         },
+    #         'p_rgh_relTol': {
+    #             'label': 'p_rgh Rel. Tolerancia',
+    #             'tooltip': 'Tolerancia relativa para el solver p_rgh.',
+    #             'type': 'float',
+    #             'current': self.p_rgh_relTol,
+    #             'group': 'Solvers'
+    #         },
+    #         'U_tolerance': {
+    #             'label': 'U Tolerancia',
+    #             'tooltip': 'Tolerancia para el solver U.',
+    #             'type': 'float',
+    #             'current': self.U_tolerance,
+    #             'group': 'Solvers'
+    #         },
+    #         'U_relTol': {
+    #             'label': 'U Rel. Tolerancia',
+    #             'tooltip': 'Tolerancia relativa para el solver U.',
+    #             'type': 'float',
+    #             'current': self.U_relTol,
+    #             'group': 'Solvers'
+    #         },
+    #         'nOuterCorrectors': {
+    #             'label': 'PIMPLE nOuterCorrectors',
+    #             'tooltip': 'Número de correctores externos en el algoritmo PIMPLE.',
+    #             'type': 'integer',
+    #             'current': self.nOuterCorrectors,
+    #             'group': 'PIMPLE'
+    #         },
+    #         'nCorrectors': {
+    #             'label': 'PIMPLE nCorrectors',
+    #             'tooltip': 'Número de correctores internos en el algoritmo PIMPLE.',
+    #             'type': 'integer',
+    #             'current': self.nCorrectors,
+    #             'group': 'PIMPLE'
+    #         },
+    #         'nNonOrthogonalCorrectors': {
+    #             'label': 'PIMPLE nNonOrthogonalCorrectors',
+    #             'tooltip': 'Número de correctores no ortogonales en el algoritmo PIMPLE.',
+    #             'type': 'integer',
+    #             'current': self.nNonOrthogonalCorrectors,
+    #             'group': 'PIMPLE'
+    #         }
+    #     }
