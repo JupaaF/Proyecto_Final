@@ -45,7 +45,7 @@ class FileHandler:
 
     def _initialize_file_objects(self) -> None:
         """Initializes the objects representing each OpenFOAM file."""
-        # Based on the template, different files would be initialized.
+        # TODO: Based on the template, different files would be initialized.
         self.files = {
             "U": U(),
             "controlDict": controlDict(),
@@ -104,7 +104,6 @@ class FileHandler:
         if file_name in self.files:
             file_obj = self.files[file_name]
             file_obj.update_parameters(new_params)
-            # file_obj.write_file(self.case_path) # Rewrite the file with updated parameters
 
     def write_files(self):
         for _,file_obj in self.files.items():

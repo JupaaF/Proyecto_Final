@@ -40,7 +40,6 @@ class fvSolution(FoamFile):
             setattr(self, key, value)
 
     def write_file(self, case_path: Path):
-        print(self.selected_solver)
         output_dir = case_path / self.folder
         output_dir.mkdir(parents=True, exist_ok=True)
         output_path = output_dir / self.name
@@ -51,8 +50,8 @@ class fvSolution(FoamFile):
     def get_editable_parameters(self):
         return {
             'selected_solver': {
-                'label': 'Condiciones de Borde',
-                'tooltip': 'Define las condiciones de velocidad en los límites del dominio.', #cambiar
+                'label': 'Caso/Solver a usar.',
+                'tooltip': 'El archivo cambia según esto.', 
                 'type': 'choice_with_options',
                 'current': self.selected_solver,
                 'group': 'Condiciones de Borde',

@@ -177,13 +177,10 @@ class MainWindowController(QMainWindow):
         self.parameter_editor_manager = ParameterEditorManager(self.ui.parameterEditorDock, self.file_handler, self._get_vtk_patch_names)
 
     def _setup_case_environment(self, mesh_file_path: Path):
-        """Copia la geometría, inicializa Docker y muestra la malla."""
+        """Copia la geometría, inicializa Docker transforma la malla según el tipo de archivo 
+           de entrada, y muestra la geometría."""
 
         self.docker_handler = DockerHandler(self.file_handler.get_case_path())
-
-        # TODO: el problema de esto es que se crea igual la carpeta system
-        # if not self.docker_handler.is_docker_running():
-        #     QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución o no se encontró. Por favor, inicia Docker Desktop e inténtalo de nuevo.")
 
         if mesh_file_path.suffix == '.unv':
             # Es un .unv
@@ -250,6 +247,7 @@ class MainWindowController(QMainWindow):
                 return
             else:
                 self.file_handler.write_files()
+                self.file_handler.save_all_parameters_to_json()
         
         self.docker_handler.execute_script_in_docker("run_openfoam.sh")
 
@@ -289,7 +287,7 @@ class MainWindowController(QMainWindow):
             if widget := item.widget():
                 widget.deleteLater()
         
-        visualizer = GeometryView(geom_file_path)
+        visualizer = GeometryView(geom_file_path) #TODO: ver si pasarle el widget padre
         self.vtk_layout.addWidget(visualizer)
         """Crea o actualiza el visualizador de geometría."""
 

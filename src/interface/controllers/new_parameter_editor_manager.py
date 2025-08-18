@@ -22,9 +22,8 @@ class ParameterEditorManager:
                                      mostrará el editor de parámetros.
             file_handler: Una instancia de una clase controladora de archivos que debe
                           implementar `get_editable_parameters` y `modify_parameters`.
-            get_vtk_patch_names_func (function): Una función que, al ser llamada, retorna
-                                                 una lista con los nombres de los patches
-                                                 (fronteras) obtenidos de un archivo VTK.
+            get_vtk_patch_names_func : Una lista con los nombres de los patches
+                                       (fronteras) obtenidos de un archivo VTK.
         """
         self.parent_widget = parent_widget
         self.file_handler = file_handler
@@ -527,7 +526,7 @@ class ParameterEditorManager:
             
             patch_form_layout.addRow("Tipo:", type_combo)
 
-            # --- Lógica para actualizar los parámetros según el tipo ---
+            # --- Lógica para actualizar los parámetros según el tipo --- #TODO: ver de unificar con la logica del choice_with_options
             # Se usa una función fábrica para capturar el estado (layouts, datos) de cada patch.
             def make_update_params_func(form_layout, combo, options, data):
                 def update_value_input_visibility(index):
