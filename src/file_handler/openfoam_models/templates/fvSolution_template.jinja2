@@ -1,65 +1,68 @@
 {# Plantilla Jinja2 para el archivo 'fvSolution' de OpenFOAM #}
 
-solvers
-{
-    "alpha.water.*"
-    {
-        nAlphaCorr      2;
-        nAlphaSubCycles 1;
-        cAlpha          1;
+{% if params.solver_selected == 'damBreak' %}
 
-        MULESCorr       yes;
-        nLimiterIter    5;
+    solvers
+        {
+            "alpha.water.*"
+            {
+                nAlphaCorr      2;
+                nAlphaSubCycles 1;
+                cAlpha          1;
 
-        solver          smoothSolver;
-        smoother        symGaussSeidel;
-        tolerance       1e-8;
-        relTol          0;
-    }
+                MULESCorr       yes;
+                nLimiterIter    5;
 
-    "pcorr.*"
-    {
-        solver          PCG;
-        preconditioner  DIC;
-        tolerance       1e-5;
-        relTol          0;
-    }
+                solver          smoothSolver;
+                smoother        symGaussSeidel;
+                tolerance       {{ params.alpha_water_tolerance }};
+                relTol          {{ params.alpha_water_relTol }};
+            }
 
-    p_rgh
-    {
-        solver          PCG;
-        preconditioner  DIC;
-        tolerance       1e-07;
-        relTol          0.05;
-    }
+            "pcorr.*"
+            {
+                solver          PCG;
+                preconditioner  DIC;
+                tolerance       1e-5;
+                relTol          0;
+            }
 
-    p_rghFinal
-    {
-        $p_rgh;
-        relTol          0;
-    }
+            p_rgh
+            {
+                solver          PCG;
+                preconditioner  DIC;
+                tolerance       {{ params.p_rgh_tolerance }};
+                relTol          {{ params.p_rgh_relTol }};
+            }
 
-    U
-    {
-        solver          smoothSolver;
-        smoother        symGaussSeidel;
-        tolerance       1e-06;
-        relTol          0;
-    }
-}
+            p_rghFinal
+            {
+                $p_rgh;
+                relTol          0;
+            }
 
-PIMPLE
-{
-    momentumPredictor   no;
-    nOuterCorrectors    1;
-    nCorrectors         3;
-    nNonOrthogonalCorrectors 0;
-}
+            U
+            {
+                solver          smoothSolver;
+                smoother        symGaussSeidel;
+                tolerance       {{ params.U_tolerance }};
+                relTol          {{ params.U_relTol }};
+            }
+        }
 
-relaxationFactors
-{
-    equations
-    {
-        ".*" 1;
-    }
-}
+        PIMPLE
+        {
+            momentumPredictor   no;
+            nOuterCorrectors    {{ params.nOuterCorrectors }};
+            nCorrectors         {{ params.nCorrectors }};
+            nNonOrthogonalCorrectors {{ params.nNonOrthogonalCorrectors }};
+        }
+
+        relaxationFactors
+        {
+            equations
+            {
+                ".*" 1;
+            }
+        }
+{% endif %}

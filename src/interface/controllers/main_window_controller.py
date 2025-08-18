@@ -298,7 +298,7 @@ class MainWindowController(QMainWindow):
         Prompts the user to save changes if there are any. 
         Returns True if the action should continue, False if it should be aborted.
         """
-        if self.parameter_editor_manager and self.parameter_editor_manager.current_file_path:
+        if self.parameter_editor_manager : #and self.parameter_editor_manager.current_file_path
             reply = QMessageBox.question(self,
                                          "Guardar Cambios",
                                          "¿Desea guardar los cambios en los parámetros actuales?",
@@ -310,6 +310,7 @@ class MainWindowController(QMainWindow):
                     return False
                 else:
                     self.file_handler.write_files()
+                    self.file_handler.save_all_parameters_to_json() 
             elif reply == QMessageBox.Cancel:
                 return False
             # If Discard, proceed without saving
@@ -321,3 +322,16 @@ class MainWindowController(QMainWindow):
         self.ui.menuVer.addAction(self.ui.fileBrowserDock.toggleViewAction())
         self.ui.menuVer.addAction(self.ui.parameterEditorDock.toggleViewAction())
         self.ui.menuVer.addAction(self.ui.logDock.toggleViewAction())
+
+    def closeEvent(self, event):
+        """
+        Sobrescribe el evento de cierre de la ventana para solicitar al usuario
+        guardar los cambios antes de salir.
+        """
+        # Llama a la función de confirmación. Si devuelve False (el usuario canceló),
+        # ignora el evento de cierre.
+        if not self._prompt_save_changes():
+            event.ignore()
+        else:
+            # Si el usuario eligió guardar o descartar, permite que la ventana se cierre.
+            event.accept()

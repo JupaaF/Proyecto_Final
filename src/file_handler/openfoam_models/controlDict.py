@@ -22,9 +22,9 @@ class controlDict(FoamFile):
         self.purgeWrite = None
         self.writeFormat = None
         self.adjustTimeStep = None
-        self.maxCo = None
-        self.maxAlphaCo = None
-        self.maxDeltaT = None
+        self.maxCo = 0
+        self.maxAlphaCo = 0
+        self.maxDeltaT = 0
         self.writeCompression = None
         self.runTimeModifiable = None
         
