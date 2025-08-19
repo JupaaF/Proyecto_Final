@@ -98,6 +98,16 @@ class MainWindowController(QMainWindow):
             QMessageBox.warning(self, "Error de Creación", "El nombre del caso no puede estar vacío.")
             return
 
+        # Si el caso existe, se borra para empezar de cero.
+        # El usuario ya dio su confirmación en el wizard.
+        case_path = RUTA_LOCAL / case_name
+        if case_path.exists():
+            try:
+                shutil.rmtree(case_path)
+            except OSError as e:
+                QMessageBox.critical(self, "Error de Borrado", f"No se pudo eliminar la carpeta del caso existente: {e}")
+                return
+
         self.setWindowTitle(f"{DEFAULT_WINDOW_TITLE} - {case_name}")
 
         self._initialize_file_handler(case_name, data["template"])

@@ -17,6 +17,14 @@ class FileBrowserManager(QObject):
     def _setup_tree_view(self):
         model = QFileSystemModel()
         root_path = self.file_handler.get_case_path()
+
+        # Obtener la lista de nombres de archivos editables desde el file_handler
+        editable_files = list(self.file_handler.files.keys())
+        
+        # Aplicar el filtro para mostrar solo los archivos editables
+        model.setNameFilters(editable_files)
+        model.setNameFilterDisables(False)  # Asegura que el filtro se aplique y oculte los demás
+
         model.setRootPath(str(root_path))
 
         self.tree_view.setModel(model)

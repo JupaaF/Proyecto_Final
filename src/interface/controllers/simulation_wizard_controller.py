@@ -38,7 +38,7 @@ class SimulationWizardController(QWizard):
     def validateCurrentPage(self):
         """
         Valida la página actual antes de pasar a la siguiente.
-        Se asegura de que el nombre del caso no esté vacío y que no exista previamente.
+        Se asegura de que el nombre del caso no esté vacío y, si existe, pide confirmación para sobrescribir.
         """
         # Si estamos en la primera página, validamos el nombre del caso
         if self.currentPage() is self.page1:
@@ -50,24 +50,27 @@ class SimulationWizardController(QWizard):
                 return False
 
             # Validar que el nombre del caso no contenga caracteres inválidos
-            invalid_chars = '<>:"/\|?*'
+            invalid_chars = '<>:"/|?*'
             if any(char in case_name for char in invalid_chars):
                 QMessageBox.warning(
-                    self, 
-                    "Error de validación", 
-                    f"El nombre del caso contiene caracteres inválidos. Por favor, evita: {invalid_chars}"
+                    self,
+                    "Error de validación",
+                    f"El nombre del caso contiene caracteres inválidos. Por favor, evita: {invalid_chars}",
                 )
                 return False
 
-            # Validar que la ruta no exista
+            # Validar que la ruta no exista, y si existe, preguntar si se quiere sobrescribir
             path_route = Path(RUTA_LOCAL / case_name)
             if path_route.exists():
-                QMessageBox.warning(
-                    self, 
-                    "Error de validación", 
-                    f"La carpeta del caso '{case_name}' ya existe en la ruta:\n{path_route}\n\nPor favor, elige un nombre diferente."
+                reply = QMessageBox.question(
+                    self,
+                    "Confirmar Sobrescritura",
+                    f"La carpeta del caso '{case_name}' ya existe en la ruta:\n{path_route}\n\n¿Desea sobrescribirla? Se perderán los datos anteriores.",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No,
                 )
-                return False
+                if reply == QMessageBox.No:
+                    return False
         
         if self.currentPage() is self.page2:
             mesh_file = self.page2.meshPathLineEdit.text()
