@@ -2,7 +2,7 @@
 import shutil
 from pathlib import Path
 
-from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout, QFileDialog)
+from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout, QFileDialog, QPlainTextEdit)
 from PySide6.QtCore import QUrl, QTimer,  QObject, QThread, Signal, QRunnable, Slot
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QDesktopServices, QKeySequence
@@ -22,6 +22,31 @@ APP_NAME = "Simulador Hidrosedimentológico"
 DOCUMENTATION_URL = "https://github.com/JupaaF/Proyecto_Final"
 DEFAULT_WINDOW_TITLE = f"{APP_NAME} by Marti and Jupa"
 
+class DockerWorker(QObject):
+    """
+    Worker thread for executing Docker commands in the background.
+    """
+    finished = Signal(bool, str)  # Signal to indicate completion (success, script_name)
+    log_received = Signal(str)
+
+    def __init__(self, docker_handler: DockerHandler, script_name: str):
+        super().__init__()
+        self.docker_handler = docker_handler
+        self.script_name = script_name
+
+    @Slot()
+    def run(self):
+        """Executes the Docker script and emits the finished signal."""
+        try:
+            for line in self.docker_handler.execute_script_in_docker(self.script_name):
+                self.log_received.emit(line)
+            self.finished.emit(True, self.script_name)
+        except Exception as e:
+            # It's important to catch exceptions in the thread and emit a signal
+            # so the main thread can handle them.
+            self.log_received.emit(f"Error during Docker execution: {e}")
+            self.finished.emit(False, self.script_name)
+
 class MainWindowController(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -34,6 +59,7 @@ class MainWindowController(QMainWindow):
         self.docker_handler = None ## Modelo
         self.file_browser_manager = None ## Controlador
         self.parameter_editor_manager = None ## Controlador
+        self.is_running_task = False
 
     def _initialize_app(self):
         """Inicializa la configuración básica de la aplicación."""
@@ -113,7 +139,6 @@ class MainWindowController(QMainWindow):
         self._initialize_file_handler(case_name, data["template"])
         self._setup_managers()
         self._setup_case_environment(Path(data["mesh_file"]))
-        self.file_handler.create_case_files()
 
     def open_load_simulation_dialog(self):
         """Abre un diálogo para cargar una simulación existente."""
@@ -195,13 +220,11 @@ class MainWindowController(QMainWindow):
         if mesh_file_path.suffix == '.unv':
             # Es un .unv
             self._copy_geometry_file(mesh_file_path)
-            self.docker_handler.execute_script_in_docker("run_transform_UNV.sh")
+            self._run_docker_script_in_thread("run_transform_UNV.sh")
         else:
             #Es un blockMeshDict
             self._copy_geometry_file(mesh_file_path)
-            self.docker_handler.execute_script_in_docker("run_transform_blockMeshDict.sh")
-
-        QTimer.singleShot(1000, self._check_mesh_and_visualize)
+            self._run_docker_script_in_thread("run_transform_blockMeshDict.sh")
 
     def _check_mesh_and_visualize(self):
         """Verifica si la malla existe y la visualiza."""
@@ -259,7 +282,63 @@ class MainWindowController(QMainWindow):
                 self.file_handler.write_files()
                 self.file_handler.save_all_parameters_to_json()
         
-        self.docker_handler.execute_script_in_docker("run_openfoam.sh")
+        self._run_docker_script_in_thread("run_openfoam.sh")
+
+    def _run_docker_script_in_thread(self, script_name: str):
+        """
+        Runs a Docker script in a separate thread to avoid freezing the GUI.
+        """
+        self.ui.logPlainTextEdit.clear()
+        self._set_ui_interactive(False)
+        self.is_running_task = True
+        
+        self.thread = QThread()
+        self.worker = DockerWorker(self.docker_handler, script_name)
+        self.worker.moveToThread(self.thread)
+
+        self.thread.started.connect(self.worker.run)
+        self.worker.log_received.connect(self._append_log)
+        self.worker.finished.connect(self._on_docker_script_finished)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.start()
+
+    @Slot(str)
+    def _append_log(self, log_line: str):
+        """Appends a line of text to the log viewer."""
+        self.ui.logPlainTextEdit.appendPlainText(log_line)
+
+    def _on_docker_script_finished(self, success: bool, script_name: str):
+        """
+        Handles the completion of a Docker script execution.
+        """
+        self._set_ui_interactive(True)
+        self.is_running_task = False
+        if success:
+            QMessageBox.information(self, "Docker Execution", f"Script '{script_name}' executed successfully.")
+            if script_name in ["run_transform_UNV.sh", "run_transform_blockMeshDict.sh"]:
+                # After mesh transformation, create case files and then check and visualize the mesh
+                self.file_handler.create_case_files()
+                QTimer.singleShot(100, self._check_mesh_and_visualize)
+            elif script_name == "run_openfoam.sh":
+                # After simulation, maybe refresh something or show a message.
+                # For now, just a message.
+                pass # The success message is already shown
+        else:
+            QMessageBox.critical(self, "Docker Execution Error", f"Failed to execute script '{script_name}'.")
+
+    def _set_ui_interactive(self, enabled: bool):
+        """
+        Enables or disables UI elements to prevent user interaction during a task.
+        """
+        self.ui.actionNueva_Simulacion.setEnabled(enabled)
+        self.ui.actionCargar_Simulacion.setEnabled(enabled)
+        self.ui.actionEjecutar_Simulacion.setEnabled(enabled)
+        self.ui.actionGuardar_Parametros.setEnabled(enabled)
+        self.ui.parameterEditorDock.setEnabled(enabled)
+        self.ui.fileBrowserDock.setEnabled(enabled)
 
     def save_all_parameters_action(self):
         """Guarda todos los parámetros editables en un archivo JSON."""
@@ -336,6 +415,13 @@ class MainWindowController(QMainWindow):
         Sobrescribe el evento de cierre de la ventana para solicitar al usuario
         guardar los cambios antes de salir.
         """
+        if self.is_running_task:
+            reply = QMessageBox.question(self, "Tarea en Progreso",
+                                         "Hay una simulación o tarea en progreso. ¿Está seguro de que desea salir? La tarea actual se cancelará.",
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply == QMessageBox.No:
+                event.ignore()
+                return
         # Llama a la función de confirmación. Si devuelve False (el usuario canceló),
         # ignora el evento de cierre.
         if not self._prompt_save_changes():

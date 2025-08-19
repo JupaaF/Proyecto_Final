@@ -1,72 +1,70 @@
 from pathlib import Path
 import subprocess
-import logging
 
 class DockerHandler():
     def __init__(self,case_path:Path):
         self.case_path = case_path
-        self.logger = logging.getLogger(__name__)
         self.IMAGEN_SEDFOAM = "cbonamy/sedfoam_2312_ubuntu" # imagen de Docker para ejecutar simulacion de SedFOAM 
         # self.IMAGEN_OPENFOAM = "openfoam/openfoam10-paraview510" # imagen de Docker para ejecutar simulacion de interFoam e icoFoam
         
 
-    def execute_script_in_docker(self, script_name: str) -> bool:
+    def execute_script_in_docker(self, script_name: str):
         """
-        Ejecuta un script dentro de un contenedor Docker.
+        Ejecuta un script dentro de un contenedor Docker y transmite la salida.
 
         Args:
             script_name (str): El nombre del script a ejecutar (ej. "run_openfoam.sh").
 
-        Returns:
-            bool: True si el comando se ejecutó con éxito, False en caso de error.
+        Yields:
+            str: Una línea de la salida del script.
+
+        Raises:
+            FileNotFoundError: Si el comando 'docker' no se encuentra.
+            subprocess.CalledProcessError: Si el script de Docker falla.
         """
-        
-        # Ruta del script en tu sistema de archivos local
         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
-        
-        # Nombre con el que el script será montado dentro del contenedor
         script_in_container = f"/{script_name}"
-        
         ruta_docker_volumen = self.case_path.as_posix()
-        
 
         docker_command = [
-            "docker", "run", "-it", "--rm",
+            "docker", "run", "--rm",
             "-v", f"{ruta_docker_volumen}:/case",
-            "-v", f"{local_script_path.as_posix()}:{script_in_container}", # Monta el script con el nombre dinámico
+            "-v", f"{local_script_path.as_posix()}:{script_in_container}",
             "--entrypoint", "bash",
             self.IMAGEN_SEDFOAM,
-            script_in_container # Pasa el nombre del script montado como argumento
+            script_in_container
         ]
-        
 
         try:
-            self.logger.info(f"Iniciando ejecución de {script_name} en {self.IMAGEN_SEDFOAM}...")
-            print("Se crearon los objetcsdoc6")
-            process = subprocess.run(
+            process = subprocess.Popen(
                 docker_command,
-                check=True
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
             )
-            print("Se crearon los objetcsdoc7")
-            self.logger.info(f"Script {script_name} completado con éxito.")
+
             if process.stdout:
-                self.logger.debug(f"Salida estándar (stdout):\n{process.stdout}")
-            if process.stderr:
-                self.logger.warning(f"Salida de error estándar (stderr):\n{process.stderr}")
-            return True
+                for line in iter(process.stdout.readline, ''):
+                    yield line.strip()
+
+            process.stdout.close()
+            return_code = process.wait()
+
+            if return_code != 0:
+                error_message = f"La ejecución de {script_name} falló con código de retorno {return_code}."
+                raise subprocess.CalledProcessError(return_code, docker_command, output=error_message)
+
+
         except FileNotFoundError:
-            self.logger.error("Error crítico: El comando 'docker' no se encontró.")
-            self.logger.error("Por favor, asegúrate de que Docker esté instalado y en el PATH del sistema.")
+            yield "Error: Docker command not found. Please ensure Docker is installed and running."
             raise
         except subprocess.CalledProcessError as e:
-            self.logger.error(f"La ejecución de {script_name} falló con código de retorno {e.returncode}.")
-            if e.stdout:
-                self.logger.error(f"Salida estándar (stdout):\n{e.stdout}")
-            if e.stderr:
-                self.logger.error(f"Salida de error (stderr):\n{e.stderr}")
-            return False
+            yield f"Error: Script execution failed with code {e.returncode}."
+            raise
         except Exception as e:
-            self.logger.critical(f"Ocurrió un error inesperado durante la ejecución de {script_name}: {e}", exc_info=True)
+            yield f"An unexpected error occurred: {e}"
             raise
         
     def is_docker_running(self) -> bool:
