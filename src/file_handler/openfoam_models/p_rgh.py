@@ -77,19 +77,21 @@ class p_rgh(FoamFile):
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Ni idea',
+                                        'label': 'Valor (uniforme)',
+                                        'tooltip': 'Valor de presión para esta condición de borde.',
                                         'default': 0
                                     }
                                 ]
                             },
                             {
                                 'name': 'totalPressure',
-                                'label': 'Presion total',
+                                'label': 'Presión Total',
                                 'parameters' : [
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Ni idea',
+                                        'label': 'Valor de Presión Total',
+                                        'tooltip': 'Valor de la presión total (p0) para esta condición.',
                                         'default': 0
                                     }
                                 ]

@@ -83,13 +83,15 @@ class alpha_water(FoamFile):
                                     {
                                         'name': 'inletValue',
                                         'type': 'float',
-                                        'label': 'inletValue',
+                                        'label': 'Valor de Entrada',
+                                        'tooltip': 'El valor de alpha.water en la entrada.',
                                         'default': 0
                                     },
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'value',
+                                        'label': 'Valor Uniforme',
+                                        'tooltip': 'El valor uniforme de alpha.water para esta condición.',
                                         'default': 0
                                     }
                                 ]

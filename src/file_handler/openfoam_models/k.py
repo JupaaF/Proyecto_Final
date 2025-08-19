@@ -77,25 +77,28 @@ class k(FoamFile):
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Ni idea',
+                                        'label': 'Valor',
+                                        'tooltip': 'Valor para la función de pared kqR.',
                                         'default': 0
                                     }
                                 ]
                             },
                             {
                                 'name': 'inletOutlet',
-                                'label': 'Valor Fijo',
+                                'label': 'Entrada/Salida',
                                 'parameters' : [
                                     {
                                         'name': 'inletValue',
                                         'type': 'float',
-                                        'label': 'inletValue',
+                                        'label': 'Valor de Entrada',
+                                        'tooltip': 'Valor de k en la entrada.',
                                         'default': 0
                                     },
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'value',
+                                        'label': 'Valor (uniforme)',
+                                        'tooltip': 'Valor uniforme para la condición de borde.',
                                         'default': 0
                                     }
                                 ]

@@ -89,7 +89,8 @@ class U(FoamFile):
                                     {
                                         'name': 'value',
                                         'type': 'vector',
-                                        'label': 'Ni idea',
+                                        'label': 'Valor de Velocidad',
+                                        'tooltip': 'Vector de velocidad uniforme para esta condición de borde.',
                                         'default': {'x':0,'y':0,'z':0}
                                     }
                                 ]

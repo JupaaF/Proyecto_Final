@@ -59,15 +59,15 @@ class epsilon(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (alpha.water)',
-                'tooltip': 'Define el valor inicial de alpha.water en todo el dominio (0 a 1).',
+                'label': 'Campo Interno (epsilon)',
+                'tooltip': 'Define el valor inicial de la tasa de disipación de turbulencia (epsilon) en todo el dominio.',
                 'type': 'float',
                 'current': self.internalField,
                 'group': 'Campo Interno',
             },
             'boundaryField': {
                 'label': 'Condiciones de Borde',
-                'tooltip': 'Define las condiciones de alpha.water en los límites del dominio.',
+                'tooltip': 'Define las condiciones de epsilon en los límites del dominio.',
                 'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
@@ -79,30 +79,33 @@ class epsilon(FoamFile):
                         'options': [
                             {
                                 'name': 'epsilonWallFunction',
-                                'label': 'Gradiente Cero',
+                                'label': 'Función de Pared (epsilonWallFunction)',
                                 'parameters': [
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Value',
+                                        'label': 'Valor',
+                                        'tooltip': 'Valor para la función de pared de epsilon.',
                                         'default': 0
                                     }
                                 ]
                             },
                             {
                                 'name': 'inletOutlet',
-                                'label': 'Valor Fijo',
+                                'label': 'Entrada/Salida',
                                 'parameters' : [
                                     {
                                         'name': 'inletValue',
                                         'type': 'float',
-                                        'label': 'inletValue',
+                                        'label': 'Valor de Entrada',
+                                        'tooltip': 'Valor de epsilon en la entrada.',
                                         'default': 0
                                     },
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'value',
+                                        'label': 'Valor (uniforme)',
+                                        'tooltip': 'Valor uniforme para la condición de borde.',
                                         'default': 0
                                     }
                                 ]

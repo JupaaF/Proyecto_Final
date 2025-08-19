@@ -77,7 +77,8 @@ class nut(FoamFile):
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Ni idea',
+                                        'label': 'Valor',
+                                        'tooltip': 'Valor para la función de pared nutk.',
                                         'default': 0
                                     }
                                 ]
@@ -89,7 +90,8 @@ class nut(FoamFile):
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Ni idea',
+                                        'label': 'Valor (uniforme)',
+                                        'tooltip': 'Valor uniforme para la condición de borde calculada.',
                                         'default': 0
                                     }
                                 ]
