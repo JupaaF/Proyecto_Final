@@ -1,12 +1,23 @@
 {# Plantilla Jinja2 para el archivo 'transportProperties' de OpenFOAM #}
 
-phases      ({% for phase in phases %}{{ phase.name }}{% if not loop.last %} {% endif %}{% endfor %});
+{% if params.solver_selected == 'damBreak' %}
+phases      (water air);
 
-{% for phase in phases %}
-{{ phase.name }}
+water
 {
-{{ phase.content }}
+    transportModel  {{params.water_transportModel}};
+    nu              {{params.water_nu}};
+    rho             {{params.water_rho}};
 }
-{% endfor %}
+
+air
+{
+    transportModel  {{params.air_transportModel}};
+    nu              {{params.air_nu}};
+    rho             {{params.air_rho}};
+}
 
 sigma       {{ sigma }};
+{% endif %}
+
+

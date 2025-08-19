@@ -10,17 +10,6 @@ class fvSolution(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         self.selected_solver = []
-        # Valores por defecto
-        # self.selected_solver = 'damBreak'
-        # self.alpha_water_tolerance = 1e-8
-        # self.alpha_water_relTol = 0
-        # self.p_rgh_tolerance = 1e-07
-        # self.p_rgh_relTol = 0.05
-        # self.U_tolerance = 1e-06
-        # self.U_relTol = 0
-        # self.nOuterCorrectors = 1
-        # self.nCorrectors = 3
-        # self.nNonOrthogonalCorrectors = 0
 
     def _get_string(self):
         template = self.jinja_env.get_template("fvSolution_template.jinja2")

@@ -14,20 +14,22 @@ class transportProperties(FoamFile):
         
         # Valores por defecto
         self.sigma = 0.07
-        self.phases = [
-            {'name': 'water', 'content': 'transportModel  Newtonian;\nviscosity       uniform 1e-06;\ndensity         uniform 1000;'},
-            {'name': 'air', 'content': 'transportModel  Newtonian;\nviscosity       uniform 1.8e-05;\ndensity         uniform 1;'}
-        ]
+        self.selected_solver = []
 
     def _get_string(self) -> str:
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
         template = self.jinja_env.get_template("transportProperties_template.jinja2")
+        
+        # Convierte la lista de parámetros en un diccionario para simplificar el manejo en el jinja
+        params_dict = {item['param_name']: item['value'] for item in self.selected_solver}
+
         context = {
             'sigma': self.sigma,
-            'phases': self.phases
+            'params': params_dict
         }
+
         content = template.render(context)
         return self.get_header() + content
 
@@ -61,16 +63,62 @@ class transportProperties(FoamFile):
                 'current': self.sigma,
                 'group': 'Propiedades Físicas',
             },
-            'phases': {
-                'label': 'Fases',
-                'tooltip': 'Define las propiedades de cada fase (ej. agua, aire).',
-                'type': 'list_of_dicts',
-                'current': self.phases,
-                'group': 'Propiedades de Fase',
-                'schema': {
-                    'name': {'label': 'Nombre de la Fase', 'type': 'string', 'default': 'nuevaFase'},
-                    'content': {'label': 'Contenido de la Fase', 'type': 'string', 'multiline': True, 'default': 'transportModel  Newtonian;\nviscosity       uniform 1e-06;\ndensity         uniform 1000;'}
-                }
+            'selected_solver': {
+                'label': 'Caso/Solver a usar.',
+                'tooltip': 'El archivo cambia según esto. Define las propiedades de cada fase (ej. agua, aire).', 
+                'type': 'choice_with_options',
+                'current': self.selected_solver,
+                'group': 'Propiedades de Transporte',
+                'options': [
+                    {
+                        'name': 'damBreak',
+                        'label': 'damBreak-interFoam',
+                        'parameters':[
+                            {
+                                'name': 'water_transportModel',
+                                'label': 'water transportModel',
+                                'tooltip': 'Modelo de transporte para el agua.' ,
+                                'type': 'string',
+                                'default': 'Newtonian'
+                            },
+                            {
+                                'name': 'water_nu',
+                                'label': 'water nu',
+                                'tooltip': 'water nu',
+                                'type': 'string',
+                                'default': '1e-06'
+                            },
+                            {
+                                'name': 'water_rho',
+                                'label': 'water rho',
+                                'tooltip': 'water rho',
+                                'type': 'int',
+                                'default': 1000
+                            },
+                            {
+                                'name': 'air_transportModel',
+                                'label': 'air transportModel',
+                                'tooltip': 'Modelo de transporte para el aire.',
+                                'type': 'string',
+                                'default': 'Newtonian'
+                            },
+                            {
+                                'name': 'air_nu',
+                                'label': 'air nu',
+                                'tooltip': 'air nu',
+                                'type': 'string',
+                                'default': '1.48e-05'
+                            },
+                            {
+                                'name': 'air_rho',
+                                'label': 'air rho',
+                                'tooltip': 'air rho',
+                                'type': 'int',
+                                'default': 1
+                            }
+                        ]
+                    }
+                ]
             }
         }
 

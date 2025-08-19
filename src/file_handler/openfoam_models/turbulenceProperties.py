@@ -13,7 +13,7 @@ class turbulenceProperties(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Valores por defecto
-        self.simulation_type = "RAS"
+        self.simulation_type = 'laminar'
 
     def _get_string(self) -> str:
         """
@@ -51,11 +51,12 @@ class turbulenceProperties(FoamFile):
         return {
             'simulation_type': {
                 'label': 'Tipo de simulación',
-                'tooltip': 'Define el tipo de simulación de turbulencia (ej. RAS, LES).',
+                'tooltip': 'Define el tipo de simulación de turbulencia (ej. laminar (sin turbulencia), RAS, LES).',
                 'type': 'choice',
                 'current': self.simulation_type,
                 'group': 'Configuración General',
-                'options': [
+                'options': [  #TODO: completar con los demas tipos que hayan
+                    {'name': 'laminar', 'label': 'laminar'},
                     {'name': 'RAS', 'label': 'RAS'},
                     {'name': 'LES', 'label': 'LES'}
                 ]
