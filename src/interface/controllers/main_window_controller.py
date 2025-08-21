@@ -209,7 +209,7 @@ class MainWindowController(QMainWindow):
         self.file_browser_manager.file_clicked.connect(self.open_parameters_view)
         self.ui.fileBrowserDock.setWidget(self.file_browser_manager.get_widget())
 
-        self.parameter_editor_manager = ParameterEditorManager(self.ui.parameterEditorDock, self.file_handler, self._get_vtk_patch_names)
+        self.parameter_editor_manager = ParameterEditorManager(self.ui.parameterEditorScrollArea, self.file_handler, self._get_vtk_patch_names)
 
     def _setup_case_environment(self, mesh_file_path: Path):
         """Copia la geometría, inicializa Docker transforma la malla según el tipo de archivo 
