@@ -16,6 +16,7 @@ from .openfoam_models.p_rgh import p_rgh
 from .openfoam_models.setFieldsDict import setFieldsDict
 from .openfoam_models.transportProperties import transportProperties
 from .openfoam_models.turbulenceProperties import turbulenceProperties
+from .openfoam_models.nuTilda import nuTilda
 
 class FileHandler:
     """Manages the creation, modification, and access of OpenFOAM case files."""
@@ -54,6 +55,7 @@ class FileHandler:
             "alpha.water": alpha_water(),
             "g": g(),
             "k": k(),
+            "nuTilda" : nuTilda(),
             "nut": nut(),
             "epsilon": epsilon(),
             "p_rgh": p_rgh(),
