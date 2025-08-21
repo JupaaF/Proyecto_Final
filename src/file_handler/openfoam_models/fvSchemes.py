@@ -86,8 +86,8 @@ class fvSchemes(FoamFile):
 En todos los casos, se utiliza el esquema de interpolación lineal para la interpolación de la difusividad. 
 Se utiliza la misma matriz de esquemas snGradSchemes basada en la no ortogonalidad máxima de la malla.''',
                 'type': 'choice',
-                'options': ['linear'],
-                'current': 'linear',
+                'options': ['Gauss linear'],
+                'current': 'Gauss linear',
                 'group': 'Esquemas de Laplaciano'
             },
             'interpolationSchemes': {

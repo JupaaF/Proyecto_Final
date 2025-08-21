@@ -88,7 +88,7 @@ class p_rgh(FoamFile):
                                 'label': 'Presión Total',
                                 'parameters' : [
                                     {
-                                        'name': 'value',
+                                        'name': 'p0', #cambie esto
                                         'type': 'float',
                                         'label': 'Valor de Presión Total',
                                         'tooltip': 'Valor de la presión total (p0) para esta condición.',

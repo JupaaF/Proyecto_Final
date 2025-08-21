@@ -14,19 +14,19 @@ class controlDict(FoamFile):
         self.application = "interFoam"
         self.startTime = 0
         self.endTime = 1
-        self.deltaT = 0.01
+        self.deltaT = 0.001
         self.writeInterval = 0.1
-        self.startFrom = None
-        self.stopAt = None
-        self.writeControl = None
-        self.purgeWrite = None
-        self.writeFormat = None
-        self.adjustTimeStep = None
-        self.maxCo = 0
-        self.maxAlphaCo = 0
-        self.maxDeltaT = 0
-        self.writeCompression = None
-        self.runTimeModifiable = None
+        self.startFrom = 'startTime'
+        self.stopAt = 'endTime'
+        self.writeControl = 'adjustable'
+        self.purgeWrite = 0
+        self.writeFormat = 'ascii'
+        self.adjustTimeStep = 'yes'
+        self.maxCo = 1
+        self.maxAlphaCo = 1
+        self.maxDeltaT = 1
+        self.writeCompression = 'off'
+        self.runTimeModifiable = 'yes'
         
     def _get_string(self):
         template = self.jinja_env.get_template("controlDict_template.jinja2")
@@ -195,7 +195,7 @@ class controlDict(FoamFile):
                 'label': 'Compresión de Archivos',
                 'tooltip': '"on" para reducir tamaño de archivos (recomendado en producción).',
                 'type': 'choice',
-                'options': [None, 'on', 'off'],
+                'options': ['on', 'off'],
                 'current': self.writeCompression,
                 'required': False,
                 'group': 'Escritura de datos'
@@ -204,7 +204,7 @@ class controlDict(FoamFile):
                 'label': 'Modificable en Ejecución',
                 'tooltip': '"yes" para permitir cambios durante la simulación (útil para pruebas).',
                 'type': 'choice',
-                'options': [True, False],
+                'options': ['yes','no'],
                 'current': self.runTimeModifiable,
                 'required': False,
                 'group': 'Avanzado'
