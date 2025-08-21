@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel, 
-                             QLineEdit, QComboBox, QHBoxLayout, QGroupBox, QMessageBox)
+                             QLineEdit, QComboBox, QHBoxLayout, QGroupBox, QMessageBox, QScrollArea)
 from PySide6.QtGui import QIntValidator, QDoubleValidator, QFont
 
 class ParameterEditorManager:
@@ -13,19 +13,18 @@ class ParameterEditorManager:
     Permite al usuario modificar estos parámetros y guardarlos de nuevo en el archivo
     correspondiente.
     """
-    def __init__(self, parent_widget: QWidget, file_handler, get_vtk_patch_names_func):
+    def __init__(self, scroll_area: QScrollArea, file_handler, get_vtk_patch_names_func):
         """
         Inicializa el gestor del editor de parámetros.
 
         Args:
-            parent_widget (QWidget): El widget padre (generalmente un QDockWidget) donde se
-                                     mostrará el editor de parámetros.
+            scroll_area (QScrollArea): El QScrollArea donde se mostrarán los widgets de parámetros.
             file_handler: Una instancia de una clase controladora de archivos que debe
                           implementar `get_editable_parameters` y `modify_parameters`.
             get_vtk_patch_names_func : Una lista con los nombres de los patches
                                        (fronteras) obtenidos de un archivo VTK.
         """
-        self.parent_widget = parent_widget
+        self.scroll_area = scroll_area
         self.file_handler = file_handler
         self.get_vtk_patch_names = get_vtk_patch_names_func
         self.parameter_widgets = {}  # Almacena los widgets generados para cada parámetro.
@@ -49,7 +48,12 @@ class ParameterEditorManager:
 
         self.current_file_path = file_path
         self.parameter_widgets.clear()
-        self.parent_widget.setWindowTitle(f"Editor de parámetros - {file_path.name}")
+        
+        # El título se establece en el dock, que es el padre del scroll area
+        if self.scroll_area.parentWidget() and self.scroll_area.parentWidget().parentWidget():
+            dock_widget = self.scroll_area.parentWidget().parentWidget()
+            dock_widget.setWindowTitle(f"Editor de parámetros - {file_path.name}")
+
 
         # Contenedor principal para los widgets de parámetros.
         container = QWidget()
@@ -71,12 +75,16 @@ class ParameterEditorManager:
                 self.parameter_widgets[param_name] = (widget, param_props)
 
         layout.addLayout(form_layout)
-
-        # Limpia el widget anterior del dock antes de establecer el nuevo.
-        if self.parent_widget.widget():
-            self.parent_widget.widget().deleteLater()
         
-        self.parent_widget.setWidget(container)
+        # Ajusta el tamaño mínimo horizontal del contenedor para que quepan todos los widgets.
+        # container.setMinimumWidth
+        self.scroll_area.setMinimumWidth(form_layout.sizeHint().width() + 40)
+
+        # Limpia el widget anterior del scroll area antes de establecer el nuevo.
+        if self.scroll_area.widget():
+            self.scroll_area.widget().deleteLater()
+        
+        self.scroll_area.setWidget(container)
 
     def save_parameters(self) -> bool:
         """
@@ -115,7 +123,7 @@ class ParameterEditorManager:
                     new_params[param_name] = widget.text()
             except ValueError:
                 # Si la conversión de tipo falla (p.ej., "abc" a int), muestra una advertencia.
-                QMessageBox.warning(self.parent_widget, "Valor Inválido",
+                QMessageBox.warning(self.scroll_area, "Valor Inválido",
                                     "Existen valores inválidos. Por favor revise los parámetros.")
                 return False
 
