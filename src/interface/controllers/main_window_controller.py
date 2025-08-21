@@ -2,11 +2,16 @@
 import shutil
 from pathlib import Path
 
+import os
+import platform
+import subprocess
+from PySide6.QtWidgets import QMessageBox
+
 from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout, QFileDialog, QPlainTextEdit)
 from PySide6.QtCore import QUrl, QTimer,  QObject, QThread, Signal, QRunnable, Slot
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QDesktopServices, QKeySequence
-import json # New import
+import json 
 
 from config import RUTA_LOCAL, create_dir
 from docker_handler.dockerHandler import DockerHandler
@@ -93,6 +98,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
         self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
         self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
+        self.ui.actionVisualizarEnParaview.triggered.connect(self.launch_paraview_action)
         self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
         self.ui.actionGuardar_Parametros.setShortcut(QKeySequence.Save)
 
@@ -429,3 +435,41 @@ class MainWindowController(QMainWindow):
         else:
             # Si el usuario eligió guardar o descartar, permite que la ventana se cierre.
             event.accept()
+
+         
+    def launch_paraview_action(self):
+        """
+        Prepara el caso y lanza ParaView instalado localmente.
+        """
+        if not self.docker_handler or not self.file_handler.get_case_path():
+            QMessageBox.warning(self, "Error de Visualización", "No hay un caso activo para visualizar.")
+            return
+
+        # 1. Llamar al DockerHandler para preparar el caso
+        success = self.docker_handler.prepare_case_for_paraview()
+        if not success:
+            QMessageBox.critical(self, "Error", "No se pudo preparar el caso para visualización.")
+            return
+
+        # 2. Abrir ParaView en la computadora local
+        case_path_local = self.file_handler.get_case_path().as_posix()
+        system = platform.system()
+        
+        try:
+            if system == "Windows":
+                # Usar os.startfile para una compatibilidad total
+                os.startfile(case_path_local)
+            elif system == "Darwin": # macOS
+                command = ['open', case_path_local]
+                subprocess.Popen(command)
+            elif system == "Linux":
+                command = ['paraview', case_path_local]
+                subprocess.Popen(command)
+            else:
+                QMessageBox.warning(self, "Error", "Sistema operativo no soportado para el lanzamiento automático de ParaView.")
+                return
+                
+        except FileNotFoundError:
+            QMessageBox.critical(self, "Error de Programa", "No se encontró el programa para iniciar ParaView.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error al Lanzar", f"Ocurrió un error inesperado: {e}")

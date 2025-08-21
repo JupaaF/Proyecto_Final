@@ -53,6 +53,7 @@
     </property>
     <addaction name="actionEjecutar_Simulacion"/>
     <addaction name="actionDetener_Simulacion"/>
+    <addaction name="actionVisualizarEnParaview"/>
    </widget>
    <widget class="QMenu" name="menuAyuda">
     <property name="title">
@@ -215,10 +216,14 @@
     <string>Restaurar Docks</string>
    </property>
   </action>
- </widget>
- <resources/>
- <connections/>
-</ui>
+  <action name="actionVisualizarEnParaview">
+   <property name="text">
+    <string>Visualizar en Paraview</string>
+   </property>
+   <property name="toolTip">
+    <string>Lanzar ParaView para visualizar el caso</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
