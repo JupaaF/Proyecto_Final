@@ -30,7 +30,22 @@ class turbulenceProperties(FoamFile):
         """
         Actualiza los parámetros desde un diccionario.
         """
+
+        param_props = self.get_editable_parameters()
+
         for key, value in params.items():
+
+            if not hasattr(self,key):
+                continue
+
+            props = param_props[key]
+            type_data = props['type']
+
+            try:
+                self._validate(value,type_data,props)
+            except ValueError:
+                raise
+
             setattr(self, key, value)
 
     def write_file(self, case_path: Path):

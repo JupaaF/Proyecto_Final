@@ -106,7 +106,7 @@ class FoamFile(ABC):
                 raise ValueError("Valor invalido")
 
         if param_type == "float":
-            if not isinstance(param_value,float):
+            if not isinstance(param_value,(float,int)):
                 raise ValueError("Valor invalido")
 
         if param_type == "int":
@@ -117,7 +117,18 @@ class FoamFile(ABC):
             if not isinstance(param_value,str):
                 raise ValueError("Valor invalido")
             
-            ## Si no esta en las opciones falta
+            if param_props.get('options') is None:
+                raise ValueError("Faltan las opciones")
+
+            if param_value not in param_props.get('options'):
+                raise ValueError("Valor invalido")
+
+        if param_type == "choice_with_options":
+            if not isinstance(param_value,list):
+                raise ValueError("Valor invalido")
+
+            if param_props.get('options') is None:
+                raise ValueError("Faltan las opciones")
             
         if param_type == "patches":
             if not isinstance(param_value,list):
