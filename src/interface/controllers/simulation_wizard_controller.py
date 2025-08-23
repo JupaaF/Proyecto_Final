@@ -116,9 +116,5 @@ class SimulationWizardController(QWizard):
             
             # Página 2
             "mesh_file": self.page2.meshPathLineEdit.text(),
-            "solver": self.page2.solverLineEdit.text(),
-            "start_time": self.page2.startTimeLineEdit.text(),
-            "end_time": self.page2.endTimeLineEdit.text(),
-            "delta_t": self.page2.deltaTLineEdit.text(),
-            "write_interval": self.page2.writeIntervalLineEdit.text(),
+            
         }

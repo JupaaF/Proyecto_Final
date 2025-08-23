@@ -325,6 +325,10 @@ class MainWindowController(QMainWindow):
         if success:
             QMessageBox.information(self, "Docker Execution", f"Script '{script_name}' executed successfully.")
             if script_name in ["run_transform_UNV.sh", "run_transform_blockMeshDict.sh"]:
+                
+                patch_names = self._get_vtk_patch_names()
+                if patch_names:
+                    self.file_handler.initialize_parameters_from_schema(patch_names)
                 # After mesh transformation, create case files and then check and visualize the mesh
                 self.file_handler.create_case_files()
                 QTimer.singleShot(100, self._check_mesh_and_visualize)

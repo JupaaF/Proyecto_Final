@@ -80,6 +80,64 @@ class FileHandler:
         for folder in ['0', 'system', 'constant']:
             (self.case_path / folder).mkdir(exist_ok=True)
 
+    def initialize_parameters_from_schema(self, patch_names: list[str]):
+        """
+        Iterates through all foam files and their parameters, initializing complex
+        types like 'patches' and 'choice_with_options' with default values based
+        on their schemas.
+        """
+        for foam_file in self.files.values():
+            params_schema = foam_file.get_editable_parameters()
+            
+            new_params_to_update = {}
+
+            for param_name, param_props in params_schema.items():
+                param_type = param_props.get('type')
+                current_value = param_props.get('current')
+
+                # Initialize 'patches' parameters if they are not already set
+                if param_type == 'patches' and not current_value:
+                    default_type = param_props.get('schema', {}).get('type', {}).get('default', 'empty')
+                    type_options = param_props.get('schema', {}).get('type', {}).get('options', [])
+                    option_schema_for_default = next((opt for opt in type_options if opt['name'] == default_type), None)
+
+                    new_boundary_field = []
+                    for patch_name in patch_names:
+                        patch_data = {'patchName': patch_name, 'type': default_type}
+                        
+                        if option_schema_for_default and 'parameters' in option_schema_for_default:
+                            for param in option_schema_for_default['parameters']:
+                                if 'default' in param:
+                                    patch_data[param['name']] = param['default']
+                        new_boundary_field.append(patch_data)
+                    
+                    new_params_to_update[param_name] = new_boundary_field
+
+                # Initialize 'choice_with_options' parameters if they are not already set
+                elif param_type == 'choice_with_options' and not current_value:
+                    options = param_props.get('options', [])
+                    if not options:
+                        continue
+
+                    default_option = options[0]
+                    default_option_name = default_option.get('name')
+                    
+                    # NOTE: 'solver_selected' is hardcoded in the original UI code, so we replicate that assumption here.
+                    default_value = [{'param_name': 'solver_selected', 'value': default_option_name}]
+                    
+                    sub_params_schema = default_option.get('parameters', [])
+                    for sub_param in sub_params_schema:
+                        if 'default' in sub_param:
+                            default_value.append({
+                                'param_name': sub_param.get('name'),
+                                'value': sub_param.get('default')
+                            })
+                    
+                    new_params_to_update[param_name] = default_value
+
+            if new_params_to_update:
+                foam_file.update_parameters(new_params_to_update)
+
     def get_editable_parameters(self, file_path: Path) -> Dict[str, Any]:
         """
         Retrieves the editable parameters for a given file.
