@@ -28,6 +28,7 @@ class U(FoamFile):
         con los datos de la instancia.
         """
         template = self.jinja_env.get_template("U_template.jinja2")
+
         context = {
             'internalField': self.internalField,
             'boundaryField': self.boundaryField
@@ -39,17 +40,37 @@ class U(FoamFile):
         """
         Actualiza los parámetros desde un diccionario.
         """
+
+        param_props = self.get_editable_parameters()
+
         for key, value in params.items():
+            
+            if not hasattr(self,key):
+                continue
+            
+            props = param_props[key]
+            type_data = props['type']
+
+            try:
+                self._validate(value,type_data,props)
+            except ValueError:
+                raise
+                
             setattr(self, key, value)
 
     def write_file(self, case_path: Path):
         """
         Escribe el contenido generado en la ruta del caso especificada.
         """
+
+        if not case_path.exists():
+            raise FileNotFoundError("No se encontro la carpeta")
+
         output_dir = case_path / self.folder
         output_dir.mkdir(parents=True, exist_ok=True)
         
         output_path = output_dir / self.name
+        
         with open(output_path, "w") as f:
             f.write(self._get_string())
 

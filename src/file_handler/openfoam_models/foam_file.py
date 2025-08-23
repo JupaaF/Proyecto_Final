@@ -81,3 +81,79 @@ class FoamFile(ABC):
         Subclasses must implement this to choose the correct header.
         """
         pass
+
+    def _validate(self,param_value,param_type,param_props = {}):
+        if param_type == "vector":
+            if not isinstance(param_value,dict):
+                raise ValueError("Valor invalido")
+
+            if param_value.get('x') is None:
+                raise KeyError("Falta x")
+            if param_value.get('y') is None:
+                raise KeyError("Falta y")
+            if param_value.get('z') is None:
+                raise KeyError("Falta z")
+
+            if not isinstance(param_value['x'],(float,int)):
+                raise ValueError("Valor invalido") 
+            if not isinstance(param_value['y'],(float,int)):
+                raise ValueError("Valor invalido")
+            if not isinstance(param_value['z'],(float,int)):
+                raise ValueError("Valor invalido")
+
+        if param_type == "string":
+            if not isinstance(param_value,str):
+                raise ValueError("Valor invalido")
+
+        if param_type == "float":
+            if not isinstance(param_value,float):
+                raise ValueError("Valor invalido")
+
+        if param_type == "int":
+            if not isinstance(param_value,int):
+                raise ValueError("Valor invalido")
+            
+        if param_type == "choice":
+            if not isinstance(param_value,str):
+                raise ValueError("Valor invalido")
+            
+            ## Si no esta en las opciones falta
+            
+        if param_type == "patches":
+            if not isinstance(param_value,list):
+                raise ValueError("Valor invalido")
+            
+            for patch in param_value:
+                if not isinstance(patch,dict):
+                    raise ValueError("Valor invalido")
+                
+                if patch.get('patchName') is None:
+                    raise ValueError("Valor invalido")
+
+                if not isinstance(patch.get('patchName'), str):
+                    raise ValueError("Valor invalido")
+                
+                if patch.get('type') is None:
+                    raise ValueError("Valor invalido")
+
+                if not isinstance(patch.get('type'),str):
+                    raise ValueError("Valor invalido")
+                
+                possible_types = param_props.get('schema').get('type').get('options')
+
+                exist = False
+
+                for typi in possible_types:
+                    if patch.get('type') == typi.get("name"):
+                        exist = True
+                        for param in typi.get('parameters'):
+                            
+                            valor_patch = patch.get(param.get('name'))
+                            if valor_patch is None:
+                                raise ValueError("Valor invalido")
+                            
+                            self._validate(valor_patch,param.get('type'))
+                            
+                            
+                if not exist:
+                    raise ValueError("Valor invalido")
