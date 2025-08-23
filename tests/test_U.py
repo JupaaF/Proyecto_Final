@@ -2,6 +2,8 @@ import pytest
 from pathlib import Path
 import sys
 import os
+import tempfile
+import shutil
 
 # Add project root to sys.path to allow imports from src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -66,6 +68,94 @@ def test_update_parameters_patch_playground(u_instance: U):
     }
     with pytest.raises(ValueError,match="Valor invalido"):
         u_instance.update_parameters(params)
+
+
+def test_update_parameters_successful(u_instance: U):
+    """Test a successful parameter update."""
+    params = {
+        'internalField': {'x': 1.1, 'y': 2.2, 'z': 3.3},
+        'boundaryField': [
+            {'patchName': 'inlet', 'type': 'pressureInletOutletVelocity', 'value': {'x': 5, 'y': 0, 'z': 0}},
+            {'patchName': 'outlet', 'type': 'noSlip'}
+        ]
+    }
+    u_instance.update_parameters(params)
+    assert u_instance.internalField == params['internalField']
+    assert u_instance.boundaryField == params['boundaryField']
+
+
+def test_update_parameters_non_existent(u_instance: U):
+    """Test updating with a parameter that does not exist in the class."""
+    params = {
+        'internalField': {'x': 1, 'y': 2, 'z': 3},
+        'boundaryField': [],
+        'non_existent_param': 'should_be_ignored'
+    }
+    u_instance.update_parameters(params)
+    assert u_instance.internalField == {'x': 1, 'y': 2, 'z': 3}
+    assert u_instance.boundaryField == []
+    assert not hasattr(u_instance, 'non_existent_param')
+
+
+def test_write_file_success(u_instance: U):
+    """Test that the U file is written correctly."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        case_path = Path(tmpdir)
+        u_instance.write_file(case_path)
+        
+        file_path = case_path / u_instance.folder / u_instance.name
+        assert file_path.exists()
+        
+        with open(file_path, 'r') as f:
+            content = f.read()
+            
+        # Check for header
+        assert "FoamFile" in content
+        assert "class       volVectorField;" in content
+        assert "object      U;" in content
+        
+        # Check for content
+        assert "internalField   uniform (0 0 0);" in content
+        assert "boundaryField" in content
+        assert "{" in content
+        assert "}" in content
+
+
+def test_write_file_with_updated_params(u_instance: U):
+    """Test that the U file is written correctly after updating parameters."""
+    params = {
+        'internalField': {'x': 1.5, 'y': 2.5, 'z': 3.5},
+        'boundaryField': [
+            {'patchName': 'walls', 'type': 'noSlip'}
+        ]
+    }
+    u_instance.update_parameters(params)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        case_path = Path(tmpdir)
+        u_instance.write_file(case_path)
+        
+        file_path = case_path / u_instance.folder / u_instance.name
+        assert file_path.exists()
+        
+        with open(file_path, 'r') as f:
+            content = f.read()
+            
+        assert "internalField   uniform (1.5 2.5 3.5);" in content
+        assert "walls" in content
+        assert "type            noSlip;" in content
+
+
+def test_write_file_no_directory(u_instance: U):
+    """Test that write_file raises FileNotFoundError for a non-existent path."""
+    non_existent_path = Path("non_existent_case_for_sure")
+    
+    if non_existent_path.exists():
+        shutil.rmtree(non_existent_path)
+        
+    with pytest.raises(FileNotFoundError):
+        u_instance.write_file(non_existent_path)
+
 
 ## TEST UPDATE PARAMETERS QUE NO EXISTEN
 
