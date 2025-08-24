@@ -292,7 +292,7 @@ class ParameterEditorManager:
         
         return value
 
-    def _create_vector_widget(self, current_value: dict) -> QWidget:
+    def _create_vector_widget(self, current_value: dict, props:dict) -> QWidget:
         """
         Crea un widget compuesto por tres QLineEdit para editar un vector (x, y, z).
 
@@ -316,6 +316,12 @@ class ParameterEditorManager:
 
         # Asigna validadores para asegurar que solo se puedan introducir números.
         double_validator = QDoubleValidator()
+
+        if 'min' in props:
+            double_validator.setBottom(props['min'])
+        if 'max' in props:
+            double_validator.setTop(props['max'])
+
         x_edit.setValidator(double_validator)
         y_edit.setValidator(double_validator)
         z_edit.setValidator(double_validator)
@@ -346,15 +352,25 @@ class ParameterEditorManager:
 
         # --- Creación de widgets básicos ---
         if widget_type == 'vector':
-            widget = self._create_vector_widget(current_value)
+            widget = self._create_vector_widget(current_value,props=props)
         elif widget_type == 'string':
             widget = QLineEdit(str(current_value))
         elif widget_type == 'float':
             widget = QLineEdit(str(current_value))
-            widget.setValidator(QDoubleValidator())
+            validator = QDoubleValidator()
+            if 'min' in props:
+                validator.setBottom(props['min'])
+            if 'max' in props:
+                validator.setTop(props['max'])
+            widget.setValidator(validator)
         elif widget_type == 'integer':
             widget = QLineEdit(str(current_value))
-            widget.setValidator(QIntValidator())
+            validator = QIntValidator()
+            if 'min' in props:
+                validator.setBottom(props['min'])
+            if 'max' in props:
+                validator.setTop(props['max'])
+            widget.setValidator(validator)
         
         # --- Creación de QComboBox para opciones ---
         elif widget_type == 'choice':
@@ -453,6 +469,7 @@ class ParameterEditorManager:
                 # Decide si usar el valor actual (si existe) o el valor por defecto del esquema.
                 value_for_widget = current_sub_value if current_sub_value is not None else param_props.get('default')
 
+
                 # Prepara un diccionario de propiedades para crear el widget del sub-parámetro.
                 sub_props = {
                     'type': param_props.get('type', 'string'),
@@ -460,7 +477,11 @@ class ParameterEditorManager:
                     'options': param_props.get('options', []),
                     'label': param_props.get('label', param_name)
                 }
+                if param_props.get('min') is not None:
+                    sub_props['min'] = param_props.get('min')
                 
+                if param_props.get('max') is not None:
+                    sub_props['max'] = param_props.get('max')
                 # Reutiliza la función principal de creación de widgets para mantener la consistencia.
                 param_widget = self._create_widget_for_parameter(sub_props)
                 
@@ -562,6 +583,13 @@ class ParameterEditorManager:
                             'label': param_props.get('label', param_name)
                         }
                         
+                        # Transfiere las propiedades de validación (min/max) al sub-widget.
+                        if param_props.get('min') is not None:
+                            sub_props['min'] = param_props.get('min')
+                        
+                        if param_props.get('max') is not None:
+                            sub_props['max'] = param_props.get('max')
+
                         param_widget = self._create_widget_for_parameter(sub_props)
                         if param_widget:
                             form_layout.addRow(sub_props['label'], param_widget)

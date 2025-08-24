@@ -85,7 +85,7 @@ class FoamFile(ABC):
     def _validate(self,param_value,param_type,param_props = {}):
         if param_type == "vector":
             if not isinstance(param_value,dict):
-                raise ValueError("Valor invalido")
+                raise ValueError("El vector no es un diccionario")
 
             if param_value.get('x') is None:
                 raise KeyError("Falta x")
@@ -95,55 +95,55 @@ class FoamFile(ABC):
                 raise KeyError("Falta z")
 
             if not isinstance(param_value['x'],(float,int)):
-                raise ValueError("Valor invalido") 
+                raise ValueError("x no es un numero") 
             if not isinstance(param_value['y'],(float,int)):
-                raise ValueError("Valor invalido")
+                raise ValueError("y no es un numero")
             if not isinstance(param_value['z'],(float,int)):
-                raise ValueError("Valor invalido")
+                raise ValueError("z no es un numero")
 
         if param_type == "string":
             if not isinstance(param_value,str):
-                raise ValueError("Valor invalido")
+                raise ValueError("El string no es un string")
 
         if param_type == "float":
             if not isinstance(param_value,(float,int)):
-                raise ValueError("Valor invalido")
+                raise ValueError("El float no es un numero")
 
         if param_type == "int":
             if not isinstance(param_value,int):
-                raise ValueError("Valor invalido")
+                raise ValueError("El int no es un numero")
             
         if param_type == "choice":
             if not isinstance(param_value,str):
-                raise ValueError("Valor invalido")
+                raise ValueError("En el choice me diste cualquier cosa")
             
             if param_props.get('options') is None:
                 raise ValueError("Faltan las opciones")
 
             if param_value not in param_props.get('options'):
-                raise ValueError("Valor invalido")
+                raise ValueError("Choice mal puesto")
 
         if param_type == "choice_with_options":
             if not isinstance(param_value,list):
-                raise ValueError("Valor invalido")
+                raise ValueError("Valor invalido, no es una lista")
 
             if param_props.get('options') is None:
-                raise ValueError("Faltan las opciones")
+                raise ValueError("Faltan las opciones, no hay opciones")
 
             if param_value[0].get('param_name') != 'solver_selected':
-                raise ValueError("Valor invalido")
+                raise ValueError("Valor invalido, no esta el solver")
             
             opciones = param_props.get('options')
 
             exist = False
 
             for opcion in opciones:
-                if param_value[0].get('param_name') == opcion.get('name'):
+                if param_value[0].get('value') == opcion.get('name'):
                     exist = True
                     ## TODO: Falta poner que checkee si los parametros que agrega realemnte existen
 
             if not exist:
-                raise ValueError("Valor invalido")
+                raise ValueError("Valor invalido, no existe")
             
         if param_type == "patches":
             if not isinstance(param_value,list):

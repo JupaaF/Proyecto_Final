@@ -85,6 +85,8 @@ class U(FoamFile):
                 'type': 'vector',
                 'current': self.internalField,
                 'group': 'Campo Interno',
+                'min': -100,
+                'max': 100
             },
             'boundaryField': {
                 'label': 'Condiciones de Borde',
@@ -112,7 +114,9 @@ class U(FoamFile):
                                         'type': 'vector',
                                         'label': 'Valor de Velocidad',
                                         'tooltip': 'Vector de velocidad uniforme para esta condición de borde.',
-                                        'default': {'x':0,'y':0,'z':0}
+                                        'default': {'x':0,'y':0,'z':0},
+                                        'min': -5,
+                                        'max': 5
                                     }
                                 ]
                             }

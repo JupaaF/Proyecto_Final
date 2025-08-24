@@ -15,8 +15,8 @@ class fvSchemes(FoamFile):
         # Valores por defecto
         self.ddtSchemes = 'Euler'
         self.gradSchemes = 'Gauss linear'
-        self.divSchemes = 'Gauss linearUpwind grad(U)'
-        self.laplacianSchemes = 'Gauss linear corrected'
+        self.divSchemes = 'damBreak'
+        self.laplacianSchemes = 'Gauss linear'
         self.interpolationSchemes = 'linear'
         self.snGradSchemes = 'corrected'
 
@@ -105,7 +105,7 @@ En todos los casos, se utiliza el esquema de interpolación lineal para la inter
 Se utiliza la misma matriz de esquemas snGradSchemes basada en la no ortogonalidad máxima de la malla.''',
                 'type': 'choice',
                 'options': ['Gauss linear'],
-                'current': 'Gauss linear',
+                'current': self.laplacianSchemes,
                 'group': 'Esquemas de Laplaciano'
             },
             'interpolationSchemes': {

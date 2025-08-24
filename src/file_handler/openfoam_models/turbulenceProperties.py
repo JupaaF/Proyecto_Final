@@ -70,10 +70,11 @@ class turbulenceProperties(FoamFile):
                 'type': 'choice',
                 'current': self.simulation_type,
                 'group': 'Configuración General',
-                'options': [  #TODO: completar con los demas tipos que hayan
-                    {'name': 'laminar', 'label': 'laminar'},
-                    {'name': 'RAS', 'label': 'RAS'},
-                    {'name': 'LES', 'label': 'LES'}
-                ]
+                # 'options': [  #TODO: completar con los demas tipos que hayan
+                #     {'name': 'laminar', 'label': 'laminar'},
+                #     {'name': 'RAS', 'label': 'RAS'},
+                #     {'name': 'LES', 'label': 'LES'}
+                # ]
+                'options': ['laminar','RAS','LES']
             }
         }

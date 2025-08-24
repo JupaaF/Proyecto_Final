@@ -36,9 +36,12 @@ class FileHandler:
         
         self._initialize_file_objects()
         
-        self.files['controlDict'].write_file(self.case_path)
-        self.files['fvSolution'].write_file(self.case_path)
-        self.files['fvSchemes'].write_file(self.case_path)
+        try: 
+            self.files['controlDict'].write_file(self.case_path)
+            self.files['fvSolution'].write_file(self.case_path)
+            self.files['fvSchemes'].write_file(self.case_path)
+        except FileNotFoundError:
+            raise
 
     def get_case_path(self) -> Path:
         """Returns the root path of the case directory."""
@@ -70,9 +73,12 @@ class FileHandler:
         This should be called after the user confirms the initial setup.
         """
         self._create_base_dirs()
-        for file_obj in self.files.values():
-            print(f"Se creo el archivo {file_obj.name}")
-            file_obj.write_file(self.case_path)
+        try:
+            for file_obj in self.files.values():
+                print(f"Se creo el archivo {file_obj.name}")
+                file_obj.write_file(self.case_path)
+        except FileNotFoundError:
+            raise
 
     def _create_base_dirs(self) -> None:
         """Creates the essential directories for an OpenFOAM case (0, system, constant)."""
@@ -161,13 +167,20 @@ class FileHandler:
             new_params: A dictionary with the new parameters to apply.
         """
         file_name = file_path.name
-        if file_name in self.files:
-            file_obj = self.files[file_name]
-            file_obj.update_parameters(new_params)
+        try:
+            if file_name in self.files:
+                file_obj = self.files[file_name]
+                file_obj.update_parameters(new_params)
+        except:
+            print(file_name)
+            raise 
 
     def write_files(self):
-        for _,file_obj in self.files.items():
-            file_obj.write_file(self.case_path)
+        try:
+            for _,file_obj in self.files.items():
+                file_obj.write_file(self.case_path)
+        except FileNotFoundError:
+            raise
 
     def save_all_parameters_to_json(self) -> None:
         """Saves all editable parameters from all FoamFile objects to a single JSON file."""
@@ -214,4 +227,8 @@ class FileHandler:
 
         for file_name, params in loaded_params.items():
             if file_name in self.files:
-                self.files[file_name].update_parameters(params)
+                try:
+                    self.files[file_name].update_parameters(params)
+                except:
+                    print(file_name)
+                    raise 
