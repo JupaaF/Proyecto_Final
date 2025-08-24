@@ -184,7 +184,9 @@ class FileHandler:
 
     def save_all_parameters_to_json(self) -> None:
         """Saves all editable parameters from all FoamFile objects to a single JSON file."""
+
         all_params_values = {}
+
         for file_name, file_obj in self.files.items():
             editable_params = file_obj.get_editable_parameters()
             file_values = {}
@@ -200,6 +202,7 @@ class FileHandler:
         }
 
         json_path = self.case_path / self.JSON_PARAMS_FILE
+
         with open(json_path, 'w') as f:
             json.dump(saved_data, f, indent=4)
 
@@ -207,7 +210,7 @@ class FileHandler:
         """Loads all parameters from the JSON file and updates the corresponding FoamFile objects."""
         json_path = self.case_path / self.JSON_PARAMS_FILE
         if not json_path.exists():
-            return
+            raise FileNotFoundError("No se encontro el JSON")
 
         with open(json_path, 'r') as f:
             saved_data = json.load(f)

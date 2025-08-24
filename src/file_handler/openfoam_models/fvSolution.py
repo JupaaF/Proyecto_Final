@@ -28,7 +28,9 @@ class fvSolution(FoamFile):
         """
         Actualiza los parámetros desde un diccionario.
         """
-
+        if not isinstance(params,dict):
+            raise ValueError("Me tenes que dar un diccionario")
+        
         param_props = self.get_editable_parameters()
 
         for key, value in params.items():

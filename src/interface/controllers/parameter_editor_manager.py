@@ -4,6 +4,15 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel,
                              QLineEdit, QComboBox, QHBoxLayout, QGroupBox, QMessageBox, QScrollArea)
 from PySide6.QtGui import QIntValidator, QDoubleValidator, QFont
 
+class NoScrollComboBox(QComboBox):
+    """
+    Una subclase de QComboBox que ignora los eventos de la rueda del ratón para
+    evitar cambios accidentales al hacer scroll.
+    """
+    def wheelEvent(self, event):
+        # Ignora el evento de la rueda del ratón para prevenir el cambio de ítem.
+        event.ignore()
+
 class ParameterEditorManager:
     """
     Gestiona la creación y actualización de la interfaz de usuario para la edición de parámetros.
@@ -115,7 +124,7 @@ class ParameterEditorManager:
                     new_params[param_name] = self._get_choice_with_options_from_widget(widget, props)
                 elif widget_type == 'choice':
                     new_params[param_name] = widget.currentData()
-                elif widget_type == 'integer':
+                elif widget_type == 'int':
                     new_params[param_name] = int(widget.text())
                 elif widget_type == 'float':
                     new_params[param_name] = float(widget.text())
@@ -279,7 +288,7 @@ class ParameterEditorManager:
             try:
                 if param_type == 'float':
                     value = float(text_value)
-                elif param_type == 'integer':
+                elif param_type == 'int':
                     value = int(text_value)
                 else:
                     value = text_value
@@ -363,7 +372,7 @@ class ParameterEditorManager:
             if 'max' in props:
                 validator.setTop(props['max'])
             widget.setValidator(validator)
-        elif widget_type == 'integer':
+        elif widget_type == 'int':
             widget = QLineEdit(str(current_value))
             validator = QIntValidator()
             if 'min' in props:
@@ -374,7 +383,7 @@ class ParameterEditorManager:
         
         # --- Creación de QComboBox para opciones ---
         elif widget_type == 'choice':
-            widget = QComboBox()
+            widget = NoScrollComboBox()
             options = props.get('options', [])
             
             # Soporta tanto listas de diccionarios como diccionarios de diccionarios.
@@ -427,7 +436,7 @@ class ParameterEditorManager:
 
         # --- ComboBox Principal ---
         # Se crea el QComboBox que controlará qué sub-parámetros se muestran.
-        main_combo = QComboBox()
+        main_combo = NoScrollComboBox()
         options = props.get('options', [])
         for option in options:
             if isinstance(option, dict):
@@ -519,7 +528,7 @@ class ParameterEditorManager:
             props (dict): Propiedades del parámetro 'patches'.
 
         Returns:
-            QWidget: El widget contenedor con todos los GroupBox de los patches.
+            QWidget: El widget contenedor con todos los los GroupBox de los patches.
         """
         container_widget = QWidget()
         container_layout = QVBoxLayout(container_widget)
@@ -548,7 +557,7 @@ class ParameterEditorManager:
             group_layout.addLayout(patch_form_layout)
 
             # --- ComboBox para seleccionar el tipo de condición de borde ---
-            type_combo = QComboBox()
+            type_combo = NoScrollComboBox()
             type_options = props.get('schema', {}).get('type', {}).get('options', [])
             for option in type_options:
                 type_combo.addItem(option.get('label'), option.get('name'))
