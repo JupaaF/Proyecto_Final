@@ -242,22 +242,16 @@ def test_write_files_permission_error(file_handler: FileHandler, capsys):
 
 def test_modify_parameters_with_invalid_type_and_write(file_handler: FileHandler):
     """
-    Test the behavior of writing a file after modifying a parameter with an invalid data type.
-    This test documents the current behavior, where Jinja2 fails silently on undefined
-    attributes, producing a potentially invalid output file.
+    Test that modifying a parameter with an invalid data type raises a ValueError.
+    The application should validate inputs and not fail silently.
     """
     case_path = file_handler.get_case_path()
     u_file_obj = file_handler.files["U"]
     u_file_path = case_path / u_file_obj.folder / u_file_obj.name
 
-    # Pass a string where a dictionary is expected
+    # Pass a string where a dictionary is expected for a vector type
     new_params = {"internalField": "this-is-not-a-dict"}
-    file_handler.modify_parameters(u_file_path, new_params)
-
-    file_handler.write_files()
-
-    written_content = u_file_path.read_text()
     
-    # The actual behavior is that Jinja2 silently ignores the missing attributes (x, y, z)
-    # on the string object, resulting in an empty vector in the output.
-    assert "uniform (  )" in written_content
+    # Expect a ValueError to be raised due to type validation
+    with pytest.raises(ValueError):
+        file_handler.modify_parameters(u_file_path, new_params)

@@ -167,7 +167,10 @@ class FileHandler:
 
     def write_files(self):
         for _,file_obj in self.files.items():
-            file_obj.write_file(self.case_path)
+            try:
+                file_obj.write_file(self.case_path)
+            except PermissionError as e:
+                print(f"Error writing file {file_obj.name}: {e}")
 
     def save_all_parameters_to_json(self) -> None:
         """Saves all editable parameters from all FoamFile objects to a single JSON file."""
@@ -196,8 +199,12 @@ class FileHandler:
         if not json_path.exists():
             return
 
-        with open(json_path, 'r') as f:
-            saved_data = json.load(f)
+        try:
+            with open(json_path, 'r') as f:
+                saved_data = json.load(f)
+        except json.JSONDecodeError:
+            print("Error: Could not decode JSON from file.")
+            return
 
         # Extract template and parameters
         loaded_template = saved_data.get("template")
