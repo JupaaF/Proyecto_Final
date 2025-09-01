@@ -1,0 +1,43 @@
+
+[
+    {
+        "id": "damBreak",
+        "name": "Dam Break",
+        "files": [
+            "U",
+            "controlDict",
+            "fvSchemes",
+            "fvSolution",
+            "alpha.water",
+            "g",
+            "k",
+            "nuTilda",
+            "nut",
+            "epsilon",
+            "p_rgh",
+            "setFieldsDict",
+            "transportProperties",
+            "turbulenceProperties"
+        ]
+    },
+    {
+        "id": "waterChannel",
+        "name": "Water en el channel jiji",
+        "files": [
+            "U",
+            "alpha.water",
+            "k",
+            "nut",
+            "omega",
+            "p_rgh",
+            "s",
+            "g",
+            "transportProperties",
+            "turbulenceProperties",
+            "controlDict",
+            "fvSchemes",
+            "fvSolution",
+            "setFieldsDict"
+        ]
+    }
+]

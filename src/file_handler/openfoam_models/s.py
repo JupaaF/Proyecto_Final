@@ -2,25 +2,25 @@ from pathlib import Path
 from .foam_file import FoamFile
 from jinja2 import Environment, FileSystemLoader
 
-class omega(FoamFile):
+class s(FoamFile):
     """
-    Representa el archivo 'omega' (tasa de disipación específica) de OpenFOAM.
+    Representa el archivo 's' (presión modificada) de OpenFOAM.
     """
     def __init__(self):
-        super().__init__(name="omega", folder="0", class_type="volScalarField")
+        super().__init__(name="s", folder="0", class_type="volScalarField")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Valores por defecto
-        self.internalField = 10
+        self.internalField = 0
         self.boundaryField = []
 
     def _get_string(self) -> str:
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
-        template = self.jinja_env.get_template("omega_template.jinja2")
+        template = self.jinja_env.get_template("s_template.jinja2")
         context = {
             'internalField': self.internalField,
             'boundaryField': self.boundaryField
@@ -69,8 +69,8 @@ class omega(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (p_rgh)',
-                'tooltip': 'Valor inicial de la presión modificada en el dominio.',
+                'label': 'Campo Interno (s)',
+                'tooltip': 'Valor inicial de la s modificada en el dominio.',
                 'type': 'float',
                 'current': self.internalField,
                 'group': 'General'
@@ -85,11 +85,11 @@ class omega(FoamFile):
                     'patchName': 'string',
                     'type': {
                         'type': 'choice',
-                        'default': 'fixedFluxPressure',
+                        'default': 'zeroGradient',
                         'options': [
                             {
-                                'name': 'fixedFluxPressure',
-                                'label': 'Presión con Flujo Fijo (fixedFluxPressure)',
+                                'name': 'fixedValue',
+                                'label': 'Valor Fijo',
                                 'parameters' : [
                                     {
                                         'name': 'value',
@@ -101,14 +101,26 @@ class omega(FoamFile):
                                 ]
                             },
                             {
-                                'name': 'totalPressure',
-                                'label': 'Presión Total',
+                                'name': 'zeroGradient',
+                                'label': 'Gradiente zero',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'inletOutlet',
+                                'label': 'Entrada/Salida',
                                 'parameters' : [
                                     {
-                                        'name': 'p0', #cambie esto
+                                        'name': 'inletValue',
                                         'type': 'float',
-                                        'label': 'Valor de Presión Total',
-                                        'tooltip': 'Valor de la presión total (p0) para esta condición.',
+                                        'label': 'Valor de entrada',
+                                        'tooltip': 'Valor de presión para esta condición de borde.',
+                                        'default': 0
+                                    },
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'Valor fijo',
+                                        'tooltip': 'Valor de presión para esta condición de borde.',
                                         'default': 0
                                     }
                                 ]

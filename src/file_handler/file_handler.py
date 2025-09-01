@@ -17,9 +17,34 @@ from .openfoam_models.setFieldsDict import setFieldsDict
 from .openfoam_models.transportProperties import transportProperties
 from .openfoam_models.turbulenceProperties import turbulenceProperties
 from .openfoam_models.nuTilda import nuTilda
+from .openfoam_models.s import s
+from .openfoam_models.omega import omega
+
+# Diccionario que mapea nombres de archivo a sus clases correspondientes
+# Esto permite la instanciación dinámica de objetos a partir de los nombres en el JSON
+FILE_CLASS_MAP = {
+    "U": U,
+    "controlDict": controlDict,
+    "fvSchemes": fvSchemes,
+    "fvSolution": fvSolution,
+    "alpha.water": alpha_water,
+    "g": g,
+    "k": k,
+    "nuTilda": nuTilda,
+    "nut": nut,
+    "epsilon": epsilon,
+    "p_rgh": p_rgh,
+    "setFieldsDict": setFieldsDict,
+    "transportProperties": transportProperties,
+    "turbulenceProperties": turbulenceProperties,
+    "s": s,
+    "omega": omega,
+}
 
 class FileHandler:
     """Manages the creation, modification, and access of OpenFOAM case files."""
+
+
     JSON_PARAMS_FILE = "parameters.json"
     
     def __init__(self, case_path: Path, template: str = None):
@@ -28,44 +53,82 @@ class FileHandler:
 
         Args:
             case_path: The absolute path to the simulation case directory.
-            template: The name of the template to use (currently not implemented).
+            template: The name of the template to use 
         """
         self.case_path = case_path
-        self.template = template  # TODO: Implement template logic
+        self.template = template
         self.files: Dict[str, FoamFile] = {}
         
         self._initialize_file_objects()
         
-        try: 
-            self.files['controlDict'].write_file(self.case_path)
-            self.files['fvSolution'].write_file(self.case_path)
-            self.files['fvSchemes'].write_file(self.case_path)
-        except FileNotFoundError:
-            raise
+        if 'controlDict' in self.files and 'fvSolution' in self.files and 'fvSchemes' in self.files:
+            try: 
+                self.files['controlDict'].write_file(self.case_path)
+                self.files['fvSolution'].write_file(self.case_path)
+                self.files['fvSchemes'].write_file(self.case_path)
+            except FileNotFoundError:
+                raise
+        else:
+            # Handle cases where essential files are missing in the template
+            # For now, we can raise an error or log a warning.
+            # This depends on how robust we want the application to be.
+            # For this implementation, we assume templates are well-formed.
+            print("Warning: One of the essential files (controlDict, fvSolution, fvSchemes) is missing in the template.")
 
     def get_case_path(self) -> Path:
         """Returns the root path of the case directory."""
         return self.case_path
 
+    def _get_template_config(self) -> Dict[str, Any]:
+        """
+        Loads the template configuration from the JSON file.
+        Returns the configuration for the selected template.
+        """
+        try:
+            # Navigate to the 'src' directory from the current file's location
+            base_path = Path(__file__).parent
+            json_path = base_path / "templates.json"
+            
+            with open(json_path, 'r') as f:
+                templates = json.load(f)
+            
+            # Find the template with the matching ID
+            for t in templates:
+                if t.get("id") == self.template:
+                    return t
+
+            # If no template is found, raise an error
+            raise ValueError(f"Template with id '{self.template}' not found in templates.json")
+
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            # Handle errors in loading or parsing the JSON file
+            print(f"Error loading templates: {e}. Cannot initialize files.")
+            return {} # Return empty dict to prevent further errors
+
     def _initialize_file_objects(self) -> None:
-        """Initializes the objects representing each OpenFOAM file."""
-        # TODO: Based on the template, different files would be initialized.
-        self.files = {
-            "U": U(),
-            "controlDict": controlDict(),
-            "fvSchemes": fvSchemes(),
-            "fvSolution": fvSolution(),
-            "alpha.water": alpha_water(),
-            "g": g(),
-            "k": k(),
-            "nuTilda": nuTilda(),
-            "nut": nut(),
-            "epsilon": epsilon(),
-            "p_rgh": p_rgh(),
-            "setFieldsDict": setFieldsDict(),
-            "transportProperties": transportProperties(),
-            "turbulenceProperties": turbulenceProperties(),
-        }
+        """
+        Initializes the FoamFile objects based on the selected template.
+        It reads the template configuration and instantiates only the required files.
+        """
+        template_config = self._get_template_config()
+        if not template_config:
+            # If config is empty (due to an error), we can't proceed
+            self.files = {}
+            return
+
+        required_files = template_config.get("files", [])
+        
+        # Instantiate only the classes listed in the template's "files" array
+        initialized_files = {}
+        for file_name in required_files:
+            if file_name in FILE_CLASS_MAP:
+                # Look up the class in the map and create an instance
+                foam_class = FILE_CLASS_MAP[file_name]
+                initialized_files[file_name] = foam_class()
+            else:
+                print(f"Warning: Class for file '{file_name}' not found in FILE_CLASS_MAP.")
+
+        self.files = initialized_files
 
     def create_case_files(self) -> None:
         """
