@@ -1,8 +1,64 @@
 from pathlib import Path
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel, 
-                             QLineEdit, QComboBox, QHBoxLayout, QGroupBox, QMessageBox, QScrollArea)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel,
+                               QLineEdit, QComboBox, QHBoxLayout, QGroupBox,
+                               QMessageBox, QScrollArea)
 from PySide6.QtGui import QIntValidator, QDoubleValidator, QFont
+
+
+class StrictIntValidator(QIntValidator):
+    """
+    Un validador de enteros que considera los valores fuera de rango como
+    inválidos inmediatamente, en lugar de intermedios.
+    """
+    def validate(self, input_str: str, pos: int):
+        # Primero, obtenemos el estado del validador base.
+        state, ret_input, ret_pos = super().validate(input_str, pos)
+
+        # Si el estado es intermedio, podría ser un número fuera de rango.
+        # Excluimos strings vacíos o solo con signo,
+        # que son intermedios válidos.
+        if state == self.State.Intermediate and input_str and input_str not in ('-', '+'):
+            try:
+                val = int(input_str)
+                # Si el número está fuera de los límites,
+                # lo marcamos como inválido.
+                if val < self.bottom() or val > self.top():
+                    return (self.State.Invalid, ret_input, ret_pos)
+            except ValueError:
+                # Si no se puede convertir a entero (p.ej. "1-2"), dejamos
+                # que el validador base decida.
+                pass
+        
+        return state, ret_input, ret_pos
+
+
+class StrictDoubleValidator(QDoubleValidator):
+    """
+    Un validador de dobles que considera los valores fuera de rango como inválidos
+    inmediatamente, en lugar de intermedios.
+    """
+    def validate(self, input_str: str, pos: int):
+        # Primero, obtenemos el estado del validador base.
+        state, ret_input, ret_pos = super().validate(input_str, pos)
+        if input_str:
+            test_str = input_str.replace(',', '.', 1)
+
+        # Si el estado es intermedio, podría ser un número fuera de rango.
+        if state == self.State.Intermediate and input_str and input_str not in ('-', '+', '.', ','):
+            # Reemplazamos la coma decimal para que float() funcione universalmente.
+            try:
+                val = float(test_str)
+                # Si el número está fuera de los límites, lo marcamos como inválido.
+                if val < self.bottom() or val > self.top():
+                    return (self.State.Invalid, ret_input, ret_pos)
+            except ValueError:
+                # No se puede convertir (p.ej. "1.2e-"), dejamos que el validador
+                # base decida.
+                pass
+        
+        return state, ret_input, ret_pos
+
 
 class NoScrollComboBox(QComboBox):
     """
@@ -12,6 +68,7 @@ class NoScrollComboBox(QComboBox):
     def wheelEvent(self, event):
         # Ignora el evento de la rueda del ratón para prevenir el cambio de ítem.
         event.ignore()
+
 
 class ParameterEditorManager:
     """
@@ -62,7 +119,6 @@ class ParameterEditorManager:
         if self.scroll_area.parentWidget() and self.scroll_area.parentWidget().parentWidget():
             dock_widget = self.scroll_area.parentWidget().parentWidget()
             dock_widget.setWindowTitle(f"Editor de parámetros - {file_path.name}")
-
 
         # Contenedor principal para los widgets de parámetros.
         container = QWidget()
@@ -228,13 +284,15 @@ class ParameterEditorManager:
         # Itera sobre cada GroupBox, que representa un patch individual.
         for i in range(layout.count()):
             groupbox = layout.itemAt(i).widget()
-            if not isinstance(groupbox, QGroupBox): continue
+            if not isinstance(groupbox, QGroupBox):
+                continue
 
             patch_name_label = groupbox.findChild(QLabel)
             patch_name = patch_name_label.text() if patch_name_label else "unknown_patch"
 
             form_layout = groupbox.findChild(QFormLayout)
-            if not form_layout: continue
+            if not form_layout:
+                continue
 
             # Extrae el tipo de condición de borde seleccionado (ej. 'fixedValue', 'zeroGradient').
             type_combo = form_layout.itemAt(0, QFormLayout.FieldRole).widget()
@@ -295,13 +353,13 @@ class ParameterEditorManager:
             except ValueError:
                 value = text_value  # Si falla la conversión, se mantiene como texto.
         elif hasattr(self, '_get_vector_from_widget') and widget.layout() is not None:
-             # Comprueba si es un widget de vector (tiene layout con 3 hijos).
+            # Comprueba si es un widget de vector (tiene layout con 3 hijos).
             if widget.layout().count() == 3:
-                 value = self._get_vector_from_widget(widget)
+                value = self._get_vector_from_widget(widget)
         
         return value
 
-    def _create_vector_widget(self, current_value: dict, props:dict) -> QWidget:
+    def _create_vector_widget(self, current_value: dict, props: dict) -> QWidget:
         """
         Crea un widget compuesto por tres QLineEdit para editar un vector (x, y, z).
 
@@ -324,7 +382,7 @@ class ParameterEditorManager:
         z_edit = QLineEdit(str(safe_current_value.get('z', 0)))
 
         # Asigna validadores para asegurar que solo se puedan introducir números.
-        double_validator = QDoubleValidator()
+        double_validator = StrictDoubleValidator()
 
         if 'min' in props:
             double_validator.setBottom(props['min'])
@@ -361,12 +419,12 @@ class ParameterEditorManager:
 
         # --- Creación de widgets básicos ---
         if widget_type == 'vector':
-            widget = self._create_vector_widget(current_value,props=props)
+            widget = self._create_vector_widget(current_value, props=props)
         elif widget_type == 'string':
             widget = QLineEdit(str(current_value))
         elif widget_type == 'float':
             widget = QLineEdit(str(current_value))
-            validator = QDoubleValidator()
+            validator = StrictDoubleValidator()
             if 'min' in props:
                 validator.setBottom(props['min'])
             if 'max' in props:
@@ -374,29 +432,30 @@ class ParameterEditorManager:
             widget.setValidator(validator)
         elif widget_type == 'int':
             widget = QLineEdit(str(current_value))
-            validator = QIntValidator()
+            validator = StrictIntValidator()
             if 'min' in props:
                 validator.setBottom(props['min'])
             if 'max' in props:
                 validator.setTop(props['max'])
             widget.setValidator(validator)
-        
+
         # --- Creación de QComboBox para opciones ---
         elif widget_type == 'choice':
             widget = NoScrollComboBox()
             options = props.get('options', [])
-            
-            # Soporta tanto listas de diccionarios como diccionarios de diccionarios.
+
+            # Soporta tanto listas de diccionarios como diccionarios 
+            # de diccionarios.
             if isinstance(options, list):
                 for option in options:
                     if isinstance(option, dict):
                         widget.addItem(option.get('label', option.get('name')), option.get('name'))
-                    else: # Lista de strings simples
+                    else:  # Lista de strings simples
                         widget.addItem(str(option), option)
             elif isinstance(options, dict):
                 for name, details in options.items():
                     widget.addItem(details.get('label', name), name)
-            
+
             # Establece el valor actual seleccionado.
             if current_value:
                 index = widget.findData(current_value)
@@ -462,11 +521,11 @@ class ParameterEditorManager:
             # Comprueba si el valor actual cargado corresponde a la opción seleccionada.
             # Esto es útil para saber si debemos usar los valores actuales o los por defecto.
             is_current_selection = len(current_value) > 0 and current_value[0].get('value') == selected_option_name
-            
+
             # Crea y añade los nuevos widgets de sub-parámetros.
             for param_props in parameters_schema:
                 param_name = param_props.get('name')
-                
+
                 # Busca el valor actual para este sub-parámetro específico.
                 current_sub_value = None
                 if is_current_selection:
@@ -474,10 +533,9 @@ class ParameterEditorManager:
                         (p.get('value') for p in current_value if p.get('param_name') == param_name),
                         None
                     )
-                
+
                 # Decide si usar el valor actual (si existe) o el valor por defecto del esquema.
                 value_for_widget = current_sub_value if current_sub_value is not None else param_props.get('default')
-
 
                 # Prepara un diccionario de propiedades para crear el widget del sub-parámetro.
                 sub_props = {
@@ -488,12 +546,12 @@ class ParameterEditorManager:
                 }
                 if param_props.get('min') is not None:
                     sub_props['min'] = param_props.get('min')
-                
+
                 if param_props.get('max') is not None:
                     sub_props['max'] = param_props.get('max')
                 # Reutiliza la función principal de creación de widgets para mantener la consistencia.
                 param_widget = self._create_widget_for_parameter(sub_props)
-                
+
                 # Añade el widget y su etiqueta a un layout horizontal para una mejor alineación.
                 if param_widget:
                     row_widget = QWidget()

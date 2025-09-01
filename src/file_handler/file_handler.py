@@ -58,7 +58,7 @@ class FileHandler:
             "alpha.water": alpha_water(),
             "g": g(),
             "k": k(),
-            "nuTilda" : nuTilda(),
+            "nuTilda": nuTilda(),
             "nut": nut(),
             "epsilon": epsilon(),
             "p_rgh": p_rgh(),
