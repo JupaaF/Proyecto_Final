@@ -1,6 +1,7 @@
 import sys
 import os
 import random
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QPushButton, QWidget, QLabel, QHBoxLayout, QScrollArea, QCheckBox
 )
@@ -9,6 +10,8 @@ from pyvistaqt import QtInteractor
 from vtkmodules.vtkRenderingCore import vtkPropPicker
 
 class GeometryView(QWidget):
+    patch_selection_changed = Signal(str, bool)
+    deselect_all_patches_requested = Signal()
     def __init__(self, filePath, parent=None):
         super().__init__(parent)
         self.setGeometry(100, 100, 1280, 800)
@@ -133,11 +136,13 @@ class GeometryView(QWidget):
                     # Restaurar color original
                     actor.GetProperty().SetColor(self.original_colors[patch_name])
                     self.selected_patches.remove(patch_name)
+                    self.patch_selection_changed.emit(patch_name, False)
                 else:
                     # Resaltar en amarillo
                     actor.GetProperty().SetColor(1, 1, 0)
                     # Agregar a selected_patches
                     self.selected_patches.add(patch_name)
+                    self.patch_selection_changed.emit(patch_name, True)
 
                 # Actualiza el QLabel con la lista de patches seleccionados:
                 seleccionados = ", ".join(self.selected_patches) if self.selected_patches else "ninguno"
@@ -180,10 +185,14 @@ class GeometryView(QWidget):
         
         # Limpiar el conjunto de seleccionados
         self.selected_patches.clear()
+        self.deselect_all_patches_requested.emit()
         
         # Actualizar el label
         self.info_label.setText("Patches seleccionados: ninguno")
         self.plotter.render()
+
+    def get_selected_patches(self):
+        return self.selected_patches
         
 def main():
     app = QApplication(sys.argv)

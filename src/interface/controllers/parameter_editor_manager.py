@@ -95,6 +95,17 @@ class ParameterEditorManager:
         self.get_vtk_patch_names = get_vtk_patch_names_func
         self.parameter_widgets = {}  # Almacena los widgets generados para cada parámetro.
         self.current_file_path = None  # Ruta del archivo que se está editando actualmente.
+        self.patch_groupboxes = {}
+        self.highlighted_patches = {}
+        self.highlight_colors = [
+            "#E6E6FA",  # Lavender
+            "#D8BFD8",  # Thistle
+            "#FFDAB9",  # PeachPuff
+            "#F0E68C",  # Khaki
+            "#ADD8E6",  # LightBlue
+            "#F08080",  # LightCoral
+            "#98FB98",  # PaleGreen
+        ]
 
     def open_parameters_view(self, file_path: Path):
         """
@@ -591,6 +602,7 @@ class ParameterEditorManager:
         container_widget = QWidget()
         container_layout = QVBoxLayout(container_widget)
         container_layout.setContentsMargins(0, 0, 0, 0)
+        self.patch_groupboxes.clear()
 
         # Obtiene los nombres de los patches y mapea los datos actuales para un acceso rápido.
         patch_names = self.get_vtk_patch_names()
@@ -602,6 +614,7 @@ class ParameterEditorManager:
             
             # Crea un GroupBox para agrupar visualmente la configuración de un patch.
             patch_groupbox = QGroupBox()
+            self.patch_groupboxes[patch_name] = patch_groupbox
             group_layout = QVBoxLayout(patch_groupbox)
 
             # Etiqueta con el nombre del patch, en negrita para destacarlo.
@@ -679,3 +692,36 @@ class ParameterEditorManager:
             container_layout.addWidget(patch_groupbox)
 
         return container_widget
+
+    def highlight_patch_group(self, patch_name: str, is_selected: bool):
+        groupbox = self.patch_groupboxes.get(patch_name)
+        if not groupbox:
+            return
+
+        if is_selected:
+            # Seleccionar un color disponible
+            used_colors = {p['color'] for p in self.highlighted_patches.values()}
+            available_colors = [c for c in self.highlight_colors if c not in used_colors]
+            
+            if not available_colors:
+                color = self.highlight_colors[0] # Fallback si todos los colores están en uso
+            else:
+                color = available_colors[0]
+
+            self.highlighted_patches[patch_name] = {
+                'color': color,
+                'original_style': groupbox.styleSheet()
+            }
+            groupbox.setStyleSheet(f"QGroupBox {{ background-color: {color}; border: 1px solid #A9A9A9; margin-top: 10px;}} QGroupBox::title {{ subcontrol-origin: margin; subcontrol-position: top center; padding: 0 3px; }}") #TODO: unificar estilos
+        else:
+            if patch_name in self.highlighted_patches:
+                original_style = self.highlighted_patches[patch_name]['original_style']
+                groupbox.setStyleSheet(original_style)
+                del self.highlighted_patches[patch_name]
+
+    def deselect_all_highlights(self):
+        for patch_name, data in self.highlighted_patches.items():
+            groupbox = self.patch_groupboxes.get(patch_name)
+            if groupbox:
+                groupbox.setStyleSheet(data['original_style'])
+        self.highlighted_patches.clear()

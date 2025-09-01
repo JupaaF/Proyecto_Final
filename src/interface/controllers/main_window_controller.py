@@ -64,6 +64,7 @@ class MainWindowController(QMainWindow):
         self.docker_handler = None ## Modelo
         self.file_browser_manager = None ## Controlador
         self.parameter_editor_manager = None ## Controlador
+        self.visualizer = None
         self.is_running_task = False
 
     def _initialize_app(self):
@@ -370,6 +371,11 @@ class MainWindowController(QMainWindow):
         if self.parameter_editor_manager:
             self.parameter_editor_manager.open_parameters_view(file_path)
 
+            if self.visualizer:
+                selected_patches = self.visualizer.get_selected_patches()
+                for patch_name in selected_patches:
+                    self.parameter_editor_manager.highlight_patch_group(patch_name, True)
+
     def _get_vtk_patch_names(self) -> list[str]:
         """Obtiene los nombres de los patches de VTK del directorio boundary."""
         if not self.file_handler:
@@ -386,9 +392,19 @@ class MainWindowController(QMainWindow):
             if widget := item.widget():
                 widget.deleteLater()
         
-        visualizer = GeometryView(geom_file_path) #TODO: ver si pasarle el widget padre
-        self.vtk_layout.addWidget(visualizer)
+        self.visualizer = GeometryView(geom_file_path)
+        self.visualizer.patch_selection_changed.connect(self.on_patch_selection_changed)
+        self.visualizer.deselect_all_patches_requested.connect(self.on_deselect_all_patches_requested)
+        self.vtk_layout.addWidget(self.visualizer)
         """Crea o actualiza el visualizador de geometría."""
+
+    def on_patch_selection_changed(self, patch_name: str, is_selected: bool):
+        if self.parameter_editor_manager:
+            self.parameter_editor_manager.highlight_patch_group(patch_name, is_selected)
+
+    def on_deselect_all_patches_requested(self):
+        if self.parameter_editor_manager:
+            self.parameter_editor_manager.deselect_all_highlights()
 
     def _prompt_save_changes(self) -> bool:
         """ 
