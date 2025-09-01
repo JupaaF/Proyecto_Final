@@ -98,6 +98,9 @@ class DockerHandler():
         """
         Crea un archivo .foam en el directorio del caso para que ParaView lo reconozca.
         """
+
+        #TODO: Agregar codigo que está en la bitacora 21/08 para cuando ejecutas el caso en paralelo++
+
         # Usar una imagen de Docker que incluya OpenFOAM
         imagen = "openfoam/openfoam10-paraview510" 
         

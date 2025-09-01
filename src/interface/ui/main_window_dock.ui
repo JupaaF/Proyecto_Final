@@ -54,6 +54,7 @@
     <addaction name="actionEjecutar_Simulacion"/>
     <addaction name="actionDetener_Simulacion"/>
     <addaction name="actionVisualizarEnParaview"/>
+    <addaction name="actionCrear_Extrude"/>
    </widget>
    <widget class="QMenu" name="menuAyuda">
     <property name="title">
@@ -222,6 +223,11 @@
    </property>
    <property name="toolTip">
     <string>Lanzar ParaView para visualizar el caso</string>
+   </property>
+  </action>
+  <action name="actionCrear_Extrude">
+   <property name="text">
+    <string>Crear Extrude</string>
    </property>
   </action>
  </widget>
