@@ -125,7 +125,9 @@ class ParameterEditorManager:
 
         self.current_file_path = file_path
         self.parameter_widgets.clear()
-        
+
+        self.patch_groupboxes.clear()
+        self.highlighted_patches.clear()
         # El título se establece en el dock, que es el padre del scroll area
         if self.scroll_area.parentWidget() and self.scroll_area.parentWidget().parentWidget():
             dock_widget = self.scroll_area.parentWidget().parentWidget()
