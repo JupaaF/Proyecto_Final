@@ -40,6 +40,7 @@ FILE_CLASS_MAP = {
     "turbulenceProperties": turbulenceProperties,
     "s": s,
     "omega": omega,
+    "decomposeParDict": DecomposeParDict,
 }
 
 class FileHandler:
@@ -307,15 +308,21 @@ class FileHandler:
         """
         if data['num_processors'] > 1:
             try:
-                decompose_dict = DecomposeParDict()
-                decompose_dict.update_parameters({'numberOfSubdomains': data['num_processors'],
-                                                  'method':  data['method'],
-                                                  'n_x':  data['n_x'],
-                                                  'n_y':  data['n_y'],
-                                                  'n_z':  data['n_z']})
+                # Ensure decomposeParDict is managed by the file handler
+                if 'decomposeParDict' not in self.files:
+                    self.files['decomposeParDict'] = DecomposeParDict()
+
+                decompose_dict = self.files['decomposeParDict']
+                decompose_dict.update_parameters({
+                    'numberOfSubdomains': data['num_processors'],
+                    'method': data['method'],
+                    'n_x': data['n_x'],
+                    'n_y': data['n_y'],
+                    'n_z': data['n_z']
+                })
                 decompose_dict.write_file(self.case_path)
                 return True
             except Exception as e:
                 print(f"Error creating decomposeParDict: {e}")
                 return False
-        return True # It's not an error if num_processors is 1 or less
+        return True  # It's not an error if num_processors is 1 or less

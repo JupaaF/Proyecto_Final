@@ -385,37 +385,52 @@ class MainWindowController(QMainWindow):
 
 
     def open_execute_simulation_parallel(self):
-        """Abre el asistente para ejecutar una nueva simulación en paralelo."""
-        
-        if not self._prompt_save_changes():
-            return # Abort if user cancels
-        
-        # Se crea una instancia temporal del DockerHandler para la verificación
-        docker_handler = DockerHandler(Path("."))
-        
-        if not docker_handler.is_docker_running():
-            QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución o no se encontró. Por favor, inicia Docker Desktop para crear una nueva simulación.")
+        """Abre el asistente para configurar y ejecutar una simulación en paralelo."""
+        if not self.file_handler:
+            QMessageBox.warning(self, "Acción Requerida", "Por favor, cargue o cree una simulación primero.")
             return
 
-        wizard = ParallelWizardController(self,self.file_handler)
+        if not self._prompt_save_changes():
+            return  # Abort if user cancels
+
+        docker_handler = DockerHandler(self.file_handler.get_case_path())
+        if not docker_handler.is_docker_running():
+            QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución. Por favor, inicie Docker Desktop.")
+            return
+
+        # Ensure decomposeParDict exists so the wizard can edit it.
+        # Create with default values if it doesn't exist.
+        decompose_par_dict_path = self.file_handler.get_case_path() / "system" / "decomposeParDict"
+        if not decompose_par_dict_path.exists():
+            default_data = {'num_processors': 2, 'method': 'simple', 'n_x': 2, 'n_y': 1, 'n_z': 1}
+            self.file_handler.create_decompose_par_dict(default_data)
+
+        wizard = ParallelWizardController(self.file_handler, self)
         if wizard.exec() == QDialog.Accepted:
-            data = wizard.get_data()
-            
+            # First, save any pending changes from the main parameter editor
             if self.parameter_editor_manager:
                 if not self.parameter_editor_manager.save_parameters():
-                    return
+                    return  # Abort if main parameters are invalid
                 else:
+                    # Also write changes to files like controlDict, fvSolution etc.
                     self.file_handler.write_files()
+                    # Optionally save to the main JSON backup
                     self.file_handler.save_all_parameters_to_json()
-        
-            # Delegate the creation of decomposeParDict to the file_handler
-            success = self.file_handler.create_decompose_par_dict(data)
             
-            if success:
-                QMessageBox.information(self, "Información", f"Se generó 'decomposeParDict' para {data['num_processors']} procesadores.")
-                self._run_docker_script_in_thread("run_openfoam_parallel.sh", data['num_processors'])
+            # Now, save the parameters from the wizard's own editor
+            if not wizard.save_parameters():
+                QMessageBox.critical(self, "Error en Parámetros", "No se pudieron guardar los parámetros de la configuración paralela. Verifique los valores.")
+                return
+
+            data = wizard.get_data()
+            num_processors = data.get('num_processors', 1)
+
+            if num_processors > 1:
+                QMessageBox.information(self, "Información", f"Configuración paralela guardada. Ejecutando con {num_processors} procesadores.")
+                self._run_docker_script_in_thread("run_openfoam_parallel.sh", num_processors)
             else:
-                QMessageBox.critical(self, "Error en Configuración Paralela", "No se pudo crear el archivo 'decomposeParDict'.")
+                QMessageBox.warning(self, "Ejecución Simple", "El número de procesadores es 1. Ejecutando simulación simple en su lugar.")
+                self.execute_simulation()
 
 
     def _run_docker_script_in_thread(self, script_name: str, num_processors: int = 1):

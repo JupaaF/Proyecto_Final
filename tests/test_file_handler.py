@@ -11,7 +11,8 @@ from src.file_handler.file_handler import FileHandler
 @pytest.fixture
 def file_handler(tmp_path: Path) -> FileHandler:
     """Fixture to create a FileHandler instance in a temporary directory."""
-    return FileHandler(tmp_path)
+    # Provide a default template for testing purposes
+    return FileHandler(tmp_path, template="damBreak")
 
 
 def test_file_handler_initialization(file_handler: FileHandler):
