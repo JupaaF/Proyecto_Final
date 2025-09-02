@@ -43,13 +43,15 @@ class DecomposeParDict(FoamFile):
                 'tooltip': 'Coincide con el número de procesadores a usar en la simulación.',
                 'type': 'int',
                 'current': self.numberOfSubdomains,
-                'required': True
+                'required': True,
+                'min': 1
             },
             'method': {
-                'label': 'Number of Subdomains',
-                'tooltip': 'Método de descomposición.',
-                'type': 'int',
+                'label': 'Método de Descomposición',
+                'tooltip': 'Algoritmo utilizado para realizar la descomposición del dominio.',
+                'type': 'choice',
                 'current': self.method,
+                'options': ['simple', 'hierarchical', 'scotch', 'metis'],
                 'required': True
             },
             'n_x': {
@@ -84,6 +86,18 @@ class DecomposeParDict(FoamFile):
                 self.numberOfSubdomains = num_domains
             else:
                 raise ValueError("El número de subdominios debe ser un entero positivo.")
+
+        if 'method' in params:
+            self.method = str(params['method'])
+
+        if 'n_x' in params:
+            self.n_x = int(params['n_x'])
+
+        if 'n_y' in params:
+            self.n_y = int(params['n_y'])
+
+        if 'n_z' in params:
+            self.n_z = int(params['n_z'])
 
     def write_file(self, case_path: Path):
         """Writes the complete file to the specified case path."""
