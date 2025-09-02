@@ -21,6 +21,8 @@ from .widget_geometria import GeometryView
 from .simulation_wizard_controller import SimulationWizardController
 from .file_browser_manager import FileBrowserManager
 from .parameter_editor_manager import ParameterEditorManager
+from .parallel_wizard_controller import ParallelWizardController
+
 
 # --- Constantes ---
 APP_NAME = "Simulador Hidrosedimentológico"
@@ -34,16 +36,17 @@ class DockerWorker(QObject):
     finished = Signal(bool, str)  # Signal to indicate completion (success, script_name)
     log_received = Signal(str)
 
-    def __init__(self, docker_handler: DockerHandler, script_name: str):
+    def __init__(self, docker_handler: DockerHandler, script_name: str, num_processors: int = 1):
         super().__init__()
         self.docker_handler = docker_handler
         self.script_name = script_name
+        self.num_processors = num_processors
 
     @Slot()
     def run(self):
         """Executes the Docker script and emits the finished signal."""
         try:
-            for line in self.docker_handler.execute_script_in_docker(self.script_name):
+            for line in self.docker_handler.execute_script_in_docker(self.script_name, self.num_processors):
                 self.log_received.emit(line)
             self.finished.emit(True, self.script_name)
         except Exception as e:
@@ -99,6 +102,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
         self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
         self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
+        self.ui.actionEjecutar_Simulacion_en_Paralelo.triggered.connect(self.open_execute_simulation_parallel)
         self.ui.actionLimpiar_Resultados.triggered.connect(self.clean_simulation_results)
         self.ui.actionVisualizarEnParaview.triggered.connect(self.launch_paraview_action)
         self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
@@ -379,7 +383,42 @@ class MainWindowController(QMainWindow):
         
         self._run_docker_script_in_thread("run_openfoam.sh")
 
-    def _run_docker_script_in_thread(self, script_name: str):
+
+    def open_execute_simulation_parallel(self):
+        """Abre el asistente para ejecutar una nueva simulación en paralelo."""
+        
+        if not self._prompt_save_changes():
+            return # Abort if user cancels
+        
+        # Se crea una instancia temporal del DockerHandler para la verificación
+        docker_handler = DockerHandler(Path("."))
+        
+        if not docker_handler.is_docker_running():
+            QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución o no se encontró. Por favor, inicia Docker Desktop para crear una nueva simulación.")
+            return
+
+        wizard = ParallelWizardController(self,self.file_handler)
+        if wizard.exec() == QDialog.Accepted:
+            data = wizard.get_data()
+            
+            if self.parameter_editor_manager:
+                if not self.parameter_editor_manager.save_parameters():
+                    return
+                else:
+                    self.file_handler.write_files()
+                    self.file_handler.save_all_parameters_to_json()
+        
+            # Delegate the creation of decomposeParDict to the file_handler
+            success = self.file_handler.create_decompose_par_dict(data)
+            
+            if success:
+                QMessageBox.information(self, "Información", f"Se generó 'decomposeParDict' para {data['num_processors']} procesadores.")
+                self._run_docker_script_in_thread("run_openfoam_parallel.sh", data['num_processors'])
+            else:
+                QMessageBox.critical(self, "Error en Configuración Paralela", "No se pudo crear el archivo 'decomposeParDict'.")
+
+
+    def _run_docker_script_in_thread(self, script_name: str, num_processors: int = 1):
         """
         Runs a Docker script in a separate thread to avoid freezing the GUI.
         """
@@ -388,7 +427,7 @@ class MainWindowController(QMainWindow):
         self.is_running_task = True
         
         self.thread = QThread()
-        self.worker = DockerWorker(self.docker_handler, script_name)
+        self.worker = DockerWorker(self.docker_handler, script_name, num_processors)
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)

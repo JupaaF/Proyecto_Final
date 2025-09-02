@@ -19,6 +19,7 @@ from .openfoam_models.turbulenceProperties import turbulenceProperties
 from .openfoam_models.nuTilda import nuTilda
 from .openfoam_models.s import s
 from .openfoam_models.omega import omega
+from .openfoam_models.decomposeParDict import DecomposeParDict
 
 # Diccionario que mapea nombres de archivo a sus clases correspondientes
 # Esto permite la instanciación dinámica de objetos a partir de los nombres en el JSON
@@ -298,3 +299,23 @@ class FileHandler:
                 except:
                     print(file_name)
                     raise 
+
+    def create_decompose_par_dict(self, data) -> bool:
+        """
+        Creates and writes the decomposeParDict file for a parallel run.
+        This method is called explicitly when a parallel run is initiated.
+        """
+        if data['num_processors'] > 1:
+            try:
+                decompose_dict = DecomposeParDict()
+                decompose_dict.update_parameters({'numberOfSubdomains': data['num_processors'],
+                                                  'method':  data['method'],
+                                                  'n_x':  data['n_x'],
+                                                  'n_y':  data['n_y'],
+                                                  'n_z':  data['n_z']})
+                decompose_dict.write_file(self.case_path)
+                return True
+            except Exception as e:
+                print(f"Error creating decomposeParDict: {e}")
+                return False
+        return True # It's not an error if num_processors is 1 or less

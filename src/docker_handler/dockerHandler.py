@@ -8,7 +8,7 @@ class DockerHandler():
         # self.IMAGEN_OPENFOAM = "openfoam/openfoam10-paraview510" # imagen de Docker para ejecutar simulacion de interFoam e icoFoam
         
 
-    def execute_script_in_docker(self, script_name: str):
+    def execute_script_in_docker(self, script_name: str, num_processors: int = 1):
         """
         Ejecuta un script dentro de un contenedor Docker y transmite la salida.
 
@@ -17,6 +17,7 @@ class DockerHandler():
 
         Yields:
             str: Una línea de la salida del script.
+            num_processors (int): El número de procesadores para correr la simulación.
 
         Raises:
             FileNotFoundError: Si el comando 'docker' no se encuentra.
@@ -32,7 +33,8 @@ class DockerHandler():
             "-v", f"{local_script_path.as_posix()}:{script_in_container}",
             "--entrypoint", "bash",
             self.IMAGEN_SEDFOAM,
-            script_in_container
+            script_in_container,
+            str(num_processors)
         ]
 
         try:
@@ -100,9 +102,6 @@ class DockerHandler():
         """
 
         #TODO: Agregar codigo que está en la bitacora 21/08 para cuando ejecutas el caso en paralelo++
-
-        # Usar una imagen de Docker que incluya OpenFOAM
-        imagen = "openfoam/openfoam10-paraview510" 
         
         ruta_docker_volumen = self.case_path.as_posix()
         nombre_caso = self.case_path.name
