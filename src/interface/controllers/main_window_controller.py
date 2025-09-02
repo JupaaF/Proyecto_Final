@@ -99,11 +99,64 @@ class MainWindowController(QMainWindow):
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
         self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
         self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
+        self.ui.actionLimpiar_Resultados.triggered.connect(self.clean_simulation_results)
         self.ui.actionVisualizarEnParaview.triggered.connect(self.launch_paraview_action)
         self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
         self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
         self.ui.actionGuardar_Parametros.setShortcut(QKeySequence.Save)
 
+    def clean_simulation_results(self):
+        """
+        Limpia los resultados de la simulación actual, eliminando las carpetas
+        de resultados numéricos, excepto la carpeta '0'.
+        """
+        if not self.file_handler:
+            QMessageBox.warning(self, "Acción Requerida", "Por favor, cargue o cree una simulación primero.")
+            return
+
+        case_path = self.file_handler.get_case_path()
+        
+        # Preguntar al usuario si está seguro
+        reply = QMessageBox.question(self, "Confirmar Limpieza",
+                                     f"¿Está seguro de que desea eliminar los resultados de la simulación en '{case_path.name}'?\n"
+                                     "Esta acción no se puede deshacer.",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.No:
+            return
+
+        deleted_folders = []
+        error_folders = []
+
+        for item in case_path.iterdir():
+            if item.is_dir():
+                # Intentar convertir el nombre de la carpeta a un número
+                try:
+                    # Permite números con decimales, como '0.1' o '0.5'
+                    float(item.name)
+                    is_numeric = True
+                except ValueError:
+                    is_numeric = False
+
+                if is_numeric and item.name != "0":
+                    try:
+                        shutil.rmtree(item)
+                        deleted_folders.append(item.name)
+                    except OSError as e:
+                        error_folders.append(item.name)
+                        print(f"Error deleting folder {item.name}: {e}")
+
+        if deleted_folders:
+            QMessageBox.information(self, "Limpieza Exitosa",
+                                    f"Se eliminaron las siguientes carpetas de resultados:\n\n"
+                                    f"{', '.join(deleted_folders)}")
+        elif not error_folders:
+            QMessageBox.information(self, "Sin Resultados", "No se encontraron carpetas de resultados para limpiar.")
+
+        if error_folders:
+            QMessageBox.critical(self, "Error de Limpieza",
+                                 f"No se pudieron eliminar las siguientes carpetas:\n\n"
+                                 f"{', '.join(error_folders)}")
 
     def open_documentation(self):
         """Abre la documentación en el navegador web."""

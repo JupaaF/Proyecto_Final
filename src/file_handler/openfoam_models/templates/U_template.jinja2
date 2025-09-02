@@ -1,31 +1,30 @@
-{# Plantilla Jinja2 para el archivo 'U' de OpenFOAM #}
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform ({{internalField.x}} {{internalField.y}} {{internalField.z}});
+internalField   uniform ({{ internalField.x }} {{ internalField.y }} {{ internalField.z }});
 
 boundaryField
 {
-    {# Itera sobre la lista de condiciones de borde pasadas desde Python #}
     {% for patch in boundaryField %}
     {{ patch.patchName }}
     {
         type            {{ patch.type }};
-        
-        {# Itera sobre todos los parámetros del patch y los escribe #}
-        {% for key, value in patch.items() %}
-        {% if key not in ['patchName', 'type'] %}
-        {% if value is mapping %}
-        {{ key }}           uniform ({{ value.x }} {{ value.y }} {{ value.z }});
+        {% if patch.type == "flowRateInletVelocity" %}
+        volumetricFlowRate           constant {{ patch.volumetricFlowRate }};
         {% else %}
-        {{ key }}           uniform {{ value }};
+            {% for key, value in patch.items() %}
+                {% if key not in ['patchName', 'type'] %}
+                    {% if value is mapping %}
+                        {{ key }}           uniform ({{ value.x }} {{ value.y }} {{ value.z }});
+                    {% else %}
+                        {{ key }}           uniform {{ value }};
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
         {% endif %}
-        {% endif %}
-        {% endfor %}
     }
     {% endfor %}
     defaultFaces
     {
         type            empty;
     }
-
 }

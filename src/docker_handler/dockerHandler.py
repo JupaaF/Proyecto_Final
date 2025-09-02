@@ -114,8 +114,8 @@ class DockerHandler():
             "docker", "run", "--rm",
             "-v", f"{ruta_docker_volumen}:/case",
             "--entrypoint", "bash",
-            imagen,
-            "-c", f"source /opt/openfoam*/etc/bashrc && {command}"
+            self.IMAGEN_SEDFOAM,
+            "-c", f"source /usr/lib/openfoam/openfoam2312/etc/bashrc && {command}"
         ]
 
         try:

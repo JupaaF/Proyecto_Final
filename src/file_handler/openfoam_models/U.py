@@ -117,8 +117,19 @@ class U(FoamFile):
                                         'label': 'Valor de Velocidad',
                                         'tooltip': 'Vector de velocidad uniforme para esta condición de borde.',
                                         'default': {'x':0,'y':0,'z':0},
-                                        'min': -5,
-                                        'max': 5
+                                    }
+                                ]
+                            },
+                            {
+                                'name': 'flowRateInletVelocity',
+                                'label': 'flowRateInletVelocity',
+                                'parameters' : [
+                                    {
+                                        'name': 'volumetricFlowRate',
+                                        'type': 'int',
+                                        'label': 'flowRateInletVelocity',
+                                        'tooltip': 'flowRateInletVelocity',
+                                        'default': 0,
                                     }
                                 ]
                             }

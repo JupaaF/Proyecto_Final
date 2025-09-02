@@ -52,6 +52,7 @@
      <string>Simulación</string>
     </property>
     <addaction name="actionEjecutar_Simulacion"/>
+    <addaction name="actionLimpiar_Resultados"/>
     <addaction name="actionDetener_Simulacion"/>
     <addaction name="actionVisualizarEnParaview"/>
     <addaction name="actionCrear_Extrude"/>
@@ -228,6 +229,11 @@
   <action name="actionCrear_Extrude">
    <property name="text">
     <string>Crear Extrude</string>
+   </property>
+  </action>
+  <action name="actionLimpiar_Resultados">
+   <property name="text">
+    <string>Limpiar Resultados de Simulación</string>
    </property>
   </action>
  </widget>

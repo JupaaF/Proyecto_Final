@@ -119,7 +119,7 @@ class ParameterEditorManager:
             file_path (Path): La ruta al archivo cuyos parámetros se van a editar.
         """
         # Guarda automáticamente los parámetros del archivo anterior antes de cambiar.
-        if self.current_file_path and self.current_file_path != file_path:
+        if self.current_file_path:
             if not self.save_parameters():
                 return  # Si el guardado falla (p.ej., por validación), aborta.
 
