@@ -69,15 +69,15 @@ class omega(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (p_rgh)',
-                'tooltip': 'Valor inicial de la presión modificada en el dominio.',
+                'label': 'Campo Interno',
+                'tooltip': 'Valor inicial en el dominio.',
                 'type': 'float',
                 'current': self.internalField,
                 'group': 'General'
             },
             'boundaryField': {
-                'label': 'Condiciones de Borde para Presión',
-                'tooltip': 'Define las condiciones de presión modificada en los límites.',
+                'label': 'Condiciones de Borde',
+                'tooltip': 'Define las condiciones en los límites.',
                 'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
@@ -85,30 +85,50 @@ class omega(FoamFile):
                     'patchName': 'string',
                     'type': {
                         'type': 'choice',
-                        'default': 'fixedFluxPressure',
+                        'default': 'fixedValue',
                         'options': [
                             {
-                                'name': 'fixedFluxPressure',
-                                'label': 'Presión con Flujo Fijo (fixedFluxPressure)',
+                                'name': 'fixedValue',
+                                'label': 'fixedValue',
                                 'parameters' : [
                                     {
                                         'name': 'value',
                                         'type': 'float',
                                         'label': 'Valor (uniforme)',
-                                        'tooltip': 'Valor de presión para esta condición de borde.',
+                                        'tooltip': 'value',
                                         'default': 0
                                     }
                                 ]
                             },
                             {
-                                'name': 'totalPressure',
-                                'label': 'Presión Total',
+                                'name': 'omegaWallFunction',
+                                'label': 'omegaWallFunction',
                                 'parameters' : [
                                     {
-                                        'name': 'p0', #cambie esto
+                                        'name': 'value', #cambie esto
                                         'type': 'float',
-                                        'label': 'Valor de Presión Total',
-                                        'tooltip': 'Valor de la presión total (p0) para esta condición.',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    }
+                                ]
+                            },
+                            {
+                                'name': 'inletOutlet',
+                                'label': 'inletOutlet',
+                                'parameters' : [
+                                    {
+                                        'name': 'inletValue', #cambie esto
+                                        'type': 'float',
+                                        'label': 'inletValue',
+                                        'tooltip': 'inletValue',
+                                        'default': 0
+                                    },
+                                    {
+                                        'name': 'value', #cambie esto
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
                                         'default': 0
                                     }
                                 ]

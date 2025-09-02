@@ -153,7 +153,7 @@ class ParameterEditorManager:
                 self.parameter_widgets[param_name] = (widget, param_props)
 
         layout.addLayout(form_layout)
-        
+
         # Ajusta el tamaño mínimo horizontal del contenedor para que quepan todos los widgets.
         # container.setMinimumWidth
         self.scroll_area.setMinimumWidth(form_layout.sizeHint().width() + 40)
@@ -226,15 +226,11 @@ class ParameterEditorManager:
             list: Una lista de diccionarios, donde cada uno representa un parámetro
                   con su nombre y valor.
         """
-        params = []
+        params = {}
         layout = widget.layout()
         
         # El primer parámetro es siempre la opción seleccionada en el ComboBox principal.
         main_combo = layout.itemAt(0).widget()
-        params.append({
-            'param_name': 'solver_selected',  # TODO: Hardcodeado, considerar hacerlo dinámico.
-            'value': main_combo.currentData()
-        })
 
         # Encuentra el esquema de los sub-parámetros para la opción actualmente seleccionada.
         param_props_schema = next(
@@ -251,12 +247,9 @@ class ParameterEditorManager:
             value = self._get_value_from_widget(param_widget, param_schema)
 
             if value is not None:
-                params.append({
-                    'param_name': param_schema.get('name'),
-                    'value': value
-                })
+                params[param_schema.get('name')] = value
         
-        return params
+        return [main_combo.currentData(),params]
 
     def _get_vector_from_widget(self, vector_widget: QWidget) -> dict:
         """
@@ -352,23 +345,26 @@ class ParameterEditorManager:
         param_type = param_schema.get('type')
         value = None
 
-        if isinstance(widget, QComboBox):
+        if param_type == 'choice':
             value = widget.currentData()
-        elif isinstance(widget, QLineEdit):
-            text_value = widget.text()
+        elif param_type == 'string':
+            value = widget.text()
+        elif param_type == 'float':
             try:
-                if param_type == 'float':
-                    value = float(text_value)
-                elif param_type == 'int':
-                    value = int(text_value)
-                else:
-                    value = text_value
+                value = float(widget.text())
             except ValueError:
-                value = text_value  # Si falla la conversión, se mantiene como texto.
-        elif hasattr(self, '_get_vector_from_widget') and widget.layout() is not None:
-            # Comprueba si es un widget de vector (tiene layout con 3 hijos).
-            if widget.layout().count() == 3:
-                value = self._get_vector_from_widget(widget)
+                raise
+        elif param_type == 'int':
+            try:
+                value = int(widget.text())
+            except ValueError:
+                raise
+        elif param_type == 'vector':
+            value = self._get_vector_from_widget(widget)
+        elif param_type == 'choice_with_options':
+            value = self._get_choice_with_options_from_widget(widget,param_schema)
+        elif param_type == 'patches':
+            value = self._get_patches_from_widget(widget,param_schema)
         
         return value
 
@@ -533,7 +529,7 @@ class ParameterEditorManager:
 
             # Comprueba si el valor actual cargado corresponde a la opción seleccionada.
             # Esto es útil para saber si debemos usar los valores actuales o los por defecto.
-            is_current_selection = len(current_value) > 0 and current_value[0].get('value') == selected_option_name
+            is_current_selection = len(current_value) > 0 and current_value[0] == selected_option_name
 
             # Crea y añade los nuevos widgets de sub-parámetros.
             for param_props in parameters_schema:
@@ -542,10 +538,7 @@ class ParameterEditorManager:
                 # Busca el valor actual para este sub-parámetro específico.
                 current_sub_value = None
                 if is_current_selection:
-                    current_sub_value = next(
-                        (p.get('value') for p in current_value if p.get('param_name') == param_name),
-                        None
-                    )
+                    current_sub_value = current_value[1].get(param_name)
 
                 # Decide si usar el valor actual (si existe) o el valor por defecto del esquema.
                 value_for_widget = current_sub_value if current_sub_value is not None else param_props.get('default')
@@ -579,7 +572,7 @@ class ParameterEditorManager:
         # Inicializa la vista con los parámetros de la opción seleccionada por defecto.
         # Esto es crucial para que la UI muestre los valores correctos al abrir el archivo.
         if current_value:
-            initial_selection = current_value[0].get('value')
+            initial_selection = current_value[0]
             idx = main_combo.findData(initial_selection)
             if idx != -1:
                 main_combo.setCurrentIndex(idx)

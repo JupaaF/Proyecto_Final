@@ -23,7 +23,9 @@ class transportProperties(FoamFile):
         template = self.jinja_env.get_template("transportProperties_template.jinja2")
         
         # Convierte la lista de parámetros en un diccionario para simplificar el manejo en el jinja
-        params_dict = {item['param_name']: item['value'] for item in self.selected_solver}
+        if self.selected_solver:
+            params_dict = self.selected_solver[1].copy()
+            params_dict['solver_selected'] = self.selected_solver[0]
 
         context = {
             'sigma': self.sigma,

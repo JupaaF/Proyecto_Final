@@ -76,8 +76,8 @@ class s(FoamFile):
                 'group': 'General'
             },
             'boundaryField': {
-                'label': 'Condiciones de Borde para Presión',
-                'tooltip': 'Define las condiciones de presión modificada en los límites.',
+                'label': 'Condiciones de Borde',
+                'tooltip': 'Define las condiciones en los límites.',
                 'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
@@ -95,7 +95,7 @@ class s(FoamFile):
                                         'name': 'value',
                                         'type': 'float',
                                         'label': 'Valor (uniforme)',
-                                        'tooltip': 'Valor de presión para esta condición de borde.',
+                                        'tooltip': 'Valor para esta condición de borde.',
                                         'default': 0
                                     }
                                 ]
@@ -112,14 +112,14 @@ class s(FoamFile):
                                     {
                                         'name': 'inletValue',
                                         'type': 'float',
-                                        'label': 'Valor de entrada',
+                                        'label': 'inletValue',
                                         'tooltip': 'Valor de presión para esta condición de borde.',
                                         'default': 0
                                     },
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Valor fijo',
+                                        'label': 'value',
                                         'tooltip': 'Valor de presión para esta condición de borde.',
                                         'default': 0
                                     }

@@ -119,6 +119,26 @@ class k(FoamFile):
                                         'default': 0
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'fixedValue',
+                                'label': 'fixedValue',
+                                'parameters' : [
+                                    {
+                                        'name': 'intensity',
+                                        'type': 'float',
+                                        'label': 'intensity',
+                                        'tooltip': 'intensity',
+                                        'default': 0
+                                    },
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    }
+                                ]
                             }
                         ]
                     }

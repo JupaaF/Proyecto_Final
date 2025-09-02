@@ -13,9 +13,11 @@ class fvSolution(FoamFile):
 
     def _get_string(self):
         template = self.jinja_env.get_template("fvSolution_template.jinja2")
-
+        params_dict = {}
         # Convierte la lista de parámetros en un diccionario para simplificar el manejo en el jinja
-        params_dict = {item['param_name']: item['value'] for item in self.selected_solver}
+        if self.selected_solver:
+            params_dict = self.selected_solver[1].copy()
+            params_dict['solver_selected'] = self.selected_solver[0]
 
         context = {
             'params': params_dict
@@ -23,7 +25,7 @@ class fvSolution(FoamFile):
 
         content = template.render(context)
         return self.get_header() + content
-
+    
     def update_parameters(self, params: dict):
         """
         Actualiza los parámetros desde un diccionario.
@@ -115,21 +117,21 @@ class fvSolution(FoamFile):
                                 'name': 'nOuterCorrectors',
                                 'label': 'PIMPLE nOuterCorrectors',
                                 'tooltip': 'Número de correctores externos en el algoritmo PIMPLE.',
-                                'type': 'integer',
+                                'type': 'int',
                                 'default': 1
                             },
                             {
                                 'name': 'nCorrectors',
                                 'label': 'PIMPLE nCorrectors',
                                 'tooltip': 'Número de correctores internos en el algoritmo PIMPLE.',
-                                'type': 'integer',
+                                'type': 'int',
                                 'default': 3
                             },
                             {
                                 'name': 'nNonOrthogonalCorrectors',
                                 'label': 'PIMPLE nNonOrthogonalCorrectors',
                                 'tooltip': 'Número de correctores no ortogonales en el algoritmo PIMPLE.',
-                                'type': 'integer',
+                                'type': 'int',
                                 'default': 0
                             }
                         ]

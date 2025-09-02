@@ -129,21 +129,6 @@ class FoamFile(ABC):
 
             if param_props.get('options') is None:
                 raise ValueError("Faltan las opciones, no hay opciones")
-
-            if param_value[0].get('param_name') != 'solver_selected':
-                raise ValueError("Valor invalido, no esta el solver")
-            
-            opciones = param_props.get('options')
-
-            exist = False
-
-            for opcion in opciones:
-                if param_value[0].get('value') == opcion.get('name'):
-                    exist = True
-                    ## TODO: Falta poner que checkee si los parametros que agrega realemnte existen
-
-            if not exist:
-                raise ValueError("Valor invalido, no existe")
             
         if param_type == "patches":
             if not isinstance(param_value,list):

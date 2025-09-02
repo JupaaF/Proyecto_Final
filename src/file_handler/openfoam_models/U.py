@@ -132,6 +132,26 @@ class U(FoamFile):
                                         'default': 0,
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'inletOutlet',
+                                'label': 'inletOutlet',
+                                'parameters' : [
+                                    {
+                                        'name': 'inletValue',
+                                        'type': 'vector',
+                                        'label': 'inletValue',
+                                        'tooltip': 'inletValue',
+                                        'default': {'x':0,'y':0,'z':0},
+                                    },
+                                    {
+                                        'name': 'value',
+                                        'type': 'vector',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': {'x':0,'y':0,'z':0},
+                                    }
+                                ]
                             }
                         ]
                     }

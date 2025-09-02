@@ -112,6 +112,19 @@ class alpha_water(FoamFile):
                                         'default': 0
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'fixedValue',
+                                'label': 'fixedValue',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    },
+                                ]
                             }
                         ]
                     }
