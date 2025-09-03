@@ -27,6 +27,11 @@ class controlDict(FoamFile):
         self.maxDeltaT = 1
         self.writeCompression = 'off'
         self.runTimeModifiable = 'yes'
+
+        # Valores para parámetros opcionales
+        self.timeFormat = None
+        self.timePrecision = None
+        self.graphFormat = None
         
     def _get_string(self):
         template = self.jinja_env.get_template("controlDict_template.jinja2")
@@ -46,7 +51,10 @@ class controlDict(FoamFile):
             'maxAlphaCo': self.maxAlphaCo,
             'maxDeltaT': self.maxDeltaT,
             'writeCompression': self.writeCompression,
-            'runTimeModifiable': self.runTimeModifiable
+            'runTimeModifiable': self.runTimeModifiable,
+            'timeFormat': self.timeFormat,
+            'timePrecision': self.timePrecision,
+            'graphFormat': self.graphFormat
         }
         content = template.render(context)
         return self.get_header() + content
@@ -63,6 +71,12 @@ class controlDict(FoamFile):
         for key, value in params.items():
 
             if not hasattr(self,key):
+                continue
+            
+            # Si el valor es None, es un parámetro opcional que se está desactivando.
+            # Lo seteamos directamente sin validar.
+            if value is None:
+                setattr(self, key, None)
                 continue
 
             props = param_props[key]
@@ -228,5 +242,38 @@ class controlDict(FoamFile):
                 'current': self.runTimeModifiable,
                 'required': False,
                 'group': 'Avanzado'
+            },
+
+            # --- Opcionales ---
+            'timeFormat': {
+                'label': 'Formato de Tiempo',
+                'tooltip': 'Formato para los nombres de los directorios de tiempo.',
+                'type': 'choice',
+                'options': ['general', 'fixed', 'scientific'],
+                'default': 'general',
+                'optional': True,
+                'group': 'Avanzado',
+                'current': self.timeFormat
+            },
+            'timePrecision': {
+                'label': 'Precisión del Tiempo',
+                'tooltip': 'Número de dígitos en los nombres de los directorios de tiempo.',
+                'type': 'int',
+                'default': 6,
+                'min': 1,
+                'max': 12,
+                'optional': True,
+                'group': 'Avanzado',
+                'current': self.timePrecision
+            },
+            'graphFormat': {
+                'label': 'Formato de Gráficos',
+                'tooltip': 'Formato de salida para los gráficos generados.',
+                'type': 'choice',
+                'options': ['raw', 'gnuplot', 'xmgr', 'csv'],
+                'default': 'raw',
+                'optional': True,
+                'group': 'Avanzado',
+                'current': self.graphFormat
             }
         }

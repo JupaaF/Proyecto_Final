@@ -2,8 +2,41 @@ from pathlib import Path
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel,
                                QLineEdit, QComboBox, QHBoxLayout, QGroupBox,
-                               QMessageBox, QScrollArea)
-from PySide6.QtGui import QIntValidator, QDoubleValidator, QFont
+                               QMessageBox, QScrollArea, QPushButton, QDialog,
+                               QCheckBox, QDialogButtonBox, QApplication)
+from PySide6.QtGui import QIntValidator, QDoubleValidator, QFont, QPalette
+
+
+class OptionalParametersDialog(QDialog):
+    """
+    Un diálogo que permite al usuario seleccionar parámetros opcionales para añadir.
+    """
+    def __init__(self, available_params, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Agregar Parámetros Opcionales")
+        
+        layout = QVBoxLayout(self)
+        self.checkboxes = {}
+
+        # Crea un checkbox por cada parámetro opcional disponible.
+        for param_name, param_props in available_params.items():
+            label = param_props.get('label', param_name)
+            checkbox = QCheckBox(label)
+            checkbox.setToolTip(param_props.get('tooltip', ''))
+            self.checkboxes[param_name] = checkbox
+            layout.addWidget(checkbox)
+            
+        # Botones de Aceptar/Cancelar.
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+
+    def get_selected_parameters(self):
+        """
+        Devuelve una lista con los nombres de los parámetros seleccionados.
+        """
+        return [name for name, checkbox in self.checkboxes.items() if checkbox.isChecked()]
 
 
 class StrictIntValidator(QIntValidator):
@@ -94,18 +127,12 @@ class ParameterEditorManager:
         self.file_handler = file_handler
         self.get_vtk_patch_names = get_vtk_patch_names_func
         self.parameter_widgets = {}  # Almacena los widgets generados para cada parámetro.
+        self.optional_params_schema = {} # Almacena el esquema de los parámetros opcionales disponibles.
+        self.active_optional_params = set() # Almacena los nombres de los params opcionales activos
         self.current_file_path = None  # Ruta del archivo que se está editando actualmente.
         self.patch_groupboxes = {}
         self.highlighted_patches = {}
-        self.highlight_colors = [
-            "#E6E6FA",  # Lavender
-            "#D8BFD8",  # Thistle
-            "#FFDAB9",  # PeachPuff
-            "#F0E68C",  # Khaki
-            "#ADD8E6",  # LightBlue
-            "#F08080",  # LightCoral
-            "#98FB98",  # PaleGreen
-        ]
+        self._setup_highlight_colors()
 
     def open_parameters_view(self, file_path: Path):
         """
@@ -139,20 +166,43 @@ class ParameterEditorManager:
         form_layout = QFormLayout()
 
         # Obtiene los parámetros editables del archivo a través del file_handler.
-        dict_parameters = self.file_handler.get_editable_parameters(file_path)
+        all_params = self.file_handler.get_editable_parameters(file_path)
+        
+        self.optional_params_schema.clear()
+        self.active_optional_params.clear()
 
-        if not dict_parameters:
+        required_params = {}
+        if all_params:
+            for name, props in all_params.items():
+                # Si el parámetro es opcional, lo guardamos para más tarde.
+                if props.get('optional'):
+                    self.optional_params_schema[name] = props
+                    # Si el parámetro opcional ya tiene un valor `current`,
+                    # significa que fue guardado previamente y debe mostrarse.
+                    if props.get('current') is not None:
+                        required_params[name] = props
+                        self.active_optional_params.add(name)
+                else:
+                    required_params[name] = props
+
+        if not required_params:
             form_layout.addRow(QLabel("Este archivo no tiene parámetros editables."))
         else:
-            # Itera sobre cada parámetro y crea el widget correspondiente.
-            for param_name, param_props in dict_parameters.items():
-                label = QLabel(param_props.get('label', param_name))
-                label.setToolTip(param_props.get('tooltip', ''))
-                widget = self._create_widget_for_parameter(param_props)
-                form_layout.addRow(label, widget)
-                self.parameter_widgets[param_name] = (widget, param_props)
+            # Itera sobre cada parámetro requerido y crea el widget correspondiente.
+            for param_name, param_props in required_params.items():
+                self._add_parameter_to_view(param_name, param_props, form_layout)
 
         layout.addLayout(form_layout)
+
+        # --- Botón para añadir parámetros opcionales ---
+        if self.optional_params_schema:
+            self.add_optional_param_button = QPushButton("Agregar Parámetro Opcional")
+            # Deshabilita el botón si todos los parámetros opcionales ya están activos.
+            if len(self.active_optional_params) == len(self.optional_params_schema):
+                self.add_optional_param_button.setEnabled(False)
+
+            self.add_optional_param_button.clicked.connect(self._open_optional_parameters_dialog)
+            layout.addWidget(self.add_optional_param_button)
 
         # Ajusta el tamaño mínimo horizontal del contenedor para que quepan todos los widgets.
         # container.setMinimumWidth
@@ -180,30 +230,22 @@ class ParameterEditorManager:
             return True
 
         new_params = {}
-        # Recorre los widgets para obtener los nuevos valores.
+        # Recorre los widgets activos para obtener sus valores.
         for param_name, (widget, props) in self.parameter_widgets.items():
-            widget_type = props.get('type', 'string')
             try:
-                # Extrae el valor del widget según su tipo.
-                if widget_type == 'vector':
-                    new_params[param_name] = self._get_vector_from_widget(widget)
-                elif widget_type == 'patches':
-                    new_params[param_name] = self._get_patches_from_widget(widget, props)
-                elif widget_type == 'choice_with_options':
-                    new_params[param_name] = self._get_choice_with_options_from_widget(widget, props)
-                elif widget_type == 'choice':
-                    new_params[param_name] = widget.currentData()
-                elif widget_type == 'int':
-                    new_params[param_name] = int(widget.text())
-                elif widget_type == 'float':
-                    new_params[param_name] = float(widget.text())
-                else:  # 'string' y otros casos por defecto.
-                    new_params[param_name] = widget.text()
+                value = self._get_value_from_widget(widget, props)
+                if value is not None:
+                    new_params[param_name] = value
             except ValueError:
-                # Si la conversión de tipo falla (p.ej., "abc" a int), muestra una advertencia.
                 QMessageBox.warning(self.scroll_area, "Valor Inválido",
-                                    "Existen valores inválidos. Por favor revise los parámetros.")
+                                    f"El valor para '{props.get('label', param_name)}' es inválido.")
                 return False
+
+        # Añade los parámetros opcionales que no están activos con valor None
+        # para que se eliminen al guardar.
+        for param_name in self.optional_params_schema:
+            if param_name not in self.active_optional_params:
+                new_params[param_name] = None
 
         # Si se recopilaron nuevos parámetros, se guardan en el archivo.
         if new_params:
@@ -688,6 +730,100 @@ class ParameterEditorManager:
 
         return container_widget
 
+    def _add_parameter_to_view(self, param_name: str, param_props: dict, layout: QFormLayout):
+        """
+        Crea y añade los widgets para un parámetro al layout especificado.
+        """
+        label = QLabel(param_props.get('label', param_name))
+        label.setToolTip(param_props.get('tooltip', ''))
+        
+        # Si el parámetro es opcional, usa el valor 'default' si 'current' no existe.
+        if param_props.get('optional') and 'current' not in param_props:
+            param_props['current'] = param_props.get('default')
+
+        widget = self._create_widget_for_parameter(param_props)
+        
+        if param_props.get('optional'):
+            # Si es opcional, añadimos un botón para eliminarlo.
+            remove_button = QPushButton("X")
+            remove_button.setFixedSize(24, 24)
+            remove_button.setToolTip("Eliminar este parámetro opcional")
+            
+            # Conectamos la señal de clic para eliminar el parámetro.
+            # Usamos una lambda para capturar el nombre del parámetro y el layout.
+            remove_button.clicked.connect(
+                lambda: self._remove_optional_parameter(param_name, layout)
+            )
+
+            # Usamos un HBoxLayout para alinear el widget y el botón de eliminar.
+            container = QWidget()
+            h_layout = QHBoxLayout(container)
+            h_layout.setContentsMargins(0, 0, 0, 0)
+            h_layout.addWidget(widget)
+            h_layout.addWidget(remove_button)
+            
+            layout.addRow(label, container)
+        else:
+            layout.addRow(label, widget)
+            
+        self.parameter_widgets[param_name] = (widget, param_props)
+
+    def _remove_optional_parameter(self, param_name: str, layout: QFormLayout):
+        """
+        Elimina un parámetro opcional de la vista y de los widgets activos.
+        """
+        if param_name in self.parameter_widgets:
+            # Elimina el widget del layout.
+            # `layout.getWidgetRows()` podría ayudar a encontrar la fila.
+            # Por simplicidad, aquí lo buscamos y eliminamos.
+            for i in range(layout.rowCount()):
+                # Suponemos que la etiqueta del campo es el primer item de la fila
+                label_item = layout.itemAt(i, QFormLayout.LabelRole)
+                if label_item and label_item.widget() and label_item.widget().text() == self.parameter_widgets[param_name][1].get('label', param_name):
+                    layout.removeRow(i)
+                    break
+            
+            # Elimina el parámetro de los widgets activos y del conjunto de activos.
+            del self.parameter_widgets[param_name]
+            self.active_optional_params.remove(param_name)
+            
+            # Habilita el botón de "Agregar" si estaba deshabilitado.
+            if hasattr(self, 'add_optional_param_button'):
+                self.add_optional_param_button.setEnabled(True)
+
+    def _open_optional_parameters_dialog(self):
+        """
+        Abre un diálogo para que el usuario seleccione qué parámetros opcionales añadir.
+        """
+        # Filtra los parámetros que aún no han sido añadidos.
+        available_params = {
+            name: props for name, props in self.optional_params_schema.items()
+            if name not in self.active_optional_params
+        }
+
+        if not available_params:
+            QMessageBox.information(self.scroll_area, "Sin Parámetros",
+                                    "Todos los parámetros opcionales ya han sido añadidos.")
+            return
+
+        dialog = OptionalParametersDialog(available_params, self.scroll_area)
+        if dialog.exec() == QDialog.Accepted:
+            selected_params = dialog.get_selected_parameters()
+            
+            # Encuentra el layout del formulario para añadir los nuevos widgets.
+            form_layout = self.scroll_area.widget().findChild(QFormLayout)
+            if form_layout:
+                for param_name in selected_params:
+                    if param_name not in self.active_optional_params:
+                        param_props = self.optional_params_schema[param_name]
+                        self._add_parameter_to_view(param_name, param_props, form_layout)
+                        self.active_optional_params.add(param_name)
+
+            # Comprueba si todos los opcionales han sido añadidos y deshabilita el botón.
+            if len(self.active_optional_params) == len(self.optional_params_schema):
+                self.add_optional_param_button.setEnabled(False)
+
+
     def highlight_patch_group(self, patch_name: str, is_selected: bool):
         groupbox = self.patch_groupboxes.get(patch_name)
         if not groupbox:
@@ -720,3 +856,27 @@ class ParameterEditorManager:
             if groupbox:
                 groupbox.setStyleSheet(data['original_style'])
         self.highlighted_patches.clear()
+
+    def _setup_highlight_colors(self):
+        app = QApplication.instance()
+        if not app:
+            # Fallback for when no QApplication instance is available (e.g., testing)
+            self.highlight_colors = []
+            return
+
+        palette = app.palette()
+        bg_color = palette.color(QPalette.Window)
+        
+        # Calculate luminance to determine if the theme is dark or light
+        luminance = (0.299 * bg_color.red() + 0.587 * bg_color.green() + 0.114 * bg_color.blue())
+
+        if luminance < 128:  # Dark theme
+            self.highlight_colors = [
+                "#5B5B9A", "#9A5B9A", "#B98A5B", "#A8A85B",
+                "#5B9AA8", "#A85B5B", "#5BA85B"
+            ]
+        else:  # Light theme
+            self.highlight_colors = [
+                "#E6E6FA", "#D8BFD8", "#FFDAB9", "#F0E68C",
+                "#ADD8E6", "#F08080", "#98FB98"
+            ]

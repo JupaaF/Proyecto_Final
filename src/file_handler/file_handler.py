@@ -162,10 +162,12 @@ class FileHandler:
         
         sub_params_schema = default_option.get('parameters', [])
         for sub_param in sub_params_schema:
-            if sub_param.get('type') == 'choice_with_options':
-                default_value[sub_param.get('name')] = self.initialize_parameters_from_choice_with_options(sub_param)
-            elif 'default' in sub_param:
-                default_value[sub_param.get('name')] = sub_param.get('default')
+            # Al inicializar, solo se añaden los parámetros que NO son opcionales.
+            if not sub_param.get('optional'):
+                if sub_param.get('type') == 'choice_with_options':
+                    default_value[sub_param.get('name')] = self.initialize_parameters_from_choice_with_options(sub_param)
+                elif 'default' in sub_param:
+                    default_value[sub_param.get('name')] = sub_param.get('default')
         
         return [default_option_name, default_value]
 
