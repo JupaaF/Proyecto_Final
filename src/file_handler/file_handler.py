@@ -212,16 +212,22 @@ class FileHandler:
     def get_editable_parameters(self, file_path: Path) -> Dict[str, Any]:
         """
         Retrieves the editable parameters for a given file.
-
-        Args:
-            file_path: The path to the file whose parameters are requested.
-
-        Returns:
-            A dictionary of editable parameters, or an empty dict if the file is not found.
+        If the file object is not in memory but is a known file type,
+        it will be instantiated on the fly.
         """
         file_name = file_path.name
         if file_name in self.files:
             return self.files[file_name].get_editable_parameters()
+
+        # If the file object doesn't exist in memory, check if it's a known type
+        if file_name in FILE_CLASS_MAP:
+            # Lazily instantiate the class
+            foam_class = FILE_CLASS_MAP[file_name]
+            self.files[file_name] = foam_class()
+            # TODO: Add logic here to load parameters from the existing file_path if it exists.
+            # For now, this will at least allow showing the editor with default values.
+            return self.files[file_name].get_editable_parameters()
+
         return {}
 
     def modify_parameters(self, file_path: Path, new_params: Dict[str, Any]) -> None:
