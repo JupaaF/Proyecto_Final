@@ -407,20 +407,18 @@ class MainWindowController(QMainWindow):
 
         wizard = ParallelWizardController(self.file_handler, self)
         if wizard.exec() == QDialog.Accepted:
-            # First, save any pending changes from the main parameter editor
-            if self.parameter_editor_manager:
-                if not self.parameter_editor_manager.save_parameters():
-                    return  # Abort if main parameters are invalid
-                else:
-                    # Also write changes to files like controlDict, fvSolution etc.
-                    self.file_handler.write_files()
-                    # Optionally save to the main JSON backup
-                    self.file_handler.save_all_parameters_to_json()
-            
-            # Now, save the parameters from the wizard's own editor
+            # Save parameters from the main editor to memory
+            if self.parameter_editor_manager and not self.parameter_editor_manager.save_parameters():
+                return  # Abort if main parameters are invalid
+
+            # Save parameters from the wizard's editor to memory
             if not wizard.save_parameters():
                 QMessageBox.critical(self, "Error en Parámetros", "No se pudieron guardar los parámetros de la configuración paralela. Verifique los valores.")
                 return
+
+            # Now that all parameters are updated in memory, write all files to disk
+            self.file_handler.write_files()
+            self.file_handler.save_all_parameters_to_json() # Create a snapshot
 
             data = wizard.get_data()
             num_processors = data.get('num_processors', 1)
