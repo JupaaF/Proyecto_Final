@@ -2,17 +2,48 @@ import pytest
 from pathlib import Path
 import sys
 import os
+import json
+import builtins
+from unittest.mock import mock_open
 
 # Add project root to sys.path to allow imports from src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.file_handler.file_handler import FileHandler
+from src.file_handler.exceptions import TemplateError, FileHandlerError, ParameterError
+
+# Default minimal valid template for tests
+VALID_TEMPLATE_CONTENT = json.dumps([
+    {
+        "id": "default",
+        "name": "Default Template",
+        "files": ["U", "controlDict", "fvSchemes", "fvSolution"]
+    }
+])
 
 @pytest.fixture
-def file_handler(tmp_path: Path) -> FileHandler:
-    """Fixture to create a FileHandler instance in a temporary directory."""
-    return FileHandler(tmp_path)
+def mock_templates_json(monkeypatch):
+    """
+    Fixture to conditionally mock the opening of templates.json.
+    It mocks 'open' only for 'templates.json' and uses the real 'open' for all other files.
+    """
+    def _mock_template(content):
+        m_open = mock_open(read_data=content)
+        original_open = builtins.open
 
+        def patched_open(file, mode='r', *args, **kwargs):
+            if 'templates.json' in str(file):
+                return m_open(file, mode, *args, **kwargs)
+            return original_open(file, mode, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, 'open', patched_open)
+    return _mock_template
+
+@pytest.fixture
+def file_handler(tmp_path: Path, mock_templates_json) -> FileHandler:
+    """Fixture to create a FileHandler instance with a valid default template."""
+    mock_templates_json(VALID_TEMPLATE_CONTENT)
+    return FileHandler(tmp_path, template="default")
 
 def test_file_handler_initialization(file_handler: FileHandler):
     """
@@ -22,16 +53,53 @@ def test_file_handler_initialization(file_handler: FileHandler):
     case_path = file_handler.get_case_path()
     assert case_path.is_dir()
     
-    # The constructor writes three files, which should create the 'system' directory.
     assert (case_path / "system").is_dir()
     assert (case_path / "system" / "controlDict").is_file()
     assert (case_path / "system" / "fvSolution").is_file()
     assert (case_path / "system" / "fvSchemes").is_file()
     
-    # It should NOT create the '0' or 'constant' directories on initialization.
     assert not (case_path / "0").exists()
     assert not (case_path / "constant").exists()
 
+# Error condition tests for initialization
+def test_init_raises_error_on_missing_template_file(tmp_path, monkeypatch):
+    """Test that FileHandler raises TemplateError if templates.json is not found."""
+    m = mock_open()
+    m.side_effect = FileNotFoundError
+    monkeypatch.setattr(builtins, 'open', m)
+
+    with pytest.raises(TemplateError, match="Template configuration file not found"):
+        FileHandler(tmp_path, template="default")
+
+def test_init_raises_error_on_invalid_template_json(tmp_path, mock_templates_json):
+    """Test that FileHandler raises TemplateError for malformed JSON."""
+    mock_templates_json("this is not valid json")
+    with pytest.raises(TemplateError, match="Failed to decode JSON"):
+        FileHandler(tmp_path, template="default")
+
+def test_init_raises_error_on_missing_template_id(tmp_path, mock_templates_json):
+    """Test that FileHandler raises TemplateError if the template ID is not found."""
+    mock_templates_json(VALID_TEMPLATE_CONTENT)
+    with pytest.raises(TemplateError, match="Template with id 'nonexistent' not found"):
+        FileHandler(tmp_path, template="nonexistent")
+
+def test_init_raises_error_on_unknown_file_in_template(tmp_path, mock_templates_json):
+    """Test TemplateError when a file in the template is not in FILE_CLASS_MAP."""
+    template_with_unknown_file = json.dumps([
+        {"id": "default", "files": ["U", "controlDict", "fvSchemes", "fvSolution", "unknownFile"]}
+    ])
+    mock_templates_json(template_with_unknown_file)
+    with pytest.raises(TemplateError, match="Class for file 'unknownFile' not found"):
+        FileHandler(tmp_path, template="default")
+
+def test_init_raises_error_on_missing_essential_files(tmp_path, mock_templates_json):
+    """Test TemplateError if essential files are missing from the template."""
+    template_missing_essentials = json.dumps([
+        {"id": "default", "files": ["U"]}
+    ])
+    mock_templates_json(template_missing_essentials)
+    with pytest.raises(TemplateError, match="Template is missing one of the essential files"):
+        FileHandler(tmp_path, template="default")
 
 def test_create_base_dirs(file_handler: FileHandler):
     """Test that _create_base_dirs creates the required directories."""
@@ -58,7 +126,6 @@ def test_create_case_files_creates_all_files_and_dirs(file_handler: FileHandler)
     assert (case_path / "constant").is_dir()
 
     for file_obj in file_handler.files.values():
-        # Corrected attribute from .location to .folder
         expected_path = case_path / file_obj.folder / file_obj.name
         assert expected_path.is_file(), f"File '{expected_path}' was not created."
 
@@ -111,9 +178,6 @@ def test_write_files_after_modification(file_handler: FileHandler):
     # Let's check for the presence of the values.
     assert "9 8 7" in file_content
 
-
-import json
-
 def test_save_all_parameters_to_json(file_handler: FileHandler):
     """Test that all parameters are saved to a JSON file correctly."""
     case_path = file_handler.get_case_path()
@@ -133,6 +197,7 @@ def test_save_all_parameters_to_json(file_handler: FileHandler):
         data = json.load(f)
 
     assert "template" in data
+    assert data["template"] == "default"
     assert "parameters" in data
     assert "U" in data["parameters"]
     assert data["parameters"]["U"]["internalField"] == new_internal_field
@@ -142,19 +207,14 @@ def test_load_all_parameters_from_json(file_handler: FileHandler):
     case_path = file_handler.get_case_path()
     json_path = case_path / file_handler.JSON_PARAMS_FILE
     
-    # Prepare a JSON file with known parameters
     new_u_internal_field = {"x": 1.1, "y": 2.2, "z": 3.3}
     new_controlDict_startTime = 10
     
     test_data = {
-        "template": "test_template",
+        "template": "new_template_name",
         "parameters": {
-            "U": {
-                "internalField": new_u_internal_field
-            },
-            "controlDict": {
-                "startTime": new_controlDict_startTime
-            }
+            "U": {"internalField": new_u_internal_field},
+            "controlDict": {"startTime": new_controlDict_startTime}
         }
     }
     with open(json_path, 'w') as f:
@@ -162,7 +222,7 @@ def test_load_all_parameters_from_json(file_handler: FileHandler):
         
     file_handler.load_all_parameters_from_json()
     
-    assert file_handler.template == "test_template"
+    assert file_handler.template == "new_template_name"
     
     u_file_obj = file_handler.files["U"]
     assert u_file_obj.internalField == new_u_internal_field
@@ -170,81 +230,57 @@ def test_load_all_parameters_from_json(file_handler: FileHandler):
     controlDict_obj = file_handler.files["controlDict"]
     assert controlDict_obj.get_editable_parameters()['startTime']['current'] == new_controlDict_startTime
 
+def test_load_all_parameters_from_json_raises_error_if_not_found(file_handler: FileHandler):
+    """Test that FileHandlerError is raised if the JSON file doesn't exist."""
+    with pytest.raises(FileHandlerError, match="Parameters JSON file not found"):
+        file_handler.load_all_parameters_from_json()
 
-def test_load_from_malformed_json(file_handler: FileHandler, capsys):
-    """Test graceful handling of a malformed JSON file."""
+def test_load_from_malformed_json_raises_error(file_handler: FileHandler):
+    """Test that FileHandlerError is raised for a malformed JSON file."""
     case_path = file_handler.get_case_path()
     json_path = case_path / file_handler.JSON_PARAMS_FILE
+    json_path.write_text("{'this is not valid json',}")
 
-    original_internal_field = file_handler.files["U"].internalField
+    with pytest.raises(FileHandlerError, match="Failed to decode JSON"):
+        file_handler.load_all_parameters_from_json()
 
-    with open(json_path, 'w') as f:
-        f.write("{'this is not valid json',}")
-
-    file_handler.load_all_parameters_from_json()
-
-    # Check that an error was printed to stderr (or stdout)
-    captured = capsys.readouterr()
-    assert "Error: Could not decode JSON" in captured.out
-
-    # Verify that the parameters have not changed
-    assert file_handler.files["U"].internalField == original_internal_field
-
-def test_load_from_json_with_mismatched_params(file_handler: FileHandler):
-    """Test handling of JSON with extra or missing parameters."""
+def test_load_from_json_with_invalid_params_raises_error(file_handler: FileHandler):
+    """Test that ParameterError is raised for invalid parameters in the JSON."""
     case_path = file_handler.get_case_path()
     json_path = case_path / file_handler.JSON_PARAMS_FILE
-
-    original_u_internal_field = file_handler.files["U"].internalField
-    original_controlDict_startTime = file_handler.files["controlDict"].get_editable_parameters()['startTime']['current']
 
     test_data = {
-        "parameters": {
-            "U": {
-                "some_extra_param": "should_be_ignored"
-            },
-            "nonExistentFile": {
-                "some_param": "should_be_ignored"
-            }
-        }
+        "template": "default",
+        "parameters": {"U": {"internalField": "not-a-dict"}}
     }
-    with open(json_path, 'w') as f:
-        json.dump(test_data, f)
+    json_path.write_text(json.dumps(test_data))
 
-    file_handler.load_all_parameters_from_json()
+    with pytest.raises(ParameterError, match="Invalid parameters for 'U'"):
+        file_handler.load_all_parameters_from_json()
 
-    assert file_handler.files["U"].internalField == original_u_internal_field
-    assert file_handler.files["controlDict"].get_editable_parameters()['startTime']['current'] == original_controlDict_startTime
-
-
-from jinja2.exceptions import UndefinedError
-
-def test_write_files_permission_error(file_handler: FileHandler, capsys):
-    """Test graceful handling of file write permission errors."""
-    case_path = file_handler.get_case_path()
-    
-    # Create a subdirectory to make read-only, to avoid affecting the case_path itself
-    # which pytest might need to clean up.
-    read_only_dir = case_path / "system"
-    read_only_dir.mkdir(exist_ok=True)
-    
-    # Make the directory read-only
-    os.chmod(read_only_dir, 0o555)
-    
-    # This should now be handled gracefully by write_files
-    file_handler.write_files()
-    
-    # Set permissions back to writable so the fixture cleanup doesn't fail
-    os.chmod(read_only_dir, 0o755)
-
-    captured = capsys.readouterr()
-    assert "Permission denied" in captured.out
-
-def test_modify_parameters_with_invalid_type_and_write(file_handler: FileHandler):
+def test_write_files_permission_error(tmp_path, mock_templates_json, monkeypatch):
     """
-    Test the behavior of writing a file after modifying a parameter with an invalid data type.
-    This test documents the current behavior, where Jinja2 fails silently on undefined
-    attributes, producing a potentially invalid output file.
+    Test that FileHandlerError is raised on file write permission errors by mocking
+    the 'open' call to raise PermissionError.
+    """
+    # 1. Set up a valid FileHandler instance. The conditional mock in the fixture
+    # ensures that the initial file writes during init succeed.
+    mock_templates_json(VALID_TEMPLATE_CONTENT)
+    handler = FileHandler(tmp_path, template="default")
+
+    # 2. Now, patch builtins.open to raise PermissionError for the next call.
+    # This simulates a situation where we lose permissions after initialization.
+    m = mock_open()
+    m.side_effect = PermissionError("Permission denied for test")
+    monkeypatch.setattr(builtins, "open", m)
+
+    # 3. Call write_files and assert that it raises the correct wrapped error.
+    with pytest.raises(FileHandlerError, match="Failed to write file"):
+        handler.write_files()
+
+def test_modify_parameters_with_invalid_type_raises_error(file_handler: FileHandler):
+    """
+    Test that modifying a parameter with an invalid data type raises ParameterError.
     """
     case_path = file_handler.get_case_path()
     u_file_obj = file_handler.files["U"]
@@ -252,12 +288,6 @@ def test_modify_parameters_with_invalid_type_and_write(file_handler: FileHandler
 
     # Pass a string where a dictionary is expected
     new_params = {"internalField": "this-is-not-a-dict"}
-    file_handler.modify_parameters(u_file_path, new_params)
-
-    file_handler.write_files()
-
-    written_content = u_file_path.read_text()
     
-    # The actual behavior is that Jinja2 silently ignores the missing attributes (x, y, z)
-    # on the string object, resulting in an empty vector in the output.
-    assert "uniform (  )" in written_content
+    with pytest.raises(ParameterError, match="Invalid parameters provided for U"):
+        file_handler.modify_parameters(u_file_path, new_params)

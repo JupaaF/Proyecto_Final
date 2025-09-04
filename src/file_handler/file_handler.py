@@ -1,7 +1,9 @@
 import json
+import logging
 from pathlib import Path
 from typing import Dict, Any
 
+from .exceptions import FileHandlerError, ParameterError, TemplateError
 from .openfoam_models.foam_file import FoamFile
 from .openfoam_models.U import U
 from .openfoam_models.controlDict import controlDict
@@ -19,6 +21,10 @@ from .openfoam_models.turbulenceProperties import turbulenceProperties
 from .openfoam_models.nuTilda import nuTilda
 from .openfoam_models.s import s
 from .openfoam_models.omega import omega
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Diccionario que mapea nombres de archivo a sus clases correspondientes
 # Esto permite la instanciación dinámica de objetos a partir de los nombres en el JSON
@@ -53,27 +59,31 @@ class FileHandler:
 
         Args:
             case_path: The absolute path to the simulation case directory.
-            template: The name of the template to use 
+            template: The name of the template to use.
+
+        Raises:
+            TemplateError: If the template is invalid or essential files are missing.
+            FileHandlerError: If there's an issue writing initial files.
         """
         self.case_path = case_path
         self.template = template
         self.files: Dict[str, FoamFile] = {}
         
-        self._initialize_file_objects()
+        try:
+            self._initialize_file_objects()
+        except TemplateError as e:
+            logger.error(f"Failed to initialize file objects from template: {e}")
+            raise
+
+        essential_files = ['controlDict', 'fvSolution', 'fvSchemes']
+        if not all(f in self.files for f in essential_files):
+            raise TemplateError(f"Template is missing one of the essential files: {', '.join(essential_files)}")
         
-        if 'controlDict' in self.files and 'fvSolution' in self.files and 'fvSchemes' in self.files:
-            try: 
-                self.files['controlDict'].write_file(self.case_path)
-                self.files['fvSolution'].write_file(self.case_path)
-                self.files['fvSchemes'].write_file(self.case_path)
-            except FileNotFoundError:
-                raise
-        else:
-            # Handle cases where essential files are missing in the template
-            # For now, we can raise an error or log a warning.
-            # This depends on how robust we want the application to be.
-            # For this implementation, we assume templates are well-formed.
-            print("Warning: One of the essential files (controlDict, fvSolution, fvSchemes) is missing in the template.")
+        try:
+            for file_name in essential_files:
+                self.files[file_name].write_file(self.case_path)
+        except (FileNotFoundError, PermissionError) as e:
+            raise FileHandlerError(f"Failed to write essential files on initialization: {e}")
 
     def get_case_path(self) -> Path:
         """Returns the root path of the case directory."""
@@ -83,50 +93,45 @@ class FileHandler:
         """
         Loads the template configuration from the JSON file.
         Returns the configuration for the selected template.
+
+        Raises:
+            TemplateError: If templates.json is not found, malformed, or the template ID is missing.
         """
+        base_path = Path(__file__).parent
+        json_path = base_path / "templates.json"
+
         try:
-            # Navigate to the 'src' directory from the current file's location
-            base_path = Path(__file__).parent
-            json_path = base_path / "templates.json"
-            
             with open(json_path, 'r') as f:
                 templates = json.load(f)
-            
-            # Find the template with the matching ID
-            for t in templates:
-                if t.get("id") == self.template:
-                    return t
+        except FileNotFoundError:
+            raise TemplateError(f"Template configuration file not found at {json_path}")
+        except json.JSONDecodeError:
+            raise TemplateError(f"Failed to decode JSON from {json_path}")
 
-            # If no template is found, raise an error
-            raise ValueError(f"Template with id '{self.template}' not found in templates.json")
+        for t in templates:
+            if t.get("id") == self.template:
+                return t
 
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            # Handle errors in loading or parsing the JSON file
-            print(f"Error loading templates: {e}. Cannot initialize files.")
-            return {} # Return empty dict to prevent further errors
+        raise TemplateError(f"Template with id '{self.template}' not found in templates.json")
 
     def _initialize_file_objects(self) -> None:
         """
         Initializes the FoamFile objects based on the selected template.
         It reads the template configuration and instantiates only the required files.
+
+        Raises:
+            TemplateError: If a file in the template is not found in FILE_CLASS_MAP.
         """
         template_config = self._get_template_config()
-        if not template_config:
-            # If config is empty (due to an error), we can't proceed
-            self.files = {}
-            return
-
         required_files = template_config.get("files", [])
         
-        # Instantiate only the classes listed in the template's "files" array
         initialized_files = {}
         for file_name in required_files:
             if file_name in FILE_CLASS_MAP:
-                # Look up the class in the map and create an instance
                 foam_class = FILE_CLASS_MAP[file_name]
                 initialized_files[file_name] = foam_class()
             else:
-                print(f"Warning: Class for file '{file_name}' not found in FILE_CLASS_MAP.")
+                raise TemplateError(f"Class for file '{file_name}' not found in FILE_CLASS_MAP.")
 
         self.files = initialized_files
 
@@ -134,20 +139,26 @@ class FileHandler:
         """
         Creates the basic directory structure and writes all initialized OpenFOAM files.
         This should be called after the user confirms the initial setup.
+
+        Raises:
+            FileHandlerError: If an error occurs during file writing.
         """
         self._create_base_dirs()
         try:
             for file_obj in self.files.values():
-                print(f"Se creo el archivo {file_obj.name}")
+                logger.info(f"Creating file {file_obj.name} in {file_obj.folder}")
                 file_obj.write_file(self.case_path)
-        except FileNotFoundError:
-            raise
+        except (FileNotFoundError, PermissionError) as e:
+            raise FileHandlerError(f"Failed to create case file: {e}")
 
     def _create_base_dirs(self) -> None:
         """Creates the essential directories for an OpenFOAM case (0, system, constant)."""
-        self.case_path.mkdir(exist_ok=True)
-        for folder in ['0', 'system', 'constant']:
-            (self.case_path / folder).mkdir(exist_ok=True)
+        try:
+            self.case_path.mkdir(exist_ok=True)
+            for folder in ['0', 'system', 'constant']:
+                (self.case_path / folder).mkdir(exist_ok=True)
+        except PermissionError as e:
+            raise FileHandlerError(f"Could not create base directories: {e}")
 
     def initialize_parameters_from_choice_with_options(self,param_props):
         options = param_props.get('options', [])
@@ -229,77 +240,91 @@ class FileHandler:
 
     def modify_parameters(self, file_path: Path, new_params: Dict[str, Any]) -> None:
         """
-        Modifies the parameters of a specific file and rewrites it.
+        Modifies the parameters of a specific file.
         Args:
             file_path: The path to the file to be modified.
             new_params: A dictionary with the new parameters to apply.
+
+        Raises:
+            ParameterError: If the file is not found or parameters are invalid.
         """
         file_name = file_path.name
+        if file_name not in self.files:
+            raise ParameterError(f"File '{file_name}' not managed by this FileHandler instance.")
+
         try:
-            if file_name in self.files:
-                file_obj = self.files[file_name]
-                file_obj.update_parameters(new_params)
-        except:
-            print(file_name)
-            raise 
+            file_obj = self.files[file_name]
+            file_obj.update_parameters(new_params)
+        except (KeyError, AttributeError, TypeError, ValueError) as e:
+            logger.error(f"Invalid parameters for {file_name}: {e}")
+            raise ParameterError(f"Invalid parameters provided for {file_name}: {e}")
 
     def write_files(self):
+        """
+        Writes all managed files to the case directory.
+
+        Raises:
+            FileHandlerError: If an error occurs during file writing.
+        """
         try:
-            for _,file_obj in self.files.items():
+            for _, file_obj in self.files.items():
                 file_obj.write_file(self.case_path)
-        except FileNotFoundError:
-            raise
+        except (FileNotFoundError, PermissionError) as e:
+            raise FileHandlerError(f"Failed to write file: {e}")
 
     def save_all_parameters_to_json(self) -> None:
-        """Saves all editable parameters from all FoamFile objects to a single JSON file."""
+        """
+        Saves all editable parameters from all FoamFile objects to a single JSON file.
 
+        Raises:
+            FileHandlerError: If the JSON file cannot be written.
+        """
         all_params_values = {}
-
         for file_name, file_obj in self.files.items():
             editable_params = file_obj.get_editable_parameters()
-            file_values = {}
-            for param_name, param_props in editable_params.items():
-                # Extract only the 'current' value
-                file_values[param_name] = param_props.get('current')
+            file_values = {param_name: props.get('current') for param_name, props in editable_params.items()}
             all_params_values[file_name] = file_values
 
-        # Add template to the saved JSON
         saved_data = {
             "template": self.template,
             "parameters": all_params_values
         }
 
         json_path = self.case_path / self.JSON_PARAMS_FILE
-
-        with open(json_path, 'w') as f:
-            json.dump(saved_data, f, indent=4)
+        try:
+            with open(json_path, 'w') as f:
+                json.dump(saved_data, f, indent=4)
+        except (IOError, PermissionError) as e:
+            raise FileHandlerError(f"Could not save parameters to JSON file at {json_path}: {e}")
 
     def load_all_parameters_from_json(self) -> None:
-        """Loads all parameters from the JSON file and updates the corresponding FoamFile objects."""
+        """
+        Loads all parameters from the JSON file and updates the corresponding FoamFile objects.
+
+        Raises:
+            FileHandlerError: If the JSON file is not found or cannot be parsed.
+            ParameterError: If the parameters in the JSON are invalid.
+        """
         json_path = self.case_path / self.JSON_PARAMS_FILE
         if not json_path.exists():
-            raise FileNotFoundError("No se encontro el JSON")
+            raise FileHandlerError(f"Parameters JSON file not found at {json_path}")
 
-        with open(json_path, 'r') as f:
-            saved_data = json.load(f)
+        try:
+            with open(json_path, 'r') as f:
+                saved_data = json.load(f)
+        except json.JSONDecodeError:
+            raise FileHandlerError(f"Failed to decode JSON from {json_path}")
 
-        # Extract template and parameters
         loaded_template = saved_data.get("template")
-        loaded_params = saved_data.get("parameters", {})
-
-        # Update self.template if loaded_template is different
         if loaded_template and loaded_template != self.template:
-            # This scenario needs careful handling.
-            # If the template changes, the initialized FoamFile objects might be different.
-            # For now, I'll just update self.template, but a more robust solution
-            # might involve re-initializing file objects based on the new template.
-            # This is beyond the current scope of just loading parameters.
+            logger.warning(f"Loaded template '{loaded_template}' differs from initial template '{self.template}'.")
             self.template = loaded_template
+            # A more robust implementation might re-initialize files here.
 
+        loaded_params = saved_data.get("parameters", {})
         for file_name, params in loaded_params.items():
             if file_name in self.files:
                 try:
                     self.files[file_name].update_parameters(params)
-                except:
-                    print(file_name)
-                    raise 
+                except (KeyError, AttributeError, TypeError, ValueError) as e:
+                    raise ParameterError(f"Invalid parameters for '{file_name}' in JSON file: {e}")
