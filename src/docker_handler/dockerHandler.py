@@ -51,7 +51,9 @@ class DockerHandler():
                 universal_newlines=True
             )
         except FileNotFoundError:
-            logger.error("Comando 'docker' no encontrado. Asegúrese de que Docker esté instalado y en el PATH.")
+            error_message = "Error: Comando 'docker' no encontrado. Asegúrese de que Docker esté instalado y en el PATH."
+            logger.error(error_message)
+            yield error_message
             raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
 
         if process.stdout:
@@ -62,8 +64,10 @@ class DockerHandler():
         return_code = process.wait()
 
         if return_code != 0:
-            logger.error(f"La ejecución de {script_name} falló con código de retorno {return_code}.")
-            raise ContainerExecutionError(f"La ejecución de {script_name} falló con código de retorno {return_code}.")
+            error_message = f"Error: La ejecución de {script_name} falló con código de retorno {return_code}."
+            logger.error(error_message)
+            yield error_message
+            raise ContainerExecutionError(error_message)
         
     def is_docker_running(self):
         """

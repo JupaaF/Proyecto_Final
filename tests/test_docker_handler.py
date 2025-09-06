@@ -96,30 +96,37 @@ def test_execute_script_in_docker_success(mock_popen, docker_handler: DockerHand
 
 @patch('src.docker_handler.dockerHandler.subprocess.Popen')
 def test_execute_script_in_docker_failure(mock_popen, docker_handler: DockerHandler):
-    """Test execute_script_in_docker raises ContainerExecutionError on script failure."""
+    """Test execute_script_in_docker yields an error message and raises ContainerExecutionError on script failure."""
     mock_process = MagicMock()
-    mock_process.stdout.readline.side_effect = ['error line 1', '']
-    mock_process.wait.return_value = 1 # Error code
+    mock_process.stdout.readline.side_effect = ['some output', '']
+    mock_process.wait.return_value = 1  # Error code
     mock_popen.return_value = mock_process
 
     script_name = "failing_script.sh"
     generator = docker_handler.execute_script_in_docker(script_name)
 
-    # The function should still yield all output lines before raising the exception
-    assert next(generator) == 'error line 1'
+    # The function should yield stdout lines first
+    assert next(generator) == 'some output'
     
-    # The exception should be raised when the generator is exhausted
+    # Then it should yield the user-facing error message
+    assert 'Error: La ejecución de failing_script.sh falló' in next(generator)
+
+    # Finally, it should raise the exception when the generator is exhausted
     with pytest.raises(ContainerExecutionError):
         list(generator)
 
 @patch('src.docker_handler.dockerHandler.subprocess.Popen')
 def test_execute_script_in_docker_not_found(mock_popen, docker_handler: DockerHandler):
-    """Test execute_script_in_docker raises DockerNotInstalledError when command is not found."""
+    """Test execute_script_in_docker yields an error and raises DockerNotInstalledError when command is not found."""
     mock_popen.side_effect = FileNotFoundError
 
     script_name = "any_script.sh"
+    generator = docker_handler.execute_script_in_docker(script_name)
 
+    # Check for the yielded error message first
+    assert "Error: Comando 'docker' no encontrado" in next(generator)
+
+    # The exception should be raised when the generator is exhausted
     with pytest.raises(DockerNotInstalledError):
-        # We need to consume the generator to trigger the exception
-        list(docker_handler.execute_script_in_docker(script_name))
+        list(generator)
 
