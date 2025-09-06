@@ -6,13 +6,13 @@ import json
 import builtins
 from unittest.mock import mock_open
 
-# Agregue la raíz del proyecto a sys.path para permitir importaciones desde src
+# Add project root to sys.path to allow imports from src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.file_handler.file_handler import FileHandler
 from src.file_handler.exceptions import TemplateError, FileHandlerError, ParameterError
 
-# Plantilla mínima válida predeterminada para pruebas
+# Default minimal valid template for tests
 VALID_TEMPLATE_CONTENT = json.dumps([
     {
         "id": "default",
@@ -21,50 +21,34 @@ VALID_TEMPLATE_CONTENT = json.dumps([
     }
 ])
 
-
-# Fixtures --------------------------
-
 @pytest.fixture
 def mock_templates_json(monkeypatch):
     """
-    Fixture para simular condicionalmente la apertura de templates.json.
-    Simula la apertura solo para templates.json y usa la apertura real para todos los demás archivos.
+    Fixture to conditionally mock the opening of templates.json.
+    It mocks 'open' only for 'templates.json' and uses the real 'open' for all other files.
     """
     def _mock_template(content):
-        # Cuando alguien intente leer del manejador de archivos (.read()), 
-        # debe devolver el content que le pasamos 
-        # (que sería el contenido simulado de nuestro templates.json).
         m_open = mock_open(read_data=content)
-
-        # Guardamos una copia de la función open() 
-        # real de Python en una variable.
         original_open = builtins.open
 
-        # Esta es nuestra función "interceptora". 
-        # Va a reemplazar temporalmente a open().
         def patched_open(file, mode='r', *args, **kwargs):
             if 'templates.json' in str(file):
-                # no llama al open real, devuelve nuestro manejador de archivo falso (m_open)
                 return m_open(file, mode, *args, **kwargs)
             return original_open(file, mode, *args, **kwargs)
 
-        # Esta es la línea que activa el "parche".
         monkeypatch.setattr(builtins, 'open', patched_open)
     return _mock_template
 
 @pytest.fixture
 def file_handler(tmp_path: Path, mock_templates_json) -> FileHandler:
-    """Accesorio para crear una instancia de FileHandler con un template predeterminada válida."""
+    """Fixture to create a FileHandler instance with a valid default template."""
     mock_templates_json(VALID_TEMPLATE_CONTENT)
     return FileHandler(tmp_path, template="default")
 
-
-# Tests --------------------------
-
 def test_file_handler_initialization(file_handler: FileHandler):
     """
-    Comprueba que el FileHandler se inicializa correctamente, 
-    creando el directorio del caso y el conjunto inicial de archivos del sistema.
+    Tests that the FileHandler initializes correctly, creating the case directory
+    and the initial set of system files.
     """
     case_path = file_handler.get_case_path()
     assert case_path.is_dir()
@@ -77,78 +61,48 @@ def test_file_handler_initialization(file_handler: FileHandler):
     assert not (case_path / "0").exists()
     assert not (case_path / "constant").exists()
 
-# Pruebas de condición de error para la inicialización
+# Error condition tests for initialization
 def test_init_raises_error_on_missing_template_file(tmp_path, monkeypatch):
-    """
-     Prueba que FileHandler genere TemplateError si no se encuentra templates.json.
-
-    pytest automáticamente le proporciona dos "fixtures":
-    tmp_path: Proporciona una ruta a un directorio temporal único para 
-              este test, para que FileHandler tenga un lugar donde trabajar sin 
-              afectar el sistema de archivos real.
-
-    monkeypatch: Es la herramienta que nos permite modificar o "parchear" 
-                 temporalmente el comportamiento del código para la prueba.
-    '''
-   """
+    """Test that FileHandler raises TemplateError if templates.json is not found."""
     m = mock_open()
-
-    # El atributo side_effect de un mock nos permite definir qué sucede 
-    # cuando se le llama. Al asignarle FileNotFoundError, estamos diciendo: 
-    # "Cuando cualquier código llame a la función que este mock reemplaza, 
-    # no hagas nada más que lanzar inmediatamente una excepción FileNotFoundError".
     m.side_effect = FileNotFoundError
-
-    # Aquí usamos monkeypatch para reemplazar la función open global 
-    # de Python (que se encuentra en builtins) por nuestro mock (m). 
-    # A partir de esta línea, y solo durante este test, cualquier llamada a open() en el código bajo prueba lanzará FileNotFoundError.
     monkeypatch.setattr(builtins, 'open', m)
 
-    # Esperamos que lance una excepción de tipo TemplateError.
-    # Además, con match="...", le pedimos que verifique que el mensaje de la excepción contenga el texto correcto.
-    with pytest.raises(TemplateError, match="Archivo de configuración de template no encontrado"):
+    with pytest.raises(TemplateError, match="Template configuration file not found"):
         FileHandler(tmp_path, template="default")
-        """
-        Intentamos crear una instancia de FileHandler. Internamente, el constructor de FileHandler llamará al método
-        _get_template_config, que a su vez intentará hacer open('.../templates.json').
-        Debido a nuestro parche/mock, esta llamada a open() no abrirá un archivo, sino que lanzará FileNotFoundError.
-        El bloque try...except que escribimos dentro de _get_template_config está diseñado para capturar este FileNotFoundError y, 
-        en respuesta, lanzar nuestra excepción personalizada: TemplateError("No se pudo decodificar JSON ...")."""
 
 def test_init_raises_error_on_invalid_template_json(tmp_path, mock_templates_json):
-    """Prueba que FileHandler genere TemplateError para JSON mal formado."""
-    # Haces un mock con un "json" que no es válido (no le pasas VALID_TEMPLATE_CONTENT)
-    mock_templates_json("esto no es un json válido")
-    with pytest.raises(TemplateError, match="No se pudo decodificar JSON"):
+    """Test that FileHandler raises TemplateError for malformed JSON."""
+    mock_templates_json("this is not valid json")
+    with pytest.raises(TemplateError, match="Failed to decode JSON"):
         FileHandler(tmp_path, template="default")
 
 def test_init_raises_error_on_missing_template_id(tmp_path, mock_templates_json):
-    """Prueba que FileHandler genere TemplateError si no se encuentra el ID del template."""
+    """Test that FileHandler raises TemplateError if the template ID is not found."""
     mock_templates_json(VALID_TEMPLATE_CONTENT)
-    with pytest.raises(TemplateError, match="Template con id 'nonexistent' no encontrado"):
-        FileHandler(tmp_path, template="nonexistent") #<-- acá le pasas un id no válido
+    with pytest.raises(TemplateError, match="Template with id 'nonexistent' not found"):
+        FileHandler(tmp_path, template="nonexistent")
 
 def test_init_raises_error_on_unknown_file_in_template(tmp_path, mock_templates_json):
-    """Prueba TemplateError cuando un archivo del template no está en FILE_CLASS_MAP."""
-    # Creamos un json provisiorio con un archivo desconocido
+    """Test TemplateError when a file in the template is not in FILE_CLASS_MAP."""
     template_with_unknown_file = json.dumps([
         {"id": "default", "files": ["U", "controlDict", "fvSchemes", "fvSolution", "unknownFile"]}
     ])
     mock_templates_json(template_with_unknown_file)
-    with pytest.raises(TemplateError, match="La clase para el archivo 'unknownFile' no se encuentra"):
+    with pytest.raises(TemplateError, match="Class for file 'unknownFile' not found"):
         FileHandler(tmp_path, template="default")
 
 def test_init_raises_error_on_missing_essential_files(tmp_path, mock_templates_json):
-    """Prueba TemplateError si hay archivos esenciales que faltan en el template."""
+    """Test TemplateError if essential files are missing from the template."""
     template_missing_essentials = json.dumps([
         {"id": "default", "files": ["U"]}
     ])
     mock_templates_json(template_missing_essentials)
-    with pytest.raises(TemplateError, match="Al template le falta uno de los archivos esenciales"):
+    with pytest.raises(TemplateError, match="Template is missing one of the essential files"):
         FileHandler(tmp_path, template="default")
 
 def test_create_base_dirs(file_handler: FileHandler):
-    """Pruebe que _create_base_dirs cree los directorios requeridos."""
+    """Test that _create_base_dirs creates the required directories."""
     case_path = file_handler.get_case_path()
     
     file_handler._create_base_dirs()
@@ -160,8 +114,8 @@ def test_create_base_dirs(file_handler: FileHandler):
 
 def test_create_case_files_creates_all_files_and_dirs(file_handler: FileHandler):
     """
-    Comprueba que create_case_files crea todos los archivos OpenFOAM 
-    definidos y la estructura completa del directorio.
+    Test that create_case_files creates all defined OpenFOAM files
+    and the complete directory structure.
     """
     case_path = file_handler.get_case_path()
     
@@ -177,7 +131,7 @@ def test_create_case_files_creates_all_files_and_dirs(file_handler: FileHandler)
 
 
 def test_get_editable_parameters(file_handler: FileHandler):
-    """Prueba que get_editable_parameters devuelva un diccionario no vacío para un archivo válido."""
+    """Test that get_editable_parameters returns a non-empty dict for a valid file."""
     case_path = file_handler.get_case_path()
     u_file_path = case_path / "0" / "U"
     
@@ -187,7 +141,7 @@ def test_get_editable_parameters(file_handler: FileHandler):
     assert "boundaryField" in params
 
 def test_modify_parameters_updates_object_in_memory(file_handler: FileHandler):
-    """Prueba que modify_parameters actualice los parámetros del objeto FoamFile."""
+    """Test that modify_parameters updates the parameters of the FoamFile object."""
     u_file_name = "U"
     u_file_obj = file_handler.files[u_file_name]
 
@@ -205,7 +159,7 @@ def test_modify_parameters_updates_object_in_memory(file_handler: FileHandler):
     assert updated_value == new_params["internalField"]
 
 def test_write_files_after_modification(file_handler: FileHandler):
-    """Prueba que write_files conserve los parámetros modificados en el disco."""
+    """Test that write_files persists modified parameters to disk."""
     case_path = file_handler.get_case_path()
     u_file_name = "U"
     u_file_obj = file_handler.files[u_file_name]
@@ -220,12 +174,12 @@ def test_write_files_after_modification(file_handler: FileHandler):
     assert u_file_path.is_file()
     file_content = u_file_path.read_text()
     
-    # El formato exacto depende de la plantilla Jinja2. 
-    # # Verificamos la presencia de los valores.
+    # The exact format depends on the Jinja2 template.
+    # Let's check for the presence of the values.
     assert "9 8 7" in file_content
 
 def test_save_all_parameters_to_json(file_handler: FileHandler):
-    """Prueba que los parámetros se guarden correctamente en un archivo JSON."""
+    """Test that all parameters are saved to a JSON file correctly."""
     case_path = file_handler.get_case_path()
     json_path = case_path / file_handler.JSON_PARAMS_FILE
 
@@ -249,7 +203,7 @@ def test_save_all_parameters_to_json(file_handler: FileHandler):
     assert data["parameters"]["U"]["internalField"] == new_internal_field
 
 def test_load_all_parameters_from_json(file_handler: FileHandler):
-    """Pruebe que los parámetros se carguen correctamente desde un archivo JSON."""
+    """Test that parameters are loaded correctly from a JSON file."""
     case_path = file_handler.get_case_path()
     json_path = case_path / file_handler.JSON_PARAMS_FILE
     
@@ -277,21 +231,21 @@ def test_load_all_parameters_from_json(file_handler: FileHandler):
     assert controlDict_obj.get_editable_parameters()['startTime']['current'] == new_controlDict_startTime
 
 def test_load_all_parameters_from_json_raises_error_if_not_found(file_handler: FileHandler):
-    """Comprueba que se genere FileHandlerError si el archivo JSON no existe."""
-    with pytest.raises(FileHandlerError, match="Archivo JSON de parámetros no encontrado"):
+    """Test that FileHandlerError is raised if the JSON file doesn't exist."""
+    with pytest.raises(FileHandlerError, match="Parameters JSON file not found"):
         file_handler.load_all_parameters_from_json()
 
 def test_load_from_malformed_json_raises_error(file_handler: FileHandler):
-    """Comprueba que se genera FileHandlerError para un archivo JSON mal formado."""
+    """Test that FileHandlerError is raised for a malformed JSON file."""
     case_path = file_handler.get_case_path()
     json_path = case_path / file_handler.JSON_PARAMS_FILE
     json_path.write_text("{'this is not valid json',}")
 
-    with pytest.raises(FileHandlerError, match="No se pudo decodificar JSON"):
+    with pytest.raises(FileHandlerError, match="Failed to decode JSON"):
         file_handler.load_all_parameters_from_json()
 
 def test_load_from_json_with_invalid_params_raises_error(file_handler: FileHandler):
-    """Comprueba que ParameterError se genere para parámetros no válidos en el JSON."""
+    """Test that ParameterError is raised for invalid parameters in the JSON."""
     case_path = file_handler.get_case_path()
     json_path = case_path / file_handler.JSON_PARAMS_FILE
 
@@ -301,7 +255,7 @@ def test_load_from_json_with_invalid_params_raises_error(file_handler: FileHandl
     }
     json_path.write_text(json.dumps(test_data))
 
-    with pytest.raises(ParameterError, match="Parámetros inválidos para 'U'"):
+    with pytest.raises(ParameterError, match="Invalid parameters for 'U'"):
         file_handler.load_all_parameters_from_json()
 
 def test_write_files_permission_error(tmp_path, mock_templates_json, monkeypatch):
@@ -309,19 +263,24 @@ def test_write_files_permission_error(tmp_path, mock_templates_json, monkeypatch
     Test that FileHandlerError is raised on file write permission errors by mocking
     the 'open' call to raise PermissionError.
     """
+    # 1. Set up a valid FileHandler instance. The conditional mock in the fixture
+    # ensures that the initial file writes during init succeed.
     mock_templates_json(VALID_TEMPLATE_CONTENT)
     handler = FileHandler(tmp_path, template="default")
 
+    # 2. Now, patch builtins.open to raise PermissionError for the next call.
+    # This simulates a situation where we lose permissions after initialization.
     m = mock_open()
     m.side_effect = PermissionError("Permission denied for test")
     monkeypatch.setattr(builtins, "open", m)
 
-    with pytest.raises(FileHandlerError, match="Error al escribir archivo"):
+    # 3. Call write_files and assert that it raises the correct wrapped error.
+    with pytest.raises(FileHandlerError, match="Failed to write file"):
         handler.write_files()
 
 def test_modify_parameters_with_invalid_type_raises_error(file_handler: FileHandler):
     """
-    Prueba que al modificar un parámetro con un tipo de dato no válido se genere ParameterError.
+    Test that modifying a parameter with an invalid data type raises ParameterError.
     """
     case_path = file_handler.get_case_path()
     u_file_obj = file_handler.files["U"]
@@ -330,5 +289,5 @@ def test_modify_parameters_with_invalid_type_raises_error(file_handler: FileHand
     # Pass a string where a dictionary is expected
     new_params = {"internalField": "this-is-not-a-dict"}
     
-    with pytest.raises(ParameterError, match="Parámetros proporcionados no válidos para U"):
+    with pytest.raises(ParameterError, match="Invalid parameters provided for U"):
         file_handler.modify_parameters(u_file_path, new_params)

@@ -1,11 +1,16 @@
 from pathlib import Path
 import subprocess
+import logging
+from .exceptions import DockerHandlerError, DockerNotInstalledError, DockerDaemonError, ContainerExecutionError
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class DockerHandler():
     def __init__(self,case_path:Path):
         self.case_path = case_path
-        self.IMAGEN_SEDFOAM = "cbonamy/sedfoam_2312_ubuntu" # imagen de Docker para ejecutar simulacion de SedFOAM 
-        # self.IMAGEN_OPENFOAM = "openfoam/openfoam10-paraview510" # imagen de Docker para ejecutar simulacion de interFoam e icoFoam
+        self.IMAGEN_SEDFOAM = "cbonamy/sedfoam_2312_ubuntu"
         
 
     def execute_script_in_docker(self, script_name: str):
@@ -19,8 +24,9 @@ class DockerHandler():
             str: Una línea de la salida del script.
 
         Raises:
-            FileNotFoundError: Si el comando 'docker' no se encuentra.
-            subprocess.CalledProcessError: Si el script de Docker falla.
+            DockerNotInstalledError: Si el comando 'docker' no se encuentra.
+            ContainerExecutionError: Si el script de Docker falla.
+            DockerHandlerError: Para otros errores relacionados con Docker.
         """
         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
         script_in_container = f"/{script_name}"
@@ -44,66 +50,51 @@ class DockerHandler():
                 bufsize=1,
                 universal_newlines=True
             )
-
-            if process.stdout:
-                for line in iter(process.stdout.readline, ''):
-                    yield line.strip()
-
-            process.stdout.close()
-            return_code = process.wait()
-
-            if return_code != 0:
-                error_message = f"La ejecución de {script_name} falló con código de retorno {return_code}."
-                raise subprocess.CalledProcessError(return_code, docker_command, output=error_message)
-
-
         except FileNotFoundError:
-            yield "Error: Docker command not found. Please ensure Docker is installed and running."
-            raise
-        except subprocess.CalledProcessError as e:
-            yield f"Error: Script execution failed with code {e.returncode}."
-            raise
-        except Exception as e:
-            yield f"An unexpected error occurred: {e}"
-            raise
+            logger.error("Comando 'docker' no encontrado. Asegúrese de que Docker esté instalado y en el PATH.")
+            raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
+
+        if process.stdout:
+            for line in iter(process.stdout.readline, ''):
+                yield line.strip()
+
+        process.stdout.close()
+        return_code = process.wait()
+
+        if return_code != 0:
+            logger.error(f"La ejecución de {script_name} falló con código de retorno {return_code}.")
+            raise ContainerExecutionError(f"La ejecución de {script_name} falló con código de retorno {return_code}.")
         
-    def is_docker_running(self) -> bool:
+    def is_docker_running(self):
         """
-        Verifica si el servicio de Docker está en ejecución.
+        Verifica si el servicio de Docker está en ejecución y es accesible.
         
-        Returns:
-            bool: True si Docker está corriendo y es accesible, False en caso contrario.
+        Raises:
+            DockerNotInstalledError: Si el comando 'docker' no se encuentra.
+            DockerDaemonError: Si el comando 'docker info' falla, indicando que el servicio no está activo.
         """
         try:
-            # El comando 'docker info' es ligero y no crea contenedores
             subprocess.run(
                 ["docker", "info"],
                 check=True,
-                stdout=subprocess.DEVNULL, # No necesitamos ver la salida
-                stderr=subprocess.DEVNULL  # No necesitamos ver los errores
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
             )
-            # Docker está corriendo
-            return True
         except FileNotFoundError:
-            # El comando 'docker' no se encontró en el PATH
-            return False
+            logger.error("Comando 'docker' no encontrado. Asegúrese de que Docker esté instalado y en el PATH.")
+            raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
         except subprocess.CalledProcessError:
-            # El comando 'docker info' falló, lo que indica que el servicio no está activo
-            return False
-        except Exception:
-            # Captura cualquier otro error inesperado
-            return False
+            logger.error("El demonio de Docker no está corriendo o no es accesible.")
+            raise DockerDaemonError("El servicio de Docker no está en ejecución o no se puede acceder a él.")
     
     def prepare_case_for_paraview(self):
         """
         Crea un archivo .foam en el directorio del caso para que ParaView lo reconozca.
+
+        Raises:
+            DockerNotInstalledError: Si el comando 'docker' no se encuentra.
+            ContainerExecutionError: Si el comando para crear el archivo .foam falla.
         """
-
-        #TODO: Agregar codigo que está en la bitacora 21/08 para cuando ejecutas el caso en paralelo++
-
-        # Usar una imagen de Docker que incluya OpenFOAM
-        imagen = "openfoam/openfoam10-paraview510" 
-        
         ruta_docker_volumen = self.case_path.as_posix()
         nombre_caso = self.case_path.name
         
@@ -120,10 +111,9 @@ class DockerHandler():
 
         try:
             subprocess.run(docker_command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return True
         except subprocess.CalledProcessError as e:
-            print(f"Error al preparar el caso: {e}")
-            return False
+            logger.error(f"Error al preparar el caso para ParaView: {e}")
+            raise ContainerExecutionError(f"No se pudo crear el archivo .foam. Código de error: {e.returncode}")
         except FileNotFoundError:
-            print("Error: El comando 'docker' no se encontró.")
-            return False
+            logger.error("Comando 'docker' no encontrado al preparar el caso para ParaView.")
+            raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")

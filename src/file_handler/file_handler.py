@@ -48,21 +48,22 @@ FILE_CLASS_MAP = {
 }
 
 class FileHandler:
-    """Maneja la creación, modificación y acceso a archivos de casos de OpenFOAM."""
+    """Manages the creation, modification, and access of OpenFOAM case files."""
+
 
     JSON_PARAMS_FILE = "parameters.json"
     
     def __init__(self, case_path: Path, template: str = None):
         """
-        Inicializa el FileHandler para un caso dado.
+        Initializes the FileHandler for a given case.
 
         Args:
-            case_path: Ruta absoluta al directorio del caso de simulación.
-            template: Nombre de la plantilla a utilizar.
+            case_path: The absolute path to the simulation case directory.
+            template: The name of the template to use.
 
         Raises:
-            TemplateError: Si el template no es válido o faltan archivos esenciales.
-            FileHandlerError: Si hay un problema al escribir los archivos iniciales.
+            TemplateError: If the template is invalid or essential files are missing.
+            FileHandlerError: If there's an issue writing initial files.
         """
         self.case_path = case_path
         self.template = template
@@ -71,30 +72,30 @@ class FileHandler:
         try:
             self._initialize_file_objects()
         except TemplateError as e:
-            logger.error(f"No se pudieron inicializar los objetos de archivo desde la plantilla: {e}")
+            logger.error(f"Failed to initialize file objects from template: {e}")
             raise
 
         essential_files = ['controlDict', 'fvSolution', 'fvSchemes']
         if not all(f in self.files for f in essential_files):
-            raise TemplateError(f"Al template le falta uno de los archivos esenciales: {', '.join(essential_files)}")
+            raise TemplateError(f"Template is missing one of the essential files: {', '.join(essential_files)}")
         
         try:
             for file_name in essential_files:
                 self.files[file_name].write_file(self.case_path)
         except (FileNotFoundError, PermissionError) as e:
-            raise FileHandlerError(f"No se pudieron escribir archivos esenciales durante la inicialización: {e}")
+            raise FileHandlerError(f"Failed to write essential files on initialization: {e}")
 
     def get_case_path(self) -> Path:
-        """Devuelve la ruta raíz del directorio del caso."""
+        """Returns the root path of the case directory."""
         return self.case_path
 
     def _get_template_config(self) -> Dict[str, Any]:
         """
-        Carga la configuración del template desde el archivo JSON.
-        Devuelve la configuración del template seleccionado.
+        Loads the template configuration from the JSON file.
+        Returns the configuration for the selected template.
 
         Raises:
-            TemplateError: Si no se encuentra templates.json, está mal formado o falta el ID del template.
+            TemplateError: If templates.json is not found, malformed, or the template ID is missing.
         """
         base_path = Path(__file__).parent
         json_path = base_path / "templates.json"
@@ -103,23 +104,23 @@ class FileHandler:
             with open(json_path, 'r') as f:
                 templates = json.load(f)
         except FileNotFoundError:
-            raise TemplateError(f"Archivo de configuración de template no encontrado en {json_path}")
+            raise TemplateError(f"Template configuration file not found at {json_path}")
         except json.JSONDecodeError:
-            raise TemplateError(f"No se pudo decodificar JSON desde {json_path}")
+            raise TemplateError(f"Failed to decode JSON from {json_path}")
 
         for t in templates:
             if t.get("id") == self.template:
                 return t
 
-        raise TemplateError(f"Template con id '{self.template}' no encontrado en templates.json")
+        raise TemplateError(f"Template with id '{self.template}' not found in templates.json")
 
     def _initialize_file_objects(self) -> None:
         """
-        Inicializa los objetos FoamFile según el template seleccionado.
-        Lee la configuración del template e instancia únicamente los archivos necesarios.
+        Initializes the FoamFile objects based on the selected template.
+        It reads the template configuration and instantiates only the required files.
 
         Raises:
-        TemplateError: Si no se encuentra un archivo de la plantilla en FILE_CLASS_MAP.
+            TemplateError: If a file in the template is not found in FILE_CLASS_MAP.
         """
         template_config = self._get_template_config()
         required_files = template_config.get("files", [])
@@ -130,34 +131,34 @@ class FileHandler:
                 foam_class = FILE_CLASS_MAP[file_name]
                 initialized_files[file_name] = foam_class()
             else:
-                raise TemplateError(f"La clase para el archivo '{file_name}' no se encuentra en FILE_CLASS_MAP.")
+                raise TemplateError(f"Class for file '{file_name}' not found in FILE_CLASS_MAP.")
 
         self.files = initialized_files
 
     def create_case_files(self) -> None:
         """
-        Crea la estructura básica de directorios y escribe todos los archivos OpenFOAM inicializados.
-        Debe ejecutarse después de que el usuario confirme la configuración inicial.
+        Creates the basic directory structure and writes all initialized OpenFOAM files.
+        This should be called after the user confirms the initial setup.
 
         Raises:
-        FileHandlerError: Si se produce un error durante la escritura del archivo.
+            FileHandlerError: If an error occurs during file writing.
         """
         self._create_base_dirs()
         try:
-            for file_obj in self.files.values():  #TODO: habría que sacar este logger/print
-                logger.info(f"Creando archivo {file_obj.name} en {file_obj.folder}")
+            for file_obj in self.files.values():
+                logger.info(f"Creating file {file_obj.name} in {file_obj.folder}")
                 file_obj.write_file(self.case_path)
         except (FileNotFoundError, PermissionError) as e:
-            raise FileHandlerError(f"No se pudo crear el archivo del caso: {e}")
+            raise FileHandlerError(f"Failed to create case file: {e}")
 
     def _create_base_dirs(self) -> None:
-        """Crea los directorios esenciales para un caso de OpenFOAM (0, system, constant)."""
+        """Creates the essential directories for an OpenFOAM case (0, system, constant)."""
         try:
             self.case_path.mkdir(exist_ok=True)
             for folder in ['0', 'system', 'constant']:
                 (self.case_path / folder).mkdir(exist_ok=True)
         except PermissionError as e:
-            raise FileHandlerError(f"No se pudieron crear los directorios base: {e}")
+            raise FileHandlerError(f"Could not create base directories: {e}")
 
     def initialize_parameters_from_choice_with_options(self,param_props):
         options = param_props.get('options', [])
@@ -167,7 +168,7 @@ class FileHandler:
         default_option = options[0]
         default_option_name = default_option.get('name')
         
-        # NOTE: ''solver_selected' está codificado en el código de UI original, por lo que replicamos esa suposición aquí.
+        # NOTE: 'solver_selected' is hardcoded in the original UI code, so we replicate that assumption here.
         default_value = {}
         
         sub_params_schema = default_option.get('parameters', [])
@@ -183,9 +184,9 @@ class FileHandler:
 
     def initialize_parameters_from_schema(self, patch_names: list[str]):
         """
-        Itera a través de todos los archivos foam y sus parámetros, inicializando 
-        tipos complejos como 'patches' y 'choice_with_options' con valores 
-        predeterminados basados en sus esquemas.
+        Iterates through all foam files and their parameters, initializing complex
+        types like 'patches' and 'choice_with_options' with default values based
+        on their schemas.
         """
         for foam_file in self.files.values():
             params_schema = foam_file.get_editable_parameters()
@@ -196,7 +197,7 @@ class FileHandler:
                 param_type = param_props.get('type')
                 current_value = param_props.get('current')
 
-                # Inicializar los parámetros 'patches' si aún no están configurados
+                # Initialize 'patches' parameters if they are not already set
                 if param_type == 'patches' and not current_value:
                     default_type = param_props.get('schema', {}).get('type', {}).get('default', 'empty')
                     type_options = param_props.get('schema', {}).get('type', {}).get('options', [])
@@ -214,7 +215,7 @@ class FileHandler:
                     
                     new_params_to_update[param_name] = new_boundary_field
 
-                # Inicializar los parámetros 'choice_with_options' si aún no están configurados
+                # Initialize 'choice_with_options' parameters if they are not already set
                 elif param_type == 'choice_with_options' and not current_value:
                     
                     new_params_to_update[param_name] = self.initialize_parameters_from_choice_with_options(param_props)
@@ -224,13 +225,13 @@ class FileHandler:
 
     def get_editable_parameters(self, file_path: Path) -> Dict[str, Any]:
         """
-        Recupera los parámetros editables de un archivo determinado.
+        Retrieves the editable parameters for a given file.
 
         Args:
-        file_path: La ruta del archivo cuyos parámetros se solicitan.
+            file_path: The path to the file whose parameters are requested.
 
         Returns:
-        Un diccionario de parámetros editables o un diccionario vacío si no se encuentra el archivo.
+            A dictionary of editable parameters, or an empty dict if the file is not found.
         """
         file_name = file_path.name
         if file_name in self.files:
@@ -239,45 +240,44 @@ class FileHandler:
 
     def modify_parameters(self, file_path: Path, new_params: Dict[str, Any]) -> None:
         """
-        Modifica los parámetros de un archivo específico.
-
+        Modifies the parameters of a specific file.
         Args:
-        file_path: La ruta del archivo que se va a modificar.
-        new_params: Un diccionario con los nuevos parámetros que se aplicarán.
+            file_path: The path to the file to be modified.
+            new_params: A dictionary with the new parameters to apply.
 
         Raises:
-        ParameterError: Si no se encuentra el archivo o los parámetros no son válidos.
+            ParameterError: If the file is not found or parameters are invalid.
         """
         file_name = file_path.name
         if file_name not in self.files:
-            raise ParameterError(f"Archivo '{file_name}' no administrado por esta instancia de FileHandler.")
+            raise ParameterError(f"File '{file_name}' not managed by this FileHandler instance.")
 
         try:
             file_obj = self.files[file_name]
             file_obj.update_parameters(new_params)
         except (KeyError, AttributeError, TypeError, ValueError) as e:
-            logger.error(f"Parámetros invalidos para {file_name}: {e}")
-            raise ParameterError(f"Parámetros proporcionados no válidos para {file_name}: {e}")
+            logger.error(f"Invalid parameters for {file_name}: {e}")
+            raise ParameterError(f"Invalid parameters provided for {file_name}: {e}")
 
     def write_files(self):
         """
-        Escribe todos los archivos administrados en el directorio del caso.
+        Writes all managed files to the case directory.
 
-        Genera:
-        FileHandlerError: Si se produce un error durante la escritura del archivo.
+        Raises:
+            FileHandlerError: If an error occurs during file writing.
         """
         try:
             for _, file_obj in self.files.items():
                 file_obj.write_file(self.case_path)
         except (FileNotFoundError, PermissionError) as e:
-            raise FileHandlerError(f"Error al escribir archivo: {e}")
+            raise FileHandlerError(f"Failed to write file: {e}")
 
     def save_all_parameters_to_json(self) -> None:
         """
-        Guarda todos los parámetros editables de todos los objetos FoamFile en un único archivo JSON.
+        Saves all editable parameters from all FoamFile objects to a single JSON file.
 
-        Genera:
-        FileHandlerError: Si no se puede escribir en el archivo JSON.
+        Raises:
+            FileHandlerError: If the JSON file cannot be written.
         """
         all_params_values = {}
         for file_name, file_obj in self.files.items():
@@ -295,31 +295,31 @@ class FileHandler:
             with open(json_path, 'w') as f:
                 json.dump(saved_data, f, indent=4)
         except (IOError, PermissionError) as e:
-            raise FileHandlerError(f"No se pudieron guardar los parámetros en el archivo JSON en {json_path}: {e}")
+            raise FileHandlerError(f"Could not save parameters to JSON file at {json_path}: {e}")
 
     def load_all_parameters_from_json(self) -> None:
         """
-        Carga todos los parámetros del archivo JSON y actualiza los objetos FoamFile correspondientes.
+        Loads all parameters from the JSON file and updates the corresponding FoamFile objects.
 
-        Genera:
-        FileHandlerError: Si el archivo JSON no se encuentra o no se puede analizar.
-        ParameterError: Si los parámetros del JSON no son válidos.
+        Raises:
+            FileHandlerError: If the JSON file is not found or cannot be parsed.
+            ParameterError: If the parameters in the JSON are invalid.
         """
         json_path = self.case_path / self.JSON_PARAMS_FILE
         if not json_path.exists():
-            raise FileHandlerError(f"Archivo JSON de parámetros no encontrado en {json_path}")
+            raise FileHandlerError(f"Parameters JSON file not found at {json_path}")
 
         try:
             with open(json_path, 'r') as f:
                 saved_data = json.load(f)
         except json.JSONDecodeError:
-            raise FileHandlerError(f"No se pudo decodificar JSON desde {json_path}")
+            raise FileHandlerError(f"Failed to decode JSON from {json_path}")
 
         loaded_template = saved_data.get("template")
         if loaded_template and loaded_template != self.template:
-            logger.warning(f"El template cargado '{loaded_template}' difiere del template inicial '{self.template}'.")
+            logger.warning(f"Loaded template '{loaded_template}' differs from initial template '{self.template}'.")
             self.template = loaded_template
-            #Una implementación más robusta podría reinicializar los archivos acá
+            # A more robust implementation might re-initialize files here.
 
         loaded_params = saved_data.get("parameters", {})
         for file_name, params in loaded_params.items():
@@ -327,4 +327,4 @@ class FileHandler:
                 try:
                     self.files[file_name].update_parameters(params)
                 except (KeyError, AttributeError, TypeError, ValueError) as e:
-                    raise ParameterError(f"Parámetros inválidos para '{file_name}' en el archivo JSON: {e}")
+                    raise ParameterError(f"Invalid parameters for '{file_name}' in JSON file: {e}")

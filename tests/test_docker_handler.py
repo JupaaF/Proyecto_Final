@@ -8,6 +8,7 @@ from unittest.mock import patch, MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.docker_handler.dockerHandler import DockerHandler
+from src.docker_handler.exceptions import DockerNotInstalledError, DockerDaemonError, ContainerExecutionError
 
 @pytest.fixture
 def docker_handler(tmp_path: Path) -> DockerHandler:
@@ -19,12 +20,12 @@ def docker_handler(tmp_path: Path) -> DockerHandler:
 
 @patch('src.docker_handler.dockerHandler.subprocess.run')
 def test_is_docker_running_success(mock_run, docker_handler: DockerHandler):
-    """Test is_docker_running when Docker is running."""
+    """Test is_docker_running returns successfully when Docker is running."""
+    mock_run.return_value = None
     
-    # Configure the mock to simulate a successful command execution
-    mock_run.return_value = None  # The function doesn't check the return value, just that it doesn't raise
+    # The method should not raise any exception
+    docker_handler.is_docker_running()
     
-    assert docker_handler.is_docker_running() is True
     mock_run.assert_called_once_with(
         ["docker", "info"],
         check=True,
@@ -33,42 +34,49 @@ def test_is_docker_running_success(mock_run, docker_handler: DockerHandler):
     )
 
 @patch('src.docker_handler.dockerHandler.subprocess.run')
-def test_is_docker_running_failure(mock_run, docker_handler: DockerHandler):
-    """Test is_docker_running when the docker command fails."""
-    # Configure the mock to simulate a failed command execution
+def test_is_docker_running_daemon_error(mock_run, docker_handler: DockerHandler):
+    """Test is_docker_running raises DockerDaemonError when the docker command fails."""
     mock_run.side_effect = subprocess.CalledProcessError(1, "docker info")
     
-    assert docker_handler.is_docker_running() is False
+    with pytest.raises(DockerDaemonError):
+        docker_handler.is_docker_running()
     mock_run.assert_called_once()
 
 @patch('src.docker_handler.dockerHandler.subprocess.run')
 def test_is_docker_running_not_found(mock_run, docker_handler: DockerHandler):
-    """Test is_docker_running when the docker command is not found."""
-    # Configure the mock to simulate the command not being found
+    """Test is_docker_running raises DockerNotInstalledError when the command is not found."""
     mock_run.side_effect = FileNotFoundError
     
-    assert docker_handler.is_docker_running() is False
+    with pytest.raises(DockerNotInstalledError):
+        docker_handler.is_docker_running()
     mock_run.assert_called_once()
 
 @patch('src.docker_handler.dockerHandler.subprocess.run')
 def test_prepare_case_for_paraview_success(mock_run, docker_handler: DockerHandler):
     """Test prepare_case_for_paraview on successful execution."""
-    mock_run.return_value = None  # Simulate successful run
+    mock_run.return_value = None
     
-    result = docker_handler.prepare_case_for_paraview()
-    
-    assert result is True
+    # The method should not raise any exception
+    docker_handler.prepare_case_for_paraview()
     mock_run.assert_called_once()
 
 
 @patch('src.docker_handler.dockerHandler.subprocess.run')
 def test_prepare_case_for_paraview_failure(mock_run, docker_handler: DockerHandler):
-    """Test prepare_case_for_paraview when the docker command fails."""
+    """Test prepare_case_for_paraview raises ContainerExecutionError on failure."""
     mock_run.side_effect = subprocess.CalledProcessError(1, "docker run ...")
     
-    result = docker_handler.prepare_case_for_paraview()
+    with pytest.raises(ContainerExecutionError):
+        docker_handler.prepare_case_for_paraview()
+    mock_run.assert_called_once()
+
+@patch('src.docker_handler.dockerHandler.subprocess.run')
+def test_prepare_case_for_paraview_not_found(mock_run, docker_handler: DockerHandler):
+    """Test prepare_case_for_paraview raises DockerNotInstalledError when command is not found."""
+    mock_run.side_effect = FileNotFoundError
     
-    assert result is False
+    with pytest.raises(DockerNotInstalledError):
+        docker_handler.prepare_case_for_paraview()
     mock_run.assert_called_once()
 
 
@@ -76,7 +84,6 @@ def test_prepare_case_for_paraview_failure(mock_run, docker_handler: DockerHandl
 def test_execute_script_in_docker_success(mock_popen, docker_handler: DockerHandler):
     """Test execute_script_in_docker for successful script execution."""
     mock_process = MagicMock()
-    mock_process.stdout = MagicMock()
     mock_process.stdout.readline.side_effect = ['line 1', 'line 2', '']
     mock_process.wait.return_value = 0 # No error
     mock_popen.return_value = mock_process
@@ -89,38 +96,30 @@ def test_execute_script_in_docker_success(mock_popen, docker_handler: DockerHand
 
 @patch('src.docker_handler.dockerHandler.subprocess.Popen')
 def test_execute_script_in_docker_failure(mock_popen, docker_handler: DockerHandler):
-    """Test execute_script_in_docker for a script that fails."""
+    """Test execute_script_in_docker raises ContainerExecutionError on script failure."""
     mock_process = MagicMock()
-    mock_process.stdout = MagicMock()
-    mock_process.stdout.readline.side_effect = ['error line', '']
-    mock_process.wait.return_value = 1 #error
+    mock_process.stdout.readline.side_effect = ['error line 1', '']
+    mock_process.wait.return_value = 1 # Error code
     mock_popen.return_value = mock_process
 
     script_name = "failing_script.sh"
     generator = docker_handler.execute_script_in_docker(script_name)
 
-    # The function should yield stdout lines first
-    assert 'error line' == next(generator)
+    # The function should still yield all output lines before raising the exception
+    assert next(generator) == 'error line 1'
     
-    # Then it should yield the error message from the except block
-    assert 'Error: Script execution failed with code 1' in next(generator)
-
-    # Finally, it should re-raise the exception
-    with pytest.raises(subprocess.CalledProcessError):
-        next(generator)
+    # The exception should be raised when the generator is exhausted
+    with pytest.raises(ContainerExecutionError):
+        list(generator)
 
 @patch('src.docker_handler.dockerHandler.subprocess.Popen')
 def test_execute_script_in_docker_not_found(mock_popen, docker_handler: DockerHandler):
-    """Test execute_script_in_docker when docker command is not found."""
+    """Test execute_script_in_docker raises DockerNotInstalledError when command is not found."""
     mock_popen.side_effect = FileNotFoundError
 
     script_name = "any_script.sh"
-    generator = docker_handler.execute_script_in_docker(script_name)
 
-    # Check for the yielded error message
-    assert "Error: Docker command not found" in next(generator)
-
-    # Check that the exception is raised when the generator is exhausted
-    with pytest.raises(FileNotFoundError):
-        list(generator)
+    with pytest.raises(DockerNotInstalledError):
+        # We need to consume the generator to trigger the exception
+        list(docker_handler.execute_script_in_docker(script_name))
 
