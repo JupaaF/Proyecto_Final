@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from .base_widget import BaseParameterWidget
 from ..helpers import NoScrollComboBox
+from ..parameter_container_widget import ParameterContainerWidget
 
 class ChoiceWithOptionsWidget(BaseParameterWidget):
     """
@@ -9,9 +10,7 @@ class ChoiceWithOptionsWidget(BaseParameterWidget):
     """
     def __init__(self, param_props: dict, widget_factory):
         self.widget_factory = widget_factory
-        self.sub_widgets = {}
-        # Inicialización de BaseParameterWidget se llama al final
-        # después de que las dependencias estén listas.
+        self.sub_param_container = None
         super().__init__(param_props)
 
     def setup_ui(self):
@@ -30,6 +29,7 @@ class ChoiceWithOptionsWidget(BaseParameterWidget):
                 self.main_combo.addItem(option.get('label', option.get('name')), option.get('name'))
         container_layout.addWidget(self.main_combo)
 
+        # Contenedor para el ParameterContainerWidget
         self.sub_widgets_container = QWidget()
         self.sub_widgets_layout = QVBoxLayout(self.sub_widgets_container)
         self.sub_widgets_layout.setContentsMargins(0, 0, 0, 0)
@@ -37,63 +37,58 @@ class ChoiceWithOptionsWidget(BaseParameterWidget):
 
         self.main_combo.currentIndexChanged.connect(self.show_parameters)
 
+        # Seleccionar valor inicial
         if self.current_value:
             initial_selection = self.current_value[0]
             idx = self.main_combo.findData(initial_selection)
             if idx != -1:
                 self.main_combo.setCurrentIndex(idx)
 
+        # Llama a show_parameters para el estado inicial
         self.show_parameters(self.main_combo.currentIndex())
 
     def show_parameters(self, index):
         """
-        Muestra los sub-parámetros correspondientes a la opción seleccionada.
+        Muestra los sub-parámetros correspondientes a la opción seleccionada
+        utilizando un ParameterContainerWidget.
         """
-        # Limpiar widgets anteriores
-        while self.sub_widgets_layout.count() > 0:
-            child = self.sub_widgets_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-        self.sub_widgets.clear()
+        # Limpiar container anterior
+        if self.sub_param_container:
+            self.sub_param_container.deleteLater()
+            self.sub_param_container = None
 
         selected_option_name = self.main_combo.itemData(index)
-        parameters_schema = next(
+        parameters_schema_list = next(
             (opt.get('parameters', []) for opt in self.options if opt.get('name') == selected_option_name),
             []
         )
 
-        is_current_selection = len(self.current_value) > 0 and self.current_value[0] == selected_option_name
+        # Obtener valores actuales para esta opción
+        current_sub_values = {}
+        if self.current_value and self.current_value[0] == selected_option_name:
+            current_sub_values = self.current_value[1]
 
-        for param_props in parameters_schema:
-            param_name = param_props.get('name')
+        # Preparar el schema para el container, inyectando los valores actuales
+        parameters_schema_dict = {}
+        for param_props in parameters_schema_list:
+            param_name = param_props['name']
+            new_props = param_props.copy()
+            if param_name in current_sub_values:
+                new_props['current'] = current_sub_values[param_name]
+            parameters_schema_dict[param_name] = new_props
 
-            current_sub_value = None
-            if is_current_selection:
-                current_sub_value = self.current_value[1].get(param_name)
-
-            value_for_widget = current_sub_value if current_sub_value is not None else param_props.get('default')
-
-            sub_props = param_props.copy()
-            sub_props['current'] = value_for_widget
-
-            param_widget = self.widget_factory.create_widget(sub_props)
-
-            if param_widget:
-                row_widget = QWidget()
-                hlayout = QHBoxLayout(row_widget)
-                hlayout.setContentsMargins(0,0,0,0)
-                hlayout.addWidget(QLabel(sub_props.get('label', param_name)))
-                hlayout.addWidget(param_widget)
-                self.sub_widgets_layout.addWidget(row_widget)
-                self.sub_widgets[param_name] = param_widget
+        # Crear y añadir el nuevo container
+        self.sub_param_container = ParameterContainerWidget(parameters_schema_dict, self.widget_factory)
+        self.sub_widgets_layout.addWidget(self.sub_param_container)
 
     def get_value(self):
         """
         Devuelve la opción principal seleccionada y los valores de sus sub-parámetros.
         """
         main_option = self.main_combo.currentData()
+
         sub_params = {}
-        for name, widget in self.sub_widgets.items():
-            sub_params[name] = widget.get_value()
+        if self.sub_param_container:
+            sub_params = self.sub_param_container.get_values()
 
         return [main_option, sub_params]

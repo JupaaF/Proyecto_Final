@@ -1,5 +1,38 @@
-from PySide6.QtWidgets import QComboBox
+from PySide6.QtWidgets import (QComboBox, QDialog, QVBoxLayout, QCheckBox,
+                               QDialogButtonBox)
 from PySide6.QtGui import QIntValidator, QDoubleValidator
+
+
+class OptionalParametersDialog(QDialog):
+    """
+    Un diálogo que permite al usuario seleccionar parámetros opcionales para añadir.
+    """
+    def __init__(self, available_params, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Agregar Parámetros Opcionales")
+
+        layout = QVBoxLayout(self)
+        self.checkboxes = {}
+
+        # Crea un checkbox por cada parámetro opcional disponible.
+        for param_name, param_props in available_params.items():
+            label = param_props.get('label', param_name)
+            checkbox = QCheckBox(label)
+            checkbox.setToolTip(param_props.get('tooltip', ''))
+            self.checkboxes[param_name] = checkbox
+            layout.addWidget(checkbox)
+
+        # Botones de Aceptar/Cancelar.
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+
+    def get_selected_parameters(self):
+        """
+        Devuelve una lista con los nombres de los parámetros seleccionados.
+        """
+        return [name for name, checkbox in self.checkboxes.items() if checkbox.isChecked()]
 
 
 class StrictIntValidator(QIntValidator):

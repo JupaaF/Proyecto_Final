@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel,
-                               QGroupBox, QHBoxLayout)
+                               QGroupBox)
 from PySide6.QtGui import QFont
 from .base_widget import BaseParameterWidget
 from ..helpers import NoScrollComboBox
+from ..parameter_container_widget import ParameterContainerWidget
 
 class PatchesWidget(BaseParameterWidget):
     """
@@ -14,7 +15,7 @@ class PatchesWidget(BaseParameterWidget):
         self.highlight_colors = highlight_colors
 
         self.patch_groupboxes = {}
-        self.patch_widgets = {}
+        self.patch_widgets_map = {}
         self.highlighted_patches = {}
 
         super().__init__(param_props)
@@ -44,18 +45,22 @@ class PatchesWidget(BaseParameterWidget):
             patch_name_label.setFont(font)
             group_layout.addWidget(patch_name_label)
 
-            patch_form_layout = QFormLayout()
-            group_layout.addLayout(patch_form_layout)
+            # Layout que contendrá el ComboBox y el ParameterContainer
+            patch_content_layout = QVBoxLayout()
+            group_layout.addLayout(patch_content_layout)
 
             type_combo = NoScrollComboBox()
             for option in self.type_options:
                 type_combo.addItem(option.get('label'), option.get('name'))
 
-            patch_form_layout.addRow("Tipo:", type_combo)
+            # Usar un FormLayout para el ComboBox para mantener la alineación
+            combo_form_layout = QFormLayout()
+            combo_form_layout.addRow("Tipo:", type_combo)
+            patch_content_layout.addLayout(combo_form_layout)
 
-            self.patch_widgets[patch_name] = {'type_combo': type_combo, 'sub_widgets': {}}
+            self.patch_widgets_map[patch_name] = {'type_combo': type_combo, 'container': None}
 
-            update_func = self._make_update_params_func(patch_name, patch_form_layout, type_combo, patch_data)
+            update_func = self._make_update_params_func(patch_name, patch_content_layout, type_combo, patch_data)
             type_combo.currentIndexChanged.connect(update_func)
 
             initial_type = patch_data.get('type', self.schema.get('type', {}).get('default'))
@@ -68,33 +73,34 @@ class PatchesWidget(BaseParameterWidget):
 
             container_layout.addWidget(patch_groupbox)
 
-    def _make_update_params_func(self, patch_name, form_layout, combo, data):
+    def _make_update_params_func(self, patch_name, layout, combo, data):
         def update_value_input_visibility(index):
-            # Limpiar widgets anteriores
-            for w in self.patch_widgets[patch_name]['sub_widgets'].values():
-                w.deleteLater()
-            self.patch_widgets[patch_name]['sub_widgets'].clear()
-
-            while form_layout.rowCount() > 1:
-                form_layout.removeRow(1)
+            # Limpiar container anterior
+            if self.patch_widgets_map[patch_name].get('container'):
+                self.patch_widgets_map[patch_name]['container'].deleteLater()
+                self.patch_widgets_map[patch_name]['container'] = None
 
             selected_type_name = combo.itemData(index)
-            parameters_schema = next(
+            parameters_schema_list = next(
                 (opt.get('parameters', []) for opt in self.type_options if opt.get('name') == selected_type_name),
                 []
             )
 
-            for param_props in parameters_schema:
+            # Preparar schema para el container, inyectando valores actuales
+            parameters_schema_dict = {}
+            for param_props in parameters_schema_list:
                 param_name_key = param_props.get('name')
+                # Usar valor actual del patch o el default del schema
                 value = data.get(param_name_key, param_props.get('default'))
 
-                sub_props = param_props.copy()
-                sub_props['current'] = value
+                new_props = param_props.copy()
+                new_props['current'] = value
+                parameters_schema_dict[param_name_key] = new_props
 
-                param_widget = self.widget_factory.create_widget(sub_props)
-                if param_widget:
-                    form_layout.addRow(sub_props.get('label', param_name_key), param_widget)
-                    self.patch_widgets[patch_name]['sub_widgets'][param_name_key] = param_widget
+            container = ParameterContainerWidget(parameters_schema_dict, self.widget_factory)
+            self.patch_widgets_map[patch_name]['container'] = container
+            layout.addWidget(container)
+
         return update_value_input_visibility
 
     def get_value(self):
@@ -102,14 +108,14 @@ class PatchesWidget(BaseParameterWidget):
         Recopila y devuelve la configuración de todos los patches.
         """
         patches = []
-        for patch_name, widgets in self.patch_widgets.items():
+        for patch_name, widgets in self.patch_widgets_map.items():
             selected_type_name = widgets['type_combo'].currentData()
             patch_data = {'patchName': patch_name, 'type': selected_type_name}
 
-            for param_name, widget in widgets['sub_widgets'].items():
-                value = widget.get_value()
-                if value is not None:
-                    patch_data[param_name] = value
+            container = widgets.get('container')
+            if container:
+                sub_params = container.get_values()
+                patch_data.update(sub_params)
 
             patches.append(patch_data)
         return patches
