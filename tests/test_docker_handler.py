@@ -99,11 +99,7 @@ def test_execute_script_in_docker_success(mock_popen, docker_handler: DockerHand
 
 @patch('src.docker_handler.dockerHandler.subprocess.Popen')
 def test_execute_script_in_docker_failure(mock_popen, docker_handler: DockerHandler):
-<<<<<<< HEAD
-    """Prueba si execute_script_in_docker devuelve un ContainerExecutionError en una falla del script."""
-=======
     """Test execute_script_in_docker yields an error message and raises ContainerExecutionError on script failure."""
->>>>>>> 28ae9dc00b384cced3d3de59777e0f2b5e1c56c5
     mock_process = MagicMock()
     mock_process.stdout.readline.side_effect = ['some output', '']
     mock_process.wait.return_value = 1  # Error code
@@ -124,11 +120,7 @@ def test_execute_script_in_docker_failure(mock_popen, docker_handler: DockerHand
 
 @patch('src.docker_handler.dockerHandler.subprocess.Popen')
 def test_execute_script_in_docker_not_found(mock_popen, docker_handler: DockerHandler):
-<<<<<<< HEAD
-    """Prueba que execute_script_in_docker devuelva un DockerNotInstalledError cuando un comando no se encuentra."""
-=======
     """Test execute_script_in_docker yields an error and raises DockerNotInstalledError when command is not found."""
->>>>>>> 28ae9dc00b384cced3d3de59777e0f2b5e1c56c5
     mock_popen.side_effect = FileNotFoundError
 
     script_name = "any_script.sh"
