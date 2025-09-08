@@ -69,13 +69,12 @@ class DockerHandler():
             yield error_message
             raise ContainerExecutionError(error_message)
         
-    def is_docker_running(self):
+    def is_docker_running(self) -> bool:
         """
         Verifica si el servicio de Docker está en ejecución y es accesible.
         
-        Raises:
-            DockerNotInstalledError: Si el comando 'docker' no se encuentra.
-            DockerDaemonError: Si el comando 'docker info' falla, indicando que el servicio no está activo.
+        Returns:
+            bool: True si Docker está corriendo y es accesible, False en caso contrario.
         """
         try:
             subprocess.run(
@@ -84,13 +83,14 @@ class DockerHandler():
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )
+            return True
         except FileNotFoundError:
-            logger.error("Comando 'docker' no encontrado. Asegúrese de que Docker esté instalado y en el PATH.")
-            raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
+            logger.warning("Comando 'docker' no encontrado. Docker puede no estar instalado o no estar en el PATH.")
+            return False
         except subprocess.CalledProcessError:
-            logger.error("El demonio de Docker no está corriendo o no es accesible.")
-            raise DockerDaemonError("El servicio de Docker no está en ejecución o no se puede acceder a él.")
-    
+            logger.warning("El demonio de Docker no está corriendo o no es accesible (el comando 'docker info' falló).")
+            return False
+        
     def prepare_case_for_paraview(self):
         """
         Crea un archivo .foam en el directorio del caso para que ParaView lo reconozca.

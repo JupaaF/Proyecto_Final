@@ -36,22 +36,21 @@ def test_is_docker_running_success(mock_run, docker_handler: DockerHandler):
         stderr=subprocess.DEVNULL
     )
 
+
 @patch('src.docker_handler.dockerHandler.subprocess.run')
 def test_is_docker_running_daemon_error(mock_run, docker_handler: DockerHandler):
-    """Prueba si is_docker_running devuelve un DockerDaemonError cuando el comando docker falla."""
+    """Test is_docker_running returns False when the docker command fails."""
     mock_run.side_effect = subprocess.CalledProcessError(1, "docker info")
     
-    with pytest.raises(DockerDaemonError):
-        docker_handler.is_docker_running()
+    assert docker_handler.is_docker_running() is False
     mock_run.assert_called_once()
 
 @patch('src.docker_handler.dockerHandler.subprocess.run')
 def test_is_docker_running_not_found(mock_run, docker_handler: DockerHandler):
-    """Prueba si is_docker_running da un DockerNotInstalledError cuando el comando no se encuentra."""
+    """Test is_docker_running returns False when the command is not found."""
     mock_run.side_effect = FileNotFoundError
     
-    with pytest.raises(DockerNotInstalledError):
-        docker_handler.is_docker_running()
+    assert docker_handler.is_docker_running() is False
     mock_run.assert_called_once()
 
 @patch('src.docker_handler.dockerHandler.subprocess.run')
