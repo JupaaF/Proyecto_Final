@@ -11,7 +11,31 @@ class DockerHandler():
     def __init__(self,case_path:Path):
         self.case_path = case_path
         self.IMAGEN_SEDFOAM = "cbonamy/sedfoam_2312_ubuntu"
+        self.process = None
+        self.was_stopped_by_user = False
         
+    def stop_simulation(self):
+        """
+        Detiene la simulación de Docker en curso.
+        """
+        if self.process and self.process.poll() is None:
+            logger.info("Intentando detener la simulación...")
+            self.was_stopped_by_user = True
+            self.process.terminate()  # Envía SIGTERM
+
+            try:
+                # Espera un poco para que el proceso termine de forma elegante
+                self.process.wait(timeout=5)
+                logger.info("El proceso de Docker ha terminado.")
+            except subprocess.TimeoutExpired:
+                # Si no termina, forzar la detención
+                logger.warning("El proceso no respondió a terminate, forzando la detención (kill)...")
+                self.process.kill()  # Envía SIGKILL
+                logger.info("El proceso de Docker ha sido forzado a detenerse.")
+            return True
+        else:
+            logger.warning("No hay ningún proceso de simulación en ejecución para detener.")
+            return False
 
     def execute_script_in_docker(self, script_name: str):
         """
@@ -28,6 +52,9 @@ class DockerHandler():
             ContainerExecutionError: Si el script de Docker falla.
             DockerHandlerError: Para otros errores relacionados con Docker.
         """
+        self.process = None
+        self.was_stopped_by_user = False
+
         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
         script_in_container = f"/{script_name}"
         ruta_docker_volumen = self.case_path.as_posix()
@@ -42,7 +69,7 @@ class DockerHandler():
         ]
 
         try:
-            process = subprocess.Popen(
+            self.process = subprocess.Popen(
                 docker_command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
@@ -56,12 +83,16 @@ class DockerHandler():
             yield error_message
             raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
 
-        if process.stdout:
-            for line in iter(process.stdout.readline, ''):
+        if self.process.stdout:
+            for line in iter(self.process.stdout.readline, ''):
                 yield line.strip()
 
-        process.stdout.close()
-        return_code = process.wait()
+        self.process.stdout.close()
+        return_code = self.process.wait()
+
+        if self.was_stopped_by_user:
+            yield "La simulación fue detenida por el usuario."
+            return
 
         if return_code != 0:
             error_message = f"Error: La ejecución de {script_name} falló con código de retorno {return_code}."

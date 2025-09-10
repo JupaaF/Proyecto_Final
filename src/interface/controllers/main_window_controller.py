@@ -104,6 +104,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
         self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
         self.ui.actionGuardar_Parametros.setShortcut(QKeySequence.Save)
+        self.ui.actionDetener_Simulacion.triggered.connect(self.stop_simulation)
 
     def clean_simulation_results(self):
         """
@@ -409,36 +410,52 @@ class MainWindowController(QMainWindow):
         """
         Handles the completion of a Docker script execution.
         """
-        self._set_ui_interactive(True)
         self.is_running_task = False
-        if success:
-            QMessageBox.information(self, "Docker Execution", f"Script '{script_name}' executed successfully.")
+        self._set_ui_interactive(True) # Restore UI interaction
+
+        if self.docker_handler and self.docker_handler.was_stopped_by_user:
+            QMessageBox.information(self, "Simulación Detenida", f"La ejecución del script '{script_name}' fue detenida por el usuario.")
+            self.docker_handler.was_stopped_by_user = False # Reset flag
+        elif success:
+            QMessageBox.information(self, "Ejecución de Docker", f"El script '{script_name}' se ejecutó correctamente.")
             if script_name in ["run_transform_UNV.sh", "run_transform_blockMeshDict.sh", "run_extrudeMesh.sh"]:
-                
                 patch_names = self._get_vtk_patch_names()
                 if patch_names:
                     self.file_handler.initialize_parameters_from_schema(patch_names)
-                # After mesh transformation, create case files and then check and visualize the mesh
                 self.file_handler.create_case_files()
                 QTimer.singleShot(100, self._check_mesh_and_visualize)
-            elif script_name == "run_openfoam.sh":
-                # After simulation, maybe refresh something or show a message.
-                # For now, just a message.
-                pass # The success message is already shown
+            # No special action needed for "run_openfoam.sh" on success, message is sufficient
         else:
-            QMessageBox.critical(self, "Docker Execution Error", f"Failed to execute script '{script_name}'.")
+            QMessageBox.critical(self, "Error en Ejecución de Docker", f"Falló la ejecución del script '{script_name}'.")
 
     def _set_ui_interactive(self, enabled: bool):
         """
         Enables or disables UI elements to prevent user interaction during a task.
+        If a task is starting (enabled=False), it also disables the stop action.
         """
+        # Main actions are enabled when no task is running
         self.ui.actionNueva_Simulacion.setEnabled(enabled)
         self.ui.actionCargar_Simulacion.setEnabled(enabled)
         self.ui.actionEjecutar_Simulacion.setEnabled(enabled)
         self.ui.actionGuardar_Parametros.setEnabled(enabled)
         self.ui.actionCrear_Extrude.setEnabled(enabled)
+
+        # The "Stop" action is the opposite: enabled only when a task is running
+        self.ui.actionDetener_Simulacion.setEnabled(not enabled)
+
+        # Docks are disabled during a task
         self.ui.parameterEditorDock.setEnabled(enabled)
         self.ui.fileBrowserDock.setEnabled(enabled)
+
+    def stop_simulation(self):
+        """
+        Stops the currently running Docker simulation.
+        """
+        if self.is_running_task and self.docker_handler:
+            self.docker_handler.stop_simulation()
+            self._append_log(">>> Solicitud para detener la simulación enviada...")
+        else:
+            QMessageBox.warning(self, "Detener Simulación", "No hay ninguna simulación en ejecución para detener.")
 
     def save_all_parameters_action(self):
         """Guarda todos los parámetros editables en un archivo JSON."""
