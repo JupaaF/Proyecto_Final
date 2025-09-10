@@ -1,6 +1,161 @@
+# from pathlib import Path
+# import subprocess
+# import logging
+# from .exceptions import DockerHandlerError, DockerNotInstalledError, DockerDaemonError, ContainerExecutionError
+
+# # Configure logging
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# logger = logging.getLogger(__name__)
+
+# class DockerHandler():
+#     def __init__(self,case_path:Path):
+#         self.case_path = case_path
+#         self.IMAGEN_SEDFOAM = "cbonamy/sedfoam_2312_ubuntu"
+#         self.process = None
+#         self.was_stopped_by_user = False
+        
+#     def stop_simulation(self):
+#         """
+#         Detiene la simulación de Docker en curso.
+#         """
+#         if self.process and self.process.poll() is None:
+#             logger.info("Intentando detener la simulación...")
+#             self.was_stopped_by_user = True
+#             self.process.terminate()  # Envía SIGTERM
+
+#             try:
+#                 # Espera un poco para que el proceso termine de forma elegante
+#                 self.process.wait(timeout=5)
+#                 logger.info("El proceso de Docker ha terminado.")
+#             except subprocess.TimeoutExpired:
+#                 # Si no termina, forzar la detención
+#                 logger.warning("El proceso no respondió a terminate, forzando la detención (kill)...")
+#                 self.process.kill()  # Envía SIGKILL
+#                 logger.info("El proceso de Docker ha sido forzado a detenerse.")
+#             return True
+#         else:
+#             logger.warning("No hay ningún proceso de simulación en ejecución para detener.")
+#             return False
+
+#     def execute_script_in_docker(self, script_name: str):
+#         """
+#         Ejecuta un script dentro de un contenedor Docker y transmite la salida.
+
+#         Args:
+#             script_name (str): El nombre del script a ejecutar (ej. "run_openfoam.sh").
+
+#         Yields:
+#             str: Una línea de la salida del script.
+
+#         Raises:
+#             DockerNotInstalledError: Si el comando 'docker' no se encuentra.
+#             ContainerExecutionError: Si el script de Docker falla.
+#             DockerHandlerError: Para otros errores relacionados con Docker.
+#         """
+#         self.process = None
+#         self.was_stopped_by_user = False
+
+#         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
+#         script_in_container = f"/{script_name}"
+#         ruta_docker_volumen = self.case_path.as_posix()
+
+#         docker_command = [
+#             "docker", "run", "--rm",
+#             "-v", f"{ruta_docker_volumen}:/case",
+#             "-v", f"{local_script_path.as_posix()}:{script_in_container}",
+#             "--entrypoint", "bash",
+#             self.IMAGEN_SEDFOAM,
+#             script_in_container
+#         ]
+
+#         try:
+#             self.process = subprocess.Popen(
+#                 docker_command,
+#                 stdout=subprocess.PIPE,
+#                 stderr=subprocess.STDOUT,
+#                 text=True,
+#                 bufsize=1,
+#                 universal_newlines=True
+#             )
+#         except FileNotFoundError:
+#             error_message = "Error: Comando 'docker' no encontrado. Asegúrese de que Docker esté instalado y en el PATH."
+#             logger.error(error_message)
+#             yield error_message
+#             raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
+
+#         if self.process.stdout:
+#             for line in iter(self.process.stdout.readline, ''):
+#                 yield line.strip()
+
+#         self.process.stdout.close()
+#         return_code = self.process.wait()
+
+#         if self.was_stopped_by_user:
+#             yield "La simulación fue detenida por el usuario."
+#             return
+
+#         if return_code != 0:
+#             error_message = f"Error: La ejecución de {script_name} falló con código de retorno {return_code}."
+#             logger.error(error_message)
+#             yield error_message
+#             raise ContainerExecutionError(error_message)
+        
+#     def is_docker_running(self) -> bool:
+#         """
+#         Verifica si el servicio de Docker está en ejecución y es accesible.
+        
+#         Returns:
+#             bool: True si Docker está corriendo y es accesible, False en caso contrario.
+#         """
+#         try:
+#             subprocess.run(
+#                 ["docker", "info"],
+#                 check=True,
+#                 stdout=subprocess.DEVNULL,
+#                 stderr=subprocess.DEVNULL
+#             )
+#             return True
+#         except FileNotFoundError:
+#             logger.warning("Comando 'docker' no encontrado. Docker puede no estar instalado o no estar en el PATH.")
+#             return False
+#         except subprocess.CalledProcessError:
+#             logger.warning("El demonio de Docker no está corriendo o no es accesible (el comando 'docker info' falló).")
+#             return False
+        
+#     def prepare_case_for_paraview(self):
+#         """
+#         Crea un archivo .foam en el directorio del caso para que ParaView lo reconozca.
+
+#         Raises:
+#             DockerNotInstalledError: Si el comando 'docker' no se encuentra.
+#             ContainerExecutionError: Si el comando para crear el archivo .foam falla.
+#         """
+#         ruta_docker_volumen = self.case_path.as_posix()
+#         nombre_caso = self.case_path.name
+        
+#         # El comando 'touch' crea el archivo .foam
+#         command = f"cd /case && touch {nombre_caso}.foam"
+
+#         docker_command = [
+#             "docker", "run", "--rm",
+#             "-v", f"{ruta_docker_volumen}:/case",
+#             "--entrypoint", "bash",
+#             self.IMAGEN_SEDFOAM,
+#             "-c", f"source /usr/lib/openfoam/openfoam2312/etc/bashrc && {command}"
+#         ]
+
+#         try:
+#             subprocess.run(docker_command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+#         except subprocess.CalledProcessError as e:
+#             logger.error(f"Error al preparar el caso para ParaView: {e}")
+#             raise ContainerExecutionError(f"No se pudo crear el archivo .foam. Código de error: {e.returncode}")
+#         except FileNotFoundError:
+#             logger.error("Comando 'docker' no encontrado al preparar el caso para ParaView.")
+#             raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
 from pathlib import Path
 import subprocess
 import logging
+import uuid
 from .exceptions import DockerHandlerError, DockerNotInstalledError, DockerDaemonError, ContainerExecutionError
 
 # Configure logging
@@ -13,34 +168,41 @@ class DockerHandler():
         self.IMAGEN_SEDFOAM = "cbonamy/sedfoam_2312_ubuntu"
         self.process = None
         self.was_stopped_by_user = False
+        self.container_name = None
         
     def stop_simulation(self):
         """
-        Detiene la simulación de Docker en curso.
+        Detiene el contenedor de Docker en curso usando su nombre.
         """
-        if self.process and self.process.poll() is None:
-            logger.info("Intentando detener la simulación...")
+        if self.container_name:
+            logger.info(f"Intentando detener el contenedor: {self.container_name}")
             self.was_stopped_by_user = True
-            self.process.terminate()  # Envía SIGTERM
-
-            try:
-                # Espera un poco para que el proceso termine de forma elegante
-                self.process.wait(timeout=5)
-                logger.info("El proceso de Docker ha terminado.")
-            except subprocess.TimeoutExpired:
-                # Si no termina, forzar la detención
-                logger.warning("El proceso no respondió a terminate, forzando la detención (kill)...")
-                self.process.kill()  # Envía SIGKILL
-                logger.info("El proceso de Docker ha sido forzado a detenerse.")
-            return True
+            
+            # Usar 'docker stop' que envía SIGTERM y después de un tiempo SIGKILL
+            result = subprocess.run(
+                ["docker", "stop", self.container_name],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 0:
+                logger.info(f"Contenedor {self.container_name} detenido exitosamente.")
+                return True
+            else:
+                # Es posible que el contenedor ya se haya detenido, lo cual no es un error.
+                if "No such container" in result.stderr:
+                    logger.warning(f"El contenedor {self.container_name} no fue encontrado, puede que ya se haya detenido.")
+                    return True
+                logger.error(f"Error al detener el contenedor {self.container_name}: {result.stderr.strip()}")
+                return False
         else:
-            logger.warning("No hay ningún proceso de simulación en ejecución para detener.")
+            logger.warning("No hay ningún nombre de contenedor registrado para detener.")
             return False
 
     def execute_script_in_docker(self, script_name: str):
         """
         Ejecuta un script dentro de un contenedor Docker y transmite la salida.
-
+        
         Args:
             script_name (str): El nombre del script a ejecutar (ej. "run_openfoam.sh").
 
@@ -54,13 +216,14 @@ class DockerHandler():
         """
         self.process = None
         self.was_stopped_by_user = False
-
+        self.container_name = f"hidrosim-{self.case_path.name}-{uuid.uuid4().hex[:8]}"
+        
         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
         script_in_container = f"/{script_name}"
         ruta_docker_volumen = self.case_path.as_posix()
 
         docker_command = [
-            "docker", "run", "--rm",
+            "docker", "run", "--name", self.container_name,
             "-v", f"{ruta_docker_volumen}:/case",
             "-v", f"{local_script_path.as_posix()}:{script_in_container}",
             "--entrypoint", "bash",
@@ -83,12 +246,19 @@ class DockerHandler():
             yield error_message
             raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
 
+        # Transmitir la salida del proceso
         if self.process.stdout:
             for line in iter(self.process.stdout.readline, ''):
                 yield line.strip()
 
-        self.process.stdout.close()
+        # Esperar a que el proceso de 'docker run' termine
+        if self.process.stdout:
+            self.process.stdout.close()
         return_code = self.process.wait()
+
+        # Limpiar el contenedor después de que se detenga
+        logger.info(f"Limpiando el contenedor {self.container_name}...")
+        subprocess.run(["docker", "rm", self.container_name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         if self.was_stopped_by_user:
             yield "La simulación fue detenida por el usuario."
