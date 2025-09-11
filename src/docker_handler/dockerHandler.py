@@ -324,6 +324,7 @@ class DockerHandler():
 
         try:
             subprocess.run(docker_command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return True
         except subprocess.CalledProcessError as e:
             logger.error(f"Error al preparar el caso para ParaView: {e}")
             raise ContainerExecutionError(f"No se pudo crear el archivo .foam. Código de error: {e.returncode}")
