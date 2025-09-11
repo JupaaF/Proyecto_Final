@@ -156,7 +156,7 @@ from pathlib import Path
 import subprocess
 import logging
 import uuid
-from .exceptions import DockerHandlerError, DockerNotInstalledError, DockerDaemonError, ContainerExecutionError
+from .exceptions import DockerNotInstalledError, ContainerExecutionError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -169,35 +169,6 @@ class DockerHandler():
         self.process = None
         self.was_stopped_by_user = False
         self.container_name = None
-        
-    def stop_simulation(self):
-        """
-        Detiene el contenedor de Docker en curso usando su nombre.
-        """
-        if self.container_name:
-            logger.info(f"Intentando detener el contenedor: {self.container_name}")
-            self.was_stopped_by_user = True
-            
-            # Usar 'docker stop' que envía SIGTERM y después de un tiempo SIGKILL
-            result = subprocess.run(
-                ["docker", "stop", self.container_name],
-                capture_output=True,
-                text=True
-            )
-            
-            if result.returncode == 0:
-                logger.info(f"Contenedor {self.container_name} detenido exitosamente.")
-                return True
-            else:
-                # Es posible que el contenedor ya se haya detenido, lo cual no es un error.
-                if "No such container" in result.stderr:
-                    logger.warning(f"El contenedor {self.container_name} no fue encontrado, puede que ya se haya detenido.")
-                    return True
-                logger.error(f"Error al detener el contenedor {self.container_name}: {result.stderr.strip()}")
-                return False
-        else:
-            logger.warning("No hay ningún nombre de contenedor registrado para detener.")
-            return False
 
     def execute_script_in_docker(self, script_name: str):
         """
@@ -212,10 +183,11 @@ class DockerHandler():
         Raises:
             DockerNotInstalledError: Si el comando 'docker' no se encuentra.
             ContainerExecutionError: Si el script de Docker falla.
-            DockerHandlerError: Para otros errores relacionados con Docker.
         """
         self.process = None
         self.was_stopped_by_user = False
+
+        # Se genera un nombre único para el contenedor.
         self.container_name = f"hidrosim-{self.case_path.name}-{uuid.uuid4().hex[:8]}"
         
         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
@@ -251,7 +223,9 @@ class DockerHandler():
             for line in iter(self.process.stdout.readline, ''):
                 yield line.strip()
 
-        # Esperar a que el proceso de 'docker run' termine
+        # Esperar a que el proceso de 'docker run' termine. Este proceso finaliza
+        # cuando el contenedor se detiene (ya sea por completar su tarea o por
+        # ser detenido externamente).
         if self.process.stdout:
             self.process.stdout.close()
         return_code = self.process.wait()
@@ -259,7 +233,9 @@ class DockerHandler():
         # Limpiar el contenedor después de que se detenga
         logger.info(f"Limpiando el contenedor {self.container_name}...")
         subprocess.run(["docker", "rm", self.container_name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
+        
+        # Si la bandera fue activada por `stop_simulation`, se informa al usuario
+        # y se termina la ejecución de forma controlada.
         if self.was_stopped_by_user:
             yield "La simulación fue detenida por el usuario."
             return
@@ -269,6 +245,38 @@ class DockerHandler():
             logger.error(error_message)
             yield error_message
             raise ContainerExecutionError(error_message)
+        
+    def stop_simulation(self):
+        """
+        Detiene el contenedor de Docker en curso usando su nombre.
+        """
+        if self.container_name:
+            logger.info(f"Intentando detener el contenedor: {self.container_name}")
+            self.was_stopped_by_user = True
+            
+            # Usar 'docker stop' que envía SIGTERM y después de un tiempo SIGKILL
+            # Este comando es bloqueante y espera a que el contenedor se detenga.
+            result = subprocess.run(
+                ["docker", "stop", self.container_name],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 0:
+                logger.info(f"Contenedor {self.container_name} detenido exitosamente.")
+                return True
+            else:
+                # Es posible que el contenedor ya se haya detenido, lo cual no es un error.
+                # Si el contenedor ya no existe (porque terminó justo antes de la
+                # llamada a stop), no se considera un error.
+                if "No such container" in result.stderr:
+                    logger.warning(f"El contenedor {self.container_name} no fue encontrado, puede que ya se haya detenido.")
+                    return True
+                logger.error(f"Error al detener el contenedor {self.container_name}: {result.stderr.strip()}")
+                return False
+        else:
+            logger.warning("No hay ningún nombre de contenedor registrado para detener.")
+            return False
         
     def is_docker_running(self) -> bool:
         """
