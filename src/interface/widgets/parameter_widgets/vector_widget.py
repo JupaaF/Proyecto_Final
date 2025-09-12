@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QLineEdit, QHBoxLayout
+from PySide6.QtWidgets import QHBoxLayout
 from .base_widget import BaseParameterWidget
-from ..helpers import StrictDoubleValidator
+from ..helpers import NoScrollDoubleSpinBox
 
 class VectorWidget(BaseParameterWidget):
     """
@@ -13,19 +13,29 @@ class VectorWidget(BaseParameterWidget):
         current_value = self.param_props.get('current', {})
         safe_current_value = current_value if isinstance(current_value, dict) else {}
 
-        self.x_edit = QLineEdit(str(safe_current_value.get('x', 0)))
-        self.y_edit = QLineEdit(str(safe_current_value.get('y', 0)))
-        self.z_edit = QLineEdit(str(safe_current_value.get('z', 0)))
+        if safe_current_value.get('x') is None:
+            safe_current_value['x'] = self.param_props.get('default').get('x',0)
+        if safe_current_value.get('y') is None:
+            safe_current_value['y'] = self.param_props.get('default').get('y',0)
+        if safe_current_value.get('z') is None:
+            safe_current_value['z'] = self.param_props.get('default').get('z',0)
 
-        validator = StrictDoubleValidator()
-        if 'min' in self.param_props:
-            validator.setBottom(self.param_props['min'])
-        if 'max' in self.param_props:
-            validator.setTop(self.param_props['max'])
 
-        self.x_edit.setValidator(validator)
-        self.y_edit.setValidator(validator)
-        self.z_edit.setValidator(validator)
+        self.x_edit = NoScrollDoubleSpinBox()
+        self.y_edit = NoScrollDoubleSpinBox()
+        self.z_edit = NoScrollDoubleSpinBox()
+
+        self.x_edit.setDecimals(5)
+        self.y_edit.setDecimals(5)
+        self.z_edit.setDecimals(5)
+
+        self.x_edit.setValue(safe_current_value.get('x',0))
+        self.y_edit.setValue(safe_current_value.get('y',0))
+        self.z_edit.setValue(safe_current_value.get('z',0))
+
+        self.x_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
+        self.y_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
+        self.z_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -40,9 +50,9 @@ class VectorWidget(BaseParameterWidget):
         Lanza un ValueError si alguno de los valores no es válido.
         """
         try:
-            x = float(self.x_edit.text())
-            y = float(self.y_edit.text())
-            z = float(self.z_edit.text())
+            x = float(self.x_edit.value())
+            y = float(self.y_edit.value())
+            z = float(self.z_edit.value())
             return {'x': x, 'y': y, 'z': z}
         except ValueError:
             raise

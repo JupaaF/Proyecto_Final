@@ -91,8 +91,6 @@ class U(FoamFile):
                 'type': 'vector',
                 'current': self.internalField,
                 'group': 'Campo Interno',
-                'min': -100,
-                'max': 100
             },
             'boundaryField': {
                 'label': 'Condiciones de Borde',

@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QComboBox, QDialog, QVBoxLayout, QCheckBox,
-                               QDialogButtonBox, QDoubleSpinBox)
+                               QDialogButtonBox, QDoubleSpinBox,QSpinBox)
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 
 
@@ -89,6 +89,10 @@ class StrictDoubleValidator(QDoubleValidator):
         return state, ret_input, ret_pos
 
 class NoScrollDoubleSpinBox(QDoubleSpinBox):
+    def wheelEvent(self, event):
+        event.ignore()
+
+class NoScrollSpinBox(QSpinBox):
     def wheelEvent(self, event):
         event.ignore()
 
