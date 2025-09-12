@@ -47,6 +47,10 @@ class transportProperties(FoamFile):
             if not hasattr(self,key):
                 continue
 
+            if value is None:
+                setattr(self, key, None)
+                continue
+
             props = param_props[key]
             type_data = props['type']
 
@@ -81,8 +85,8 @@ class transportProperties(FoamFile):
                 'group': 'Propiedades de Transporte',
                 'options': [
                     {
-                        'name': 'damBreak',
-                        'label': 'damBreak-interFoam',
+                        'name': 'interFoam',
+                        'label': 'interFoam',
                         'parameters':[
                             {
                                 'name': 'sigma',
@@ -133,7 +137,7 @@ class transportProperties(FoamFile):
                                 'tooltip': 'air rho',
                                 'type': 'int',
                                 'default': 1
-                            }
+                            },
                         ]
                         
                     },

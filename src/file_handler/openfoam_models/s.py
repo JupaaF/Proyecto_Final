@@ -42,6 +42,10 @@ class s(FoamFile):
             if not hasattr(self,key):
                 continue
 
+            if value is None:
+                setattr(self, key, None)
+                continue
+            
             props = param_props[key]
             type_data = props['type']
 
@@ -103,7 +107,16 @@ class s(FoamFile):
                             {
                                 'name': 'zeroGradient',
                                 'label': 'Gradiente zero',
-                                'parameters' : []
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'Valor de Neumann',
+                                        'tooltip': 'El valor de s en la entrada.',
+                                        'default': 0,
+                                        'optional': True
+                                    }
+                                ]
                             },
                             {
                                 'name': 'inletOutlet',

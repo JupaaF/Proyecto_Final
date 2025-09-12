@@ -35,9 +35,9 @@
 #         except ValueError:
 #             raise
 
-from PySide6.QtWidgets import QLineEdit, QHBoxLayout, QDoubleSpinBox
+from PySide6.QtWidgets import QHBoxLayout, QDoubleSpinBox
 from .base_widget import BaseParameterWidget
-from ..helpers import StrictDoubleValidator
+from ..helpers import NoScrollDoubleSpinBox
 
 class FloatWidget(BaseParameterWidget):
     """
@@ -48,10 +48,12 @@ class FloatWidget(BaseParameterWidget):
         Configura un QLineEdit con un validador de dobles.
         """
         current_value = self.param_props.get('current', '')
-        self.line_edit = QDoubleSpinBox()
+        if current_value is None:
+            current_value = self.param_props.get('default',0)
+        self.line_edit = NoScrollDoubleSpinBox()
         self.line_edit.setDecimals(5)
         self.line_edit.setValue(current_value)
-        self.line_edit.setButtonSymbols(QDoubleSpinBox.NoButtons)
+        self.line_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)

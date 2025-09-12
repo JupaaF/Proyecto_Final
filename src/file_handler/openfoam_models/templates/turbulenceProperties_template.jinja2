@@ -2,3 +2,15 @@
 
 simulationType       {{ simulation_type }};
 
+{% if simulation_type == "RAS"%}
+RAS
+{
+    RASModel        kOmegaSST;
+
+    turbulence      on;
+
+    printCoeffs     on;
+}
+
+{%endif%}
+

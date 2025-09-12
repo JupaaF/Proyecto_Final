@@ -43,6 +43,10 @@ class alpha_water(FoamFile):
             if not hasattr(self,key):
                 continue
 
+            if value is None:
+                setattr(self, key, None)
+                continue
+
             props = param_props[key]
             type_data = props['type']
 
@@ -91,7 +95,16 @@ class alpha_water(FoamFile):
                             {
                                 'name': 'zeroGradient',
                                 'label': 'Gradiente Cero',
-                                'parameters': []
+                                'parameters': [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'Valor de Neumann',
+                                        'tooltip': 'El valor de alpha.water en la entrada.',
+                                        'default': 0,
+                                        'optional': True
+                                    }
+                                ]
                             },
                             {
                                 'name': 'inletOutlet',

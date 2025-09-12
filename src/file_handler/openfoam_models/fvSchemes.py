@@ -19,6 +19,7 @@ class fvSchemes(FoamFile):
         self.laplacianSchemes = 'Gauss linear'
         self.interpolationSchemes = 'linear'
         self.snGradSchemes = 'corrected'
+        self.wallDist = None
 
     def _get_string(self):
         template = self.jinja_env.get_template("fvSchemes_template.jinja2")
@@ -28,7 +29,8 @@ class fvSchemes(FoamFile):
             'divSchemes': self.divSchemes,
             'laplacianSchemes': self.laplacianSchemes,
             'interpolationSchemes': self.interpolationSchemes,
-            'snGradSchemes': self.snGradSchemes
+            'snGradSchemes': self.snGradSchemes,
+            'wallDist': self.wallDist
         }
         content = template.render(context)
         return self.get_header() + content
@@ -45,6 +47,10 @@ class fvSchemes(FoamFile):
         for key, value in params.items():
 
             if not hasattr(self,key):
+                continue
+
+            if value is None:
+                setattr(self, key, None)
                 continue
 
             props = param_props[key]
@@ -131,5 +137,14 @@ Un gradiente normal a la superficie se evalúa en una cara de celda.
                 'options': ['corrected','uncorrected','orthogonal','limited corrected 0.33','limited corrected 0.5'],
                 'current': self.snGradSchemes,
                 'group': 'Esquemas de Gradiente de Superficie'
+            },
+            'wallDist': {
+                'label': 'wallDist',
+                'tooltip': 'No tengo idea que es, la distnacia a la pared supongo',
+                'type': 'choice',
+                'options': ['meshWave'],
+                'current': self.wallDist,
+                'group': 'Esquemas de Gradiente de Superficie',
+                'optional' : True
             }
         }

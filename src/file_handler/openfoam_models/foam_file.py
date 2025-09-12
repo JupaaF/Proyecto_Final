@@ -83,6 +83,8 @@ class FoamFile(ABC):
         pass
 
     def _validate(self,param_value,param_type,param_props = {}):
+
+            
         if param_type == "vector":
             if not isinstance(param_value,dict):
                 raise ValueError("El vector no es un diccionario")
@@ -157,13 +159,13 @@ class FoamFile(ABC):
                 for typi in possible_types:
                     if patch.get('type') == typi.get("name"):
                         exist = True
-                        for param in typi.get('parameters'):
+                        # for param in typi.get('parameters'):
                             
-                            valor_patch = patch.get(param.get('name'))
-                            if valor_patch is None:
-                                raise ValueError("Valor invalido")
+                        #     valor_patch = patch.get(param.get('name'))
+                        #     if valor_patch is None:
+                        #         raise ValueError("Valor None")
                             
-                            self._validate(valor_patch,param.get('type'))
+                        #     self._validate(valor_patch,param.get('type'))
                             
                             
                 if not exist:

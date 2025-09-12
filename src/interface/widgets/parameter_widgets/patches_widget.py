@@ -90,11 +90,16 @@ class PatchesWidget(BaseParameterWidget):
             parameters_schema_dict = {}
             for param_props in parameters_schema_list:
                 param_name_key = param_props.get('name')
-                # Usar valor actual del patch o el default del schema
-                value = data.get(param_name_key, param_props.get('default'))
-
                 new_props = param_props.copy()
-                new_props['current'] = value
+
+                current_value = data.get(param_name_key)
+                is_optional = param_props.get('optional', False)
+
+                if current_value is not None:
+                    new_props['current'] = current_value
+                elif not is_optional:
+                    new_props['current'] = param_props.get('default')
+
                 parameters_schema_dict[param_name_key] = new_props
 
             container = ParameterContainerWidget(parameters_schema_dict, self.widget_factory)
