@@ -2,7 +2,7 @@
 [
     {
         "id": "damBreak",
-        "name": "Dam Break",
+        "name": "damBreak - OpenFOAM",
         "files": [
             "U",
             "controlDict",
@@ -22,7 +22,7 @@
     },
     {
         "id": "waterChannel",
-        "name": "Water en el channel jiji",
+        "name": "waterChannel - OpenFOAM",
         "files": [
             "U",
             "alpha.water",
@@ -38,6 +38,31 @@
             "fvSchemes",
             "fvSolution",
             "setFieldsDict"
+        ]
+    },
+    {
+        "id": "2DChannel",
+        "name": "2DChannel - SedFOAM",
+        "files": [
+            "U",
+            "alpha.water",
+            "k",
+            "nut",
+            "omega",
+            "p_rgh",
+            "s",
+            "g",
+            "transportProperties",
+            "granularRheologyProperties",
+            "filterProperties",
+            "forceProperties",
+            "turbulenceProperties",
+            "interfacialProperties",
+            "kineticTheoryProperties",
+            "ppProperties",
+            "controlDict",
+            "fvSchemes",
+            "fvSolution"
         ]
     }
 ]

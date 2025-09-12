@@ -13,7 +13,6 @@ class transportProperties(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Valores por defecto
-        self.sigma = 0.07
         self.selected_solver = []
 
     def _get_string(self) -> str:
@@ -28,7 +27,6 @@ class transportProperties(FoamFile):
             params_dict['solver_selected'] = self.selected_solver[0]
 
         context = {
-            'sigma': self.sigma,
             'params': params_dict
         }
 
@@ -75,13 +73,6 @@ class transportProperties(FoamFile):
         Devuelve un diccionario con los parámetros editables y sus valores actuales.
         """
         return {
-            'sigma': {
-                'label': 'Tensión Superficial (sigma)',
-                'tooltip': 'Coeficiente de tensión superficial entre fases.',
-                'type': 'float',
-                'current': self.sigma,
-                'group': 'Propiedades Físicas',
-            },
             'selected_solver': {
                 'label': 'Caso/Solver a usar.',
                 'tooltip': 'El archivo cambia según esto. Define las propiedades de cada fase (ej. agua, aire).', 
@@ -93,6 +84,14 @@ class transportProperties(FoamFile):
                         'name': 'damBreak',
                         'label': 'damBreak-interFoam',
                         'parameters':[
+                            {
+                                'name': 'sigma',
+                                'label': 'Tensión Superficial (sigma)',
+                                'tooltip': 'Coeficiente de tensión superficial entre fases.',
+                                'type': 'float',
+                                'default': 0.07,
+                                'group': 'Propiedades Físicas',
+                            },
                             {
                                 'name': 'water_transportModel',
                                 'label': 'water transportModel',
@@ -136,6 +135,27 @@ class transportProperties(FoamFile):
                                 'default': 1
                             }
                         ]
+                        
+                    },
+                    {
+                    'name': '2DChannel',
+                        'label': '2DChannel-SedFOAM',
+                        'parameters':[
+                            {
+                                'name': 'da',
+                                'label': 'Diámetro Fase A',
+                                'tooltip': 'Diámetro de las partículas.' ,
+                                'type': 'string',
+                                'default': '1.e-7'
+                            },                             #TODO: ver el tipo y si
+                            {
+                                'name': 'db',
+                                'label': 'Diámetro Fase B',
+                                'tooltip': 'Diámetro de las partículas.' ,
+                                'type': 'string',
+                                'default': '1.e-7'
+                            }
+                            ]
                     }
                 ]
             }

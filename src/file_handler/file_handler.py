@@ -18,6 +18,12 @@ from .openfoam_models.p_rgh import p_rgh
 from .openfoam_models.setFieldsDict import setFieldsDict
 from .openfoam_models.transportProperties import transportProperties
 from .openfoam_models.turbulenceProperties import turbulenceProperties
+from .openfoam_models.granularRheologyProperties import granularRheologyProperties
+from .openfoam_models.filterProperties import filterProperties
+from .openfoam_models.forceProperties import forceProperties
+from .openfoam_models.interfacialProperties import interfacialProperties
+from .openfoam_models.kineticTheoryProperties import kineticTheoryProperties
+from .openfoam_models.ppProperties import ppProperties
 from .openfoam_models.nuTilda import nuTilda
 from .openfoam_models.s import s
 from .openfoam_models.omega import omega
@@ -43,6 +49,12 @@ FILE_CLASS_MAP = {
     "setFieldsDict": setFieldsDict,
     "transportProperties": transportProperties,
     "turbulenceProperties": turbulenceProperties,
+    "granularRheologyProperties": granularRheologyProperties,
+    "filterProperties": filterProperties,
+    "forceProperties": forceProperties,
+    "interfacialProperties": interfacialProperties,
+    "kineticTheoryProperties": kineticTheoryProperties,
+    "ppProperties": ppProperties,
     "s": s,
     "omega": omega,
 }
