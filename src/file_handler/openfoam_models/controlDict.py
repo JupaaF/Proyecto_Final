@@ -27,11 +27,11 @@ class controlDict(FoamFile):
         self.maxDeltaT = 1
         self.writeCompression = 'off'
         self.runTimeModifiable = 'yes'
+        self.writePrecision = 6
 
         # Valores para parámetros opcionales
         self.timeFormat = None
         self.timePrecision = None
-        self.graphFormat = None
         
     def _get_string(self):
         template = self.jinja_env.get_template("controlDict_template.jinja2")
@@ -54,7 +54,7 @@ class controlDict(FoamFile):
             'runTimeModifiable': self.runTimeModifiable,
             'timeFormat': self.timeFormat,
             'timePrecision': self.timePrecision,
-            'graphFormat': self.graphFormat
+
         }
         content = template.render(context)
         return self.get_header() + content
@@ -104,8 +104,6 @@ class controlDict(FoamFile):
                 'tooltip': 'Solver para flujo multifase (interFoam).',
                 'type': 'string',
                 'current': self.application,  # Fijo para damBreak
-                'required': True,
-                'editable': False,  # No se debe cambiar en este caso
                 'group': 'Configuración General'
             },
             'startFrom': {
@@ -115,14 +113,12 @@ class controlDict(FoamFile):
                 'current': self.startFrom,
                 'group': 'Control de Tiempo',
                 'options': ['startTime', 'latestTime'],  # firstTime no es común aquí
-                'required': True
             },
             'startTime': {
                 'label': 'Tiempo de Inicio (startTime)',
                 'tooltip': 'Tiempo inicial (típicamente 0 para damBreak).',
                 'type': 'float',
                 'current': self.startTime,
-                'required': True,
                 'group': 'Control de Tiempo'
             },
 
@@ -133,7 +129,6 @@ class controlDict(FoamFile):
                 'type': 'choice',
                 'options': ['endTime'],  # writeNow/noWriteNow raramente usados aquí
                 'current': self.stopAt,
-                'required': True,
                 'group': 'Control de Tiempo'
             },
             'endTime': {
@@ -141,7 +136,6 @@ class controlDict(FoamFile):
                 'tooltip': 'Duración de la simulación (típico: 1-5 segundos).',
                 'type': 'float',
                 'current': self.endTime,
-                'required': True,
                 'group': 'Control de Tiempo'
             },
             'deltaT': {
@@ -149,7 +143,6 @@ class controlDict(FoamFile):
                 'tooltip': 'Intervalo de tiempo (típico: 0.001 para precisión en interFoam).',
                 'type': 'float',
                 'current': self.deltaT,
-                'required': True,
                 'group': 'Control de Tiempo'
             },
 
@@ -160,7 +153,6 @@ class controlDict(FoamFile):
                 'type': 'choice',
                 'options': ['adjustable'],  # Más relevante que timeStep/runTime
                 'current': self.writeControl,
-                'required': True,
                 'group': 'Escritura de datos'
             },
             'writeInterval': {
@@ -168,7 +160,6 @@ class controlDict(FoamFile):
                 'tooltip': 'Guardar cada X segundos (ej: 0.05 para alta frecuencia).',
                 'type': 'float',
                 'current': self.writeInterval,
-                'required': True,
                 'group': 'Escritura de datos'
             },
             'purgeWrite': {
@@ -176,7 +167,6 @@ class controlDict(FoamFile):
                 'tooltip': 'Máximo de archivos de tiempo guardados (0 = todos).',
                 'type': 'int',
                 'current': self.purgeWrite,
-                'required': False,
                 'group': 'Escritura de datos'
             },
             'writeFormat': {
@@ -185,8 +175,51 @@ class controlDict(FoamFile):
                 'type': 'choice',
                 'options': ['ascii', 'binary'],
                 'current': self.writeFormat,
-                'required': False,
                 'group': 'Escritura de datos'
+            },
+            'writePrecision': {
+                'label': 'Precision de Escritura',
+                'tooltip': 'Decimales de precision',
+                'type': 'int',
+                'current': self.writePrecision,
+                'group': 'Escritura de datos'
+            },
+            'writeCompression': {
+                'label': 'Compresión de Archivos',
+                'tooltip': '"on" para reducir tamaño de archivos (recomendado en producción).',
+                'type': 'choice',
+                'options': ['on', 'off'],
+                'current': self.writeCompression,
+                'group': 'Escritura de datos'
+            },
+            'timeFormat': {
+                'label': 'Formato de Tiempo',
+                'tooltip': 'Formato para los nombres de los directorios de tiempo.',
+                'type': 'choice',
+                'options': ['general', 'fixed', 'scientific'],
+                'default': 'general',
+                'optional': True,
+                'group': 'Avanzado',
+                'current': self.timeFormat
+            },
+            'timePrecision': {
+                'label': 'Precisión del Tiempo',
+                'tooltip': 'Número de dígitos en los nombres de los directorios de tiempo.',
+                'type': 'int',
+                'default': 6,
+                'min': 1,
+                'max': 12,
+                'optional': True,
+                'group': 'Avanzado',
+                'current': self.timePrecision
+            },
+            'runTimeModifiable': {
+                'label': 'Modificable en Ejecución',
+                'tooltip': '"yes" para permitir cambios durante la simulación (útil para pruebas).',
+                'type': 'choice',
+                'options': ['yes','no'],
+                'current': self.runTimeModifiable,
+                'group': 'Avanzado'
             },
 
             # --- Parámetros Críticos para interFoam/damBreak ---
@@ -222,58 +255,5 @@ class controlDict(FoamFile):
                 'current': self.maxDeltaT,
                 'required': True if self.adjustTimeStep else False,
                 'group': 'Control de Tiempo'
-            },
-
-            # --- Opcionales Recomendados ---
-            'writeCompression': {
-                'label': 'Compresión de Archivos',
-                'tooltip': '"on" para reducir tamaño de archivos (recomendado en producción).',
-                'type': 'choice',
-                'options': ['on', 'off'],
-                'current': self.writeCompression,
-                'required': False,
-                'group': 'Escritura de datos'
-            },
-            'runTimeModifiable': {
-                'label': 'Modificable en Ejecución',
-                'tooltip': '"yes" para permitir cambios durante la simulación (útil para pruebas).',
-                'type': 'choice',
-                'options': ['yes','no'],
-                'current': self.runTimeModifiable,
-                'required': False,
-                'group': 'Avanzado'
-            },
-
-            # --- Opcionales ---
-            'timeFormat': {
-                'label': 'Formato de Tiempo',
-                'tooltip': 'Formato para los nombres de los directorios de tiempo.',
-                'type': 'choice',
-                'options': ['general', 'fixed', 'scientific'],
-                'default': 'general',
-                'optional': True,
-                'group': 'Avanzado',
-                'current': self.timeFormat
-            },
-            'timePrecision': {
-                'label': 'Precisión del Tiempo',
-                'tooltip': 'Número de dígitos en los nombres de los directorios de tiempo.',
-                'type': 'int',
-                'default': 6,
-                'min': 1,
-                'max': 12,
-                'optional': True,
-                'group': 'Avanzado',
-                'current': self.timePrecision
-            },
-            'graphFormat': {
-                'label': 'Formato de Gráficos',
-                'tooltip': 'Formato de salida para los gráficos generados.',
-                'type': 'choice',
-                'options': ['raw', 'gnuplot', 'xmgr', 'csv'],
-                'default': 'raw',
-                'optional': True,
-                'group': 'Avanzado',
-                'current': self.graphFormat
             }
         }

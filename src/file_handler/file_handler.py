@@ -209,7 +209,7 @@ class FileHandler:
                         
                         if option_schema_for_default and 'parameters' in option_schema_for_default:
                             for param in option_schema_for_default['parameters']:
-                                if 'default' in param:
+                                if 'default' in param and not 'optional' in param:
                                     patch_data[param['name']] = param['default']
                         new_boundary_field.append(patch_data)
                     

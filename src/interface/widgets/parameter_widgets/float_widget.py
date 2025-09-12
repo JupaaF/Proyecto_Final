@@ -48,6 +48,8 @@ class FloatWidget(BaseParameterWidget):
         Configura un QLineEdit con un validador de dobles.
         """
         current_value = self.param_props.get('current', '')
+        if current_value is None:
+            current_value = self.param_props.get('default',0)
         self.line_edit = NoScrollDoubleSpinBox()
         self.line_edit.setDecimals(5)
         self.line_edit.setValue(current_value)
