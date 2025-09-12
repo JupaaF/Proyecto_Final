@@ -2,13 +2,17 @@ from pathlib import Path
 from .foam_file import FoamFile
 from jinja2 import Environment, FileSystemLoader
 
-class alpha_water(FoamFile):
+class alpha(FoamFile):
     """
     Representa el archivo 'alpha.water' de OpenFOAM, utilizando el motor
     de plantillas Jinja2 para generar su contenido.
     """
-    def __init__(self):
-        super().__init__(name="alpha.water", folder="0", class_type="volScalarField")
+    def __init__(self, second_part=None):
+        if second_part != None:
+            name_aux = "alpha" + "." + second_part
+        else:
+            name_aux = "alpha"
+        super().__init__(name=name_aux, folder="0", class_type="volScalarField")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))

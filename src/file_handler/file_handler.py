@@ -9,7 +9,7 @@ from .openfoam_models.U import U
 from .openfoam_models.controlDict import controlDict
 from .openfoam_models.fvSchemes import fvSchemes
 from .openfoam_models.fvSolution import fvSolution
-from .openfoam_models.alpha_water import alpha_water
+from .openfoam_models.alpha import alpha
 from .openfoam_models.g import g
 from .openfoam_models.k import k
 from .openfoam_models.nut import nut
@@ -23,6 +23,7 @@ from .openfoam_models.filterProperties import filterProperties
 from .openfoam_models.forceProperties import forceProperties
 from .openfoam_models.interfacialProperties import interfacialProperties
 from .openfoam_models.kineticTheoryProperties import kineticTheoryProperties
+from .openfoam_models.twophaseRASProperties import twophaseRASProperties
 from .openfoam_models.ppProperties import ppProperties
 from .openfoam_models.nuTilda import nuTilda
 from .openfoam_models.s import s
@@ -39,7 +40,7 @@ FILE_CLASS_MAP = {
     "controlDict": controlDict,
     "fvSchemes": fvSchemes,
     "fvSolution": fvSolution,
-    "alpha.water": alpha_water,
+    "alpha": alpha,
     "g": g,
     "k": k,
     "nuTilda": nuTilda,
@@ -54,6 +55,7 @@ FILE_CLASS_MAP = {
     "forceProperties": forceProperties,
     "interfacialProperties": interfacialProperties,
     "kineticTheoryProperties": kineticTheoryProperties,
+    "twophaseRASProperties": twophaseRASProperties,
     "ppProperties": ppProperties,
     "s": s,
     "omega": omega,
@@ -139,9 +141,21 @@ class FileHandler:
         
         initialized_files = {}
         for file_name in required_files:
+            second_part = None
+            #Acá procesar el file name <-----------------------------
+            parts_of_file_name = file_name.split('.')
+            file_name_aux = file_name
+            if len(parts_of_file_name) > 1:
+                file_name = parts_of_file_name[0]
+                second_part = parts_of_file_name[1]
+
             if file_name in FILE_CLASS_MAP:
                 foam_class = FILE_CLASS_MAP[file_name]
-                initialized_files[file_name] = foam_class()
+                if second_part != None:
+                    # creo la clase especialmente con argumento
+                    initialized_files[file_name_aux] = foam_class(second_part)
+                else:
+                    initialized_files[file_name] = foam_class()
             else:
                 raise TemplateError(f"Class for file '{file_name}' not found in FILE_CLASS_MAP.")
 
