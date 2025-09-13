@@ -25,9 +25,13 @@ class VectorWidget(BaseParameterWidget):
         self.y_edit = NoScrollDoubleSpinBox()
         self.z_edit = NoScrollDoubleSpinBox()
 
-        self.x_edit.setDecimals(5)
-        self.y_edit.setDecimals(5)
-        self.z_edit.setDecimals(5)
+        self.x_edit.setDecimals(10)
+        self.y_edit.setDecimals(10)
+        self.z_edit.setDecimals(10)
+
+        self.x_edit.setRange(-1.7e308, 1.7e308)
+        self.y_edit.setRange(-1.7e308, 1.7e308)
+        self.z_edit.setRange(-1.7e308, 1.7e308)
 
         self.x_edit.setValue(safe_current_value.get('x',0))
         self.y_edit.setValue(safe_current_value.get('y',0))

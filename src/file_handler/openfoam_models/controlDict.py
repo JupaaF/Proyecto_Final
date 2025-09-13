@@ -28,6 +28,7 @@ class controlDict(FoamFile):
         self.writeCompression = 'off'
         self.runTimeModifiable = 'yes'
         self.writePrecision = 6
+        self.functions = 'damBreakOpenFoam'
 
         # Valores para parámetros opcionales
         self.timeFormat = None
@@ -54,7 +55,7 @@ class controlDict(FoamFile):
             'runTimeModifiable': self.runTimeModifiable,
             'timeFormat': self.timeFormat,
             'timePrecision': self.timePrecision,
-
+            'functions': self.functions
         }
         content = template.render(context)
         return self.get_header() + content
@@ -255,5 +256,12 @@ class controlDict(FoamFile):
                 'current': self.maxDeltaT,
                 'required': True if self.adjustTimeStep else False,
                 'group': 'Control de Tiempo'
+            },
+            'functions': {
+                'label': 'Funciones para cosas',
+                'tooltip': 'Funciones para cosas',
+                'type': 'choice',
+                'options': ['damBreakOpenFoam','waterChannelOpenFoam'],  # Más relevante que timeStep/runTime
+                'current': self.writeControl,
             }
         }

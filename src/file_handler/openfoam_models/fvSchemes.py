@@ -103,7 +103,8 @@ class fvSchemes(FoamFile):
                 'current': self.divSchemes,
                 'group': 'Esquemas de Divergencia',
                 'options': [
-                    'damBreak'
+                    'damBreak',
+                    'waterChannel'
                 ]
             },
             'laplacianSchemes': {

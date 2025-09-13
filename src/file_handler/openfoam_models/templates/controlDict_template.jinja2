@@ -41,3 +41,116 @@ maxAlphaCo      {{maxAlphaCo}};
 {% if maxAlphaCo is not none %}
 maxDeltaT      {{maxDeltaT}};
 {% endif %}
+
+{%if functions == "damBreakOpenFoam"%}
+functions
+{
+    sampleSets
+    {
+        type    sets;
+        libs    (sampling);
+
+        writeControl  timeStep;
+        writeInterval 1;
+
+        setFormat           vtk;
+        interpolationScheme cellPointFace;
+
+        fields ( alpha.water );
+
+        sets
+        {
+            gauge_1
+            {
+                type    face;
+                axis    y;
+                start   (0.02 0.20 0.005);
+                end     (0.02 0.25 0.005);
+                nPoints 100;
+            }
+
+            gauge_2
+            {
+                type    face;
+                axis    y;
+                start   (0.2 0.03 0.005);
+                end     (0.2 0.55 0.005);
+                nPoints 100;
+            }
+        }
+    }
+
+}
+{%endif%}
+
+{%if functions == "waterChannelOpenFoam"%}
+functions
+{
+    inletFlux
+    {
+        type            surfaceFieldValue;
+        libs            (fieldFunctionObjects);
+        writeControl    timeStep;
+        log             true;
+        // Output field values as well
+        writeFields     false;
+        regionType      patch;
+        name            inlet;
+        operation       sum;
+
+        fields
+        (
+            rhoPhi
+        );
+    }
+
+    outletFlux
+    {
+        $inletFlux;
+        name            outlet;
+    }
+
+    atmosphereFlux
+    {
+        $inletFlux;
+        name            atmosphere;
+    }
+
+    sTransport
+    {
+        type            scalarTransport;
+        libs            (solverFunctionObjects);
+
+        enabled         true;
+        writeControl    writeTime;
+        writeInterval   1;
+
+        field           s;
+        bounded01       false;
+        phase           alpha.water;
+
+        write           true;
+
+        fvOptions
+        {
+            unitySource
+            {
+                type            scalarSemiImplicitSource;
+                enabled         true;
+
+                selectionMode   all;
+                volumeMode      specific;
+
+                sources
+                {
+                    s           (1 0);
+                }
+            }
+        }
+
+        resetOnStartUp  false;
+    }
+}
+
+
+{%endif%}

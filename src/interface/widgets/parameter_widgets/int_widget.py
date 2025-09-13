@@ -14,8 +14,11 @@ class IntWidget(BaseParameterWidget):
         if current_value is None:
             current_value = self.param_props.get('default',0)
         self.line_edit = NoScrollSpinBox()
+        self.line_edit.setMaximum(2147483647)
+        self.line_edit.setMinimum(-2147483648)
         self.line_edit.setValue(current_value)
         self.line_edit.setButtonSymbols(NoScrollSpinBox.NoButtons)
+        
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)

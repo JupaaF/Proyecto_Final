@@ -51,7 +51,8 @@ class FloatWidget(BaseParameterWidget):
         if current_value is None:
             current_value = self.param_props.get('default',0)
         self.line_edit = NoScrollDoubleSpinBox()
-        self.line_edit.setDecimals(5)
+        self.line_edit.setDecimals(10)
+        self.line_edit.setRange(-1.7e308, 1.7e308)
         self.line_edit.setValue(current_value)
         self.line_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
 
