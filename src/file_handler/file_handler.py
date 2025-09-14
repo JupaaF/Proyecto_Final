@@ -25,6 +25,8 @@ from .openfoam_models.interfacialProperties import interfacialProperties
 from .openfoam_models.kineticTheoryProperties import kineticTheoryProperties
 from .openfoam_models.twophaseRASProperties import twophaseRASProperties
 from .openfoam_models.ppProperties import ppProperties
+from .openfoam_models.pa import pa
+from .openfoam_models.p_rbgh import p_rbgh
 from .openfoam_models.nuTilda import nuTilda
 from .openfoam_models.s import s
 from .openfoam_models.omega import omega
@@ -57,6 +59,8 @@ FILE_CLASS_MAP = {
     "kineticTheoryProperties": kineticTheoryProperties,
     "twophaseRASProperties": twophaseRASProperties,
     "ppProperties": ppProperties,
+    "p_rbgh": p_rbgh,
+    "pa": pa,
     "s": s,
     "omega": omega,
 }
@@ -142,7 +146,7 @@ class FileHandler:
         initialized_files = {}
         for file_name in required_files:
             second_part = None
-            #Acá procesar el file name <-----------------------------
+            #Acá se procesa el file_name y se divide para ver si se tiene que especificar una terminación especial
             parts_of_file_name = file_name.split('.')
             file_name_aux = file_name
             if len(parts_of_file_name) > 1:

@@ -2,30 +2,25 @@ from pathlib import Path
 from .foam_file import FoamFile
 from jinja2 import Environment, FileSystemLoader
 
-class k(FoamFile):
+class p_rbgh(FoamFile):
     """
-    Representa el archivo 'k' (energía cinética turbulenta) de OpenFOAM.
+    Representa el archivo 'p_rbgh' de OpenFOAM.
     """
-    def __init__(self, second_part=None):
-        if second_part != None:
-            name_aux = "k" + "." + second_part
-        else:
-            name_aux = "k"
-            
-        super().__init__(name=name_aux, folder="0", class_type="volScalarField")
+    def __init__(self):
+        super().__init__(name="p_rbgh", folder="0", class_type="volScalarField")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Valores por defecto
-        self.internalField = 0.01
+        self.internalField = 0
         self.boundaryField = []
 
     def _get_string(self) -> str:
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
-        template = self.jinja_env.get_template("k_template.jinja2")
+        template = self.jinja_env.get_template("p_rbgh_template.jinja2")
         context = {
             'internalField': self.internalField,
             'boundaryField': self.boundaryField
@@ -78,15 +73,15 @@ class k(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (k)',
-                'tooltip': 'Define el valor inicial de la energía cinética turbulenta.',
+                'label': 'Campo Interno (p_rgh)',
+                'tooltip': 'Valor inicial de la presión modificada en el dominio.',
                 'type': 'float',
                 'current': self.internalField,
-                'group': 'Campo Interno',
+                'group': 'General'
             },
             'boundaryField': {
-                'label': 'Condiciones de Borde',
-                'tooltip': 'Define las condiciones de k en los límites del dominio.',
+                'label': 'Condiciones de Borde para Presión',
+                'tooltip': 'Define las condiciones de presión modificada en los límites.',
                 'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',
@@ -94,39 +89,32 @@ class k(FoamFile):
                     'patchName': 'string',
                     'type': {
                         'type': 'choice',
-                        'default': 'kqRWallFunction',
+                        'default': 'fixedFluxPressure',
                         'options': [
                             {
-                                'name': 'kqRWallFunction',
-                                'label': 'Función de Pared (kqRWallFunction)',
+                                'name': 'fixedFluxPressure',
+                                'label': 'Presión con Flujo Fijo (fixedFluxPressure)',
                                 'parameters' : [
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Valor',
-                                        'tooltip': 'Valor para la función de pared kqR.',
+                                        'label': 'Valor (uniforme)',
+                                        'tooltip': 'Valor de presión para esta condición de borde.',
+                                        'default': 0
+                                    },
+                                    {
+                                        'name': 'gradient',
+                                        'type': 'float',
+                                        'label': 'Valor (uniforme)',
+                                        'tooltip': 'Valor de presión para esta condición de borde.',
                                         'default': 0
                                     }
                                 ]
                             },
                             {
-                                'name': 'inletOutlet',
-                                'label': 'Entrada/Salida',
+                                'name': 'zeroGradient',
+                                'label': 'zeroGradient',
                                 'parameters' : [
-                                    {
-                                        'name': 'inletValue',
-                                        'type': 'float',
-                                        'label': 'Valor de Entrada',
-                                        'tooltip': 'Valor de k en la entrada.',
-                                        'default': 0
-                                    },
-                                    {
-                                        'name': 'value',
-                                        'type': 'float',
-                                        'label': 'Valor (uniforme)',
-                                        'tooltip': 'Valor uniforme para la condición de borde.',
-                                        'default': 0
-                                    }
                                 ]
                             },
                             {
@@ -134,26 +122,37 @@ class k(FoamFile):
                                 'label': 'fixedValue',
                                 'parameters' : [
                                     {
-                                        'name': 'intensity',
-                                        'type': 'float',
-                                        'label': 'intensity',
-                                        'tooltip': 'intensity',
-                                        'default': 0
-                                    },
-                                    {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'value',
-                                        'tooltip': 'value',
+                                        'label': 'Valor (uniforme)',
+                                        'tooltip': 'Valor de presión para esta condición de borde.',
                                         'default': 0
                                     }
                                 ]
-                            }
+                            },
+                            {
+                                'name': 'totalPressure',
+                                'label': 'Presión Total',
+                                'parameters' : [
+                                    {
+                                        'name': 'p0', #cambie esto
+                                        'type': 'float',
+                                        'label': 'Valor de Presión Total',
+                                        'tooltip': 'Valor de la presión total (p0) para esta condición.',
+                                        'default': 0
+                                    }
+                                ]
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'Empty',
+                                'parameters' : [
+                                    {
+                                    }
+                                ]
+                            },
                         ]
                     }
                 }
             }
         }
-
-
-    

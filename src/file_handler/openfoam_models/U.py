@@ -6,15 +6,15 @@ from jinja2 import Environment, FileSystemLoader
 
 class U(FoamFile):
     """
-    Representa el archivo 'U' (velocidad) de OpenFOAM, utilizando el motor
-    de plantillas Jinja2 para generar su contenido.
-
-    Este enfoque externaliza completamente la estructura del archivo a una
-    plantilla, permitiendo que el código Python se centre únicamente en la
-    preparación de los datos.
+    Representa el archivo 'U' (velocidad) de OpenFOAM.
     """
-    def __init__(self):
-        super().__init__(name="U", folder="0", class_type="volVectorField")
+    def __init__(self, second_part=None):
+        if second_part != None:
+            name_aux = "U" + "." + second_part
+        else:
+            name_aux = "U"
+
+        super().__init__(name=name_aux, folder="0", class_type="volVectorField")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))

@@ -6,8 +6,13 @@ class omega(FoamFile):
     """
     Representa el archivo 'omega' (tasa de disipación específica) de OpenFOAM.
     """
-    def __init__(self):
-        super().__init__(name="omega", folder="0", class_type="volScalarField")
+    def __init__(self, second_part=None):
+        if second_part != None:
+            name_aux = "omega" + "." + second_part
+        else:
+            name_aux = "omega"
+            
+        super().__init__(name=name_aux, folder="0", class_type="volScalarField")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
