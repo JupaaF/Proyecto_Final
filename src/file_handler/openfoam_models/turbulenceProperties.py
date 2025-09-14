@@ -86,6 +86,6 @@ class turbulenceProperties(FoamFile):
                 #     {'name': 'RAS', 'label': 'RAS'},
                 #     {'name': 'LES', 'label': 'LES'}
                 # ]
-                'options': ['laminar','RAS','LES']
+                'options': ['laminar','RASWaterChannel','LES','RASSedFoam']
             }
         }

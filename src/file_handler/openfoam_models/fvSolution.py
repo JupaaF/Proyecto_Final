@@ -141,8 +141,8 @@ class fvSolution(FoamFile):
                         ]
                     },
                     {
-                        'name': 'otro_solver',
-                        'label': 'otro_solver_o_caso',
+                        'name': 'waterChannelOpenFoam',
+                        'label': 'waterChannel - OpenFOAM',
                         'parameters' : []
                     }
                 ]

@@ -123,7 +123,7 @@ class FoamFile(ABC):
                 raise ValueError("Faltan las opciones")
 
             if param_value not in param_props.get('options'):
-                raise ValueError("Choice mal puesto")
+                raise ValueError("Choice mal puesto" + param_props.get('label'))
 
         if param_type == "choice_with_options":
             if not isinstance(param_value,list):

@@ -262,6 +262,6 @@ class controlDict(FoamFile):
                 'tooltip': 'Funciones para cosas',
                 'type': 'choice',
                 'options': ['damBreakOpenFoam','waterChannelOpenFoam'],  # Más relevante que timeStep/runTime
-                'current': self.writeControl,
+                'current': self.functions,
             }
         }
