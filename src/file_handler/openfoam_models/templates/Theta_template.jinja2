@@ -1,0 +1,44 @@
+dimensions      [0 2 -2 0 0 0 0];
+
+internalField   uniform ({{ internalField.x }} {{ internalField.y }} {{ internalField.z }});
+
+boundaryField
+{
+    {% for patch in boundaryField %}
+    {{ patch.patchName }}
+    {
+        type            {{ patch.type }};
+        {% if patch.type == "groovyBC" %}
+                    type            groovyBC;
+                    refValue        uniform 0;
+                    value           uniform 1e-10;
+                    refGradient     uniform 0;
+                    valueFraction   uniform 1;
+                    valueExpression "inletprofiletheta(pos().z)";
+                    gradientExpression "0";
+                    fractionExpression "1";
+                    evaluateDuringConstruction 1;
+                    variables       "";
+                    timelines       (
+            );
+                    lookuptables    (
+            {
+                    name            inletprofiletheta;
+                    file            "$FOAM_CASE/1d_profil/Theta.xy";
+                    outOfBounds     clamp;
+            }
+            );
+        {% else %}
+            {% for key, value in patch.items() %}
+                {% if key not in ['patchName', 'type'] %}
+                    {% if value is mapping %}
+                        {{ key }}           uniform ({{ value.x }} {{ value.y }} {{ value.z }});
+                    {% else %}
+                        {{ key }}           uniform {{ value }};
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    }
+    {% endfor %}
+}

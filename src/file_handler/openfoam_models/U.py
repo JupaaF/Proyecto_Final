@@ -11,10 +11,12 @@ class U(FoamFile):
     def __init__(self, second_part=None):
         if second_part != None:
             name_aux = "U" + "." + second_part
+            object_name = "U" + second_part
         else:
             name_aux = "U"
+            object_name = None
 
-        super().__init__(name=name_aux, folder="0", class_type="volVectorField")
+        super().__init__(name=name_aux, folder="0", class_type="volVectorField",  object_name=object_name)
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
@@ -106,17 +108,17 @@ class U(FoamFile):
                         'options': [
                             {
                                 'name': 'noSlip',
-                                'label': 'Sin Deslizamiento',
+                                'label': 'noSlip',
                                 'parameters':[]
                             },
                             {
                                 'name': 'slip',
-                                'label': 'Deslizamiento',
+                                'label': 'slip',
                                 'parameters':[]
                             },
                             {
                                 'name': 'pressureInletOutletVelocity',
-                                'label': 'Salida/Entrada por Presión',
+                                'label': 'pressureInletOutletVelocity',
                                 'parameters' : [
                                     {
                                         'name': 'value',
@@ -176,6 +178,15 @@ class U(FoamFile):
                             {
                                 'name': 'groovyBC',
                                 'label': 'groovyBC',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'cyclic',
+                                'label': 'cyclic',
+                                'parameters' : []
+                            },{
+                                'name': 'zeroGradient',
+                                'label': 'zeroGradient',
                                 'parameters' : []
                             },
                             {

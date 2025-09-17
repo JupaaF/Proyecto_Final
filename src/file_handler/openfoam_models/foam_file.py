@@ -5,7 +5,7 @@ from typing import Dict, Any
 class FoamFile(ABC):
     """Abstract base class for all OpenFOAM configuration files."""
 
-    def __init__(self, name: str, folder: str, class_type: str):
+    def __init__(self, name: str, folder: str, class_type: str, object_name=None):
         """
         Initializes a FoamFile object.
 
@@ -17,8 +17,14 @@ class FoamFile(ABC):
         self.name = name
         self.folder = folder
         self.class_type = class_type
+        self.object_name = object_name
 
     def get_header(self):
+        if self.object_name is not None:
+            object = self.object_name
+        else:
+            object = self.name
+            
         return f"""
     /*--------------------------------*- C++ -*---------------------------------*\\
     | =========                 |                                                |
@@ -33,7 +39,7 @@ class FoamFile(ABC):
         version     2.0;
         format      ascii;
         class       {self.class_type};
-        object      {self.name};
+        object      {object};
     }}
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     """

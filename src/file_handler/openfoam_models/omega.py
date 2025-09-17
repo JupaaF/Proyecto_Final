@@ -12,7 +12,7 @@ class omega(FoamFile):
         else:
             name_aux = "omega"
             
-        super().__init__(name=name_aux, folder="0", class_type="volScalarField")
+        super().__init__(name=name_aux, folder="0", class_type="volScalarField",object_name="omega")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
@@ -165,6 +165,16 @@ class omega(FoamFile):
                                         'default': 0.0002
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'cyclic',
+                                'label': 'cyclic',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'groovyBC',
+                                'label': 'groovyBC',
+                                'parameters' : []
                             },
                             {
                                 'name': 'empty',

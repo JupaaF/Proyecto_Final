@@ -117,6 +117,11 @@ class pa(FoamFile):
                                 'parameters' : [ ]
                             },
                             {
+                                'name': 'cyclic',
+                                'label': 'cyclic',
+                                'parameters' : [ ]
+                            },
+                            {
                                 'name': 'fixedValue',
                                 'label': 'fixedValue',
                                 'parameters' : [

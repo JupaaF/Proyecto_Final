@@ -160,6 +160,26 @@ class transportProperties(FoamFile):
                                 'default': '1.e-7'
                             }
                             ]
+                    },
+                    {
+                    'name': '3DScourSqr',
+                        'label': '3DScourSqr-SedFOAM',
+                        'parameters':[
+                            {
+                                'name': 'da',
+                                'label': 'Diámetro Fase A',
+                                'tooltip': 'Diámetro de las partículas.' ,
+                                'type': 'string',
+                                'default': '0.26e-3'
+                            },                             #TODO: ver el tipo y si
+                            {
+                                'name': 'db',
+                                'label': 'Diámetro Fase B',
+                                'tooltip': 'Diámetro de las partículas.' ,
+                                'type': 'string',
+                                'default': '10e-6'
+                            }
+                            ]
                     }
                 ]
             }

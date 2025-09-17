@@ -30,6 +30,10 @@ from .openfoam_models.p_rbgh import p_rbgh
 from .openfoam_models.nuTilda import nuTilda
 from .openfoam_models.s import s
 from .openfoam_models.omega import omega
+from .openfoam_models.Theta import Theta
+from .openfoam_models.delta import delta
+from .openfoam_models.alphaPlastic import alphaPlastic
+from .openfoam_models.funkySetFieldsDict import funkySetFieldsDict
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -63,6 +67,10 @@ FILE_CLASS_MAP = {
     "pa": pa,
     "s": s,
     "omega": omega,
+    "Theta": Theta,
+    "delta": delta,
+    "alphaPlastic": alphaPlastic,
+    "funkySetFieldsDict": funkySetFieldsDict
 }
 
 class FileHandler:
@@ -107,7 +115,7 @@ class FileHandler:
         """Returns the root path of the case directory."""
         return self.case_path
     
-    def get_template(self):
+    def get_template(self) -> str :
         """Returns the template name."""
         return self.template
     

@@ -1,5 +1,5 @@
-{# Plantilla Jinja2 para el archivo 'p_rbgh' de OpenFOAM #}
-dimensions      [1 -1 -2 0 0 0 0];
+{# Plantilla Jinja2 para el archivo 'alpha.water' de OpenFOAM #}
+dimensions      [0 0 0 0 0 0 0];
 
 internalField   uniform {{internalField}};
 
@@ -11,26 +11,22 @@ boundaryField
     {
         type            {{ patch.type }};
         {% if patch.type == "groovyBC" %}
-       refValue        uniform  0; 
-        refGradient     uniform 0;
-        valueFraction   uniform 1;
-        value           uniform  0;
-        valueExpression "inletprofilep(pos().z)";
-        gradientExpression "0";
-        fractionExpression "1";
-        evaluateDuringConstruction 1;
-        variables       "";
-        timelines       (
-);
-        lookuptables    (
-{
-        name            inletprofilep;
-        file        "$FOAM_CASE/1d_profil/p_rbgh.xy";
-        outOfBounds     clamp;
-}
-);
+                refValue        uniform 0;
+                valueExpression "inletprofilealpha(pos().z)";
+                gradientExpression "0";
+                fractionExpression "1";
+                evaluateDuringConstruction 1;
+                variables       "";
+                timelines       (
+        );
+                lookuptables    (
+        {
+                name            inletprofilealpha;
+                file        "$FOAM_CASE/1d_profil/alpha.a.xy";
+                outOfBounds     clamp;
+        }
+        );               
         {% endif %}
-
         {# Itera sobre todos los parámetros del patch y los escribe #}
         {% for key, value in patch.items() %}
         {% if key not in ['patchName', 'type'] %}

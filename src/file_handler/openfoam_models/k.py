@@ -12,7 +12,7 @@ class k(FoamFile):
         else:
             name_aux = "k"
             
-        super().__init__(name=name_aux, folder="0", class_type="volScalarField")
+        super().__init__(name=name_aux, folder="0", class_type="volScalarField", object_name="k")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
@@ -152,6 +152,16 @@ class k(FoamFile):
                             {
                                 'name': 'zeroGradient',
                                 'label': 'zeroGradient',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'cyclic',
+                                'label': 'cyclic',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'groovyBC',
+                                'label': 'groovyBC',
                                 'parameters' : []
                             },
                             {

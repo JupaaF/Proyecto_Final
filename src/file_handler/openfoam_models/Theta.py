@@ -2,32 +2,30 @@ from pathlib import Path
 from .foam_file import FoamFile
 from jinja2 import Environment, FileSystemLoader
 
-class alpha(FoamFile):
+class Theta(FoamFile):
     """
-    Representa el archivo 'alpha' de OpenFOAM, utilizando el motor
+    Representa el archivo 'Theta' de OpenFOAM, utilizando el motor
     de plantillas Jinja2 para generar su contenido.
     """
     def __init__(self, second_part=None):
         if second_part != None:
-            name_aux = "alpha" + "." + second_part
-            object_name = "alpha" + "_" + second_part
+            name_aux = "Theta" + "." + second_part
         else:
-            name_aux = "alpha"
-            object_name = None
-        super().__init__(name=name_aux, folder="0", class_type="volScalarField", object_name=object_name)
+            name_aux = "Theta"
+        super().__init__(name=name_aux, folder="0", class_type="volScalarField")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Inicializa los parámetros con valores por defecto
-        self.internalField = 0
+        self.internalField = 0.55
         self.boundaryField = []
 
     def _get_string(self) -> str:
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
-        template = self.jinja_env.get_template("alpha_template.jinja2")
+        template = self.jinja_env.get_template("Theta_template.jinja2")
         context = {
             'internalField': self.internalField,
             'boundaryField': self.boundaryField
@@ -80,8 +78,8 @@ class alpha(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (alpha.water)',
-                'tooltip': 'Define el valor inicial de alpha.water en todo el dominio (0 a 1).',
+                'label': 'Campo Interno (alpha)',
+                'tooltip': 'Define el valor inicial de alpha en todo el dominio (0 a 1).',
                 'type': 'float',
                 'current': self.internalField,
                 'group': 'Campo Interno',
@@ -101,59 +99,7 @@ class alpha(FoamFile):
                             {
                                 'name': 'zeroGradient',
                                 'label': 'zeroGradient',
-                                'parameters': [
-                                    {
-                                        'name': 'value',
-                                        'type': 'float',
-                                        'label': 'Valor de Neumann',
-                                        'tooltip': 'El valor de alpha.water en la entrada.',
-                                        'default': 0,
-                                        'optional': True
-                                    }
-                                ]
-                            },
-                            {
-                                'name': 'inletOutlet',
-                                'label': 'inletOutlet',
-                                'parameters' : [
-                                    {
-                                        'name': 'inletValue',
-                                        'type': 'float',
-                                        'label': 'Valor de Entrada',
-                                        'tooltip': 'El valor de alpha.water en la entrada.',
-                                        'default': 0
-                                    },
-                                    {
-                                        'name': 'value',
-                                        'type': 'float',
-                                        'label': 'Valor Uniforme',
-                                        'tooltip': 'El valor uniforme de alpha.water para esta condición.',
-                                        'default': 0
-                                    }
-                                ]
-                            },
-                            {
-                                'name': 'fixedValue',
-                                'label': 'fixedValue',
-                                'parameters' : [
-                                    {
-                                        'name': 'value',
-                                        'type': 'float',
-                                        'label': 'value',
-                                        'tooltip': 'value',
-                                        'default': 0
-                                    },
-                                ]
-                            },
-                            {
-                                'name': 'groovyBC',
-                                'label': 'groovyBC',
-                                'parameters' : []
-                            },
-                            {
-                                'name': 'simmetryPlane',
-                                'label': 'simmetryPlane',
-                                'parameters' : []
+                                'parameters': []
                             },
                             {
                                 'name': 'cyclic',
@@ -161,10 +107,53 @@ class alpha(FoamFile):
                                 'parameters' : []
                             },
                             {
-                                'name': 'empty',
-                                'label': 'empty',
+                                'name': 'groovyBC',
+                                'label': 'groovyBC',
                                 'parameters' : []
                             }
+                            # {
+                            #     'name': 'inletOutlet',
+                            #     'label': 'inletOutlet',
+                            #     'parameters' : [
+                            #         {
+                            #             'name': 'inletValue',
+                            #             'type': 'float',
+                            #             'label': 'Valor de Entrada',
+                            #             'tooltip': 'El valor de alpha.water en la entrada.',
+                            #             'default': 0
+                            #         },
+                            #         {
+                            #             'name': 'value',
+                            #             'type': 'float',
+                            #             'label': 'Valor Uniforme',
+                            #             'tooltip': 'El valor uniforme de alpha.water para esta condición.',
+                            #             'default': 0
+                            #         }
+                            #     ]
+                            # },
+                            # {
+                            #     'name': 'fixedValue',
+                            #     'label': 'fixedValue',
+                            #     'parameters' : [
+                            #         {
+                            #             'name': 'value',
+                            #             'type': 'float',
+                            #             'label': 'value',
+                            #             'tooltip': 'value',
+                            #             'default': 0
+                            #         },
+                            #     ]
+                            # },
+                            # {
+                            #     'name': 'empty',
+                            #     'label': 'empty',
+                            #     'parameters' : []
+                            # },
+                            # {
+                            #     'name': 'simmetryPlane',
+                            #     'label': 'simmetryPlane',
+                            #     'parameters' : []
+                            # }
                         ]
                     }
                 }

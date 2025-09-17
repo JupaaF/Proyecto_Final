@@ -237,6 +237,7 @@ class MainWindowController(QMainWindow):
                 self._setup_managers() # Re-setup managers with the new file_handler
                 
                 #Search for VTK directory
+                #TODO: CAMBIAAAAAAR LOGICA PARA QUE SE EJECUTE ACÁ UN BLOCKMESH
                 self._check_mesh_and_visualize()
 
                 self.file_handler.load_all_parameters_from_json() # Load parameters from the JSON
@@ -379,7 +380,7 @@ class MainWindowController(QMainWindow):
                 self.file_handler.save_all_parameters_to_json()
 
         #Acá está la logica de si usar OpenFOAM o SedFOAM segun el template!!!!!!!!!!!!!:
-        if(self.file_handler.get_template == 'damBreak' or self.file_handler.get_template == 'waterChannel'):
+        if(self.file_handler.get_template() == 'damBreak' or self.file_handler.get_template() == 'waterChannel'):
             self._run_docker_script_in_thread("run_openfoam.sh")
         else:
             self._run_docker_script_in_thread("run_sedfoam.sh")

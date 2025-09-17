@@ -10,7 +10,25 @@ boundaryField
     {{ patch.patchName }}
     {
         type            {{ patch.type }};
-        
+        {% if patch.type == "groovyBC" %}
+        refValue        uniform 0;
+        value           uniform 1e-10;
+        refGradient     uniform 0;
+        valueFraction   uniform 1;
+        valueExpression "inletprofilek(pos().z)";
+        gradientExpression "0";
+        fractionExpression "1";
+        evaluateDuringConstruction 1;
+        variables       "";
+        timelines       (
+);
+        lookuptables    (
+{
+        name            inletprofilek;
+        file        "$FOAM_CASE/1d_profil/k.b.xy";
+        outOfBounds     clamp;
+}
+        {% endif %}
         {# Itera sobre todos los parámetros del patch y los escribe #}
         {% for key, value in patch.items() %}
         {% if key not in ['patchName', 'type'] %}

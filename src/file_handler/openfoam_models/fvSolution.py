@@ -149,6 +149,11 @@ class fvSolution(FoamFile):
                         'name': '2DChannelSedFoam',
                         'label': '2DChannel - SedFOAM',
                         'parameters' : []
+                    },
+                    {
+                        'name': '3DScourSqrSedFoam',
+                        'label': '3DScourSqr - SedFOAM',
+                        'parameters' : []
                     }
                 ]
                 }

@@ -114,8 +114,17 @@ class p_rbgh(FoamFile):
                             {
                                 'name': 'zeroGradient',
                                 'label': 'zeroGradient',
-                                'parameters' : [
-                                ]
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'cyclic',
+                                'label': 'cyclic',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'groovyBC',
+                                'label': 'groovyBC',
+                                'parameters' : []
                             },
                             {
                                 'name': 'fixedValue',

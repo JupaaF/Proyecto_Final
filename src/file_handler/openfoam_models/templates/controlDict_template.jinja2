@@ -164,3 +164,14 @@ libs (
       "libWilcoxOmegaWallFunction.so"
      );
 {%endif%}
+
+{%if functions == "3DScourSqrSedFoam"%}
+favreAveraging false; 
+
+libs (
+"libturbulenceModels.so"
+"libgroovyBC.so"
+"libgroovyStandardBCs.so"
+"libtwoPhaseTurbulenceModels.so"
+     );
+{%endif%}

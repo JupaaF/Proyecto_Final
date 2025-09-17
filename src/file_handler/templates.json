@@ -63,5 +63,37 @@
             "fvSchemes",
             "fvSolution"
         ]
+    },
+    {
+        "id": "3DScourSqr",
+        "name": "3DScourSqr - SedFOAM",
+        "files": [
+            "Theta",
+            "U.a",
+            "U.b",
+            "alpha.a",
+            "alphaPlastic",
+            "delta",
+            "k.b",
+            "nut.b",
+            "omega.b",
+            "p_rbgh",
+            "pa",
+            "g",
+            "transportProperties",
+            "granularRheologyProperties",
+            "filterProperties",
+            "forceProperties",
+            "turbulenceProperties.a",
+            "turbulenceProperties.b",
+            "twophaseRASProperties",
+            "interfacialProperties",
+            "kineticTheoryProperties",
+            "ppProperties",
+            "controlDict",
+            "fvSchemes",
+            "fvSolution",
+            "funkySetFieldsDict"
+        ]
     }
 ]

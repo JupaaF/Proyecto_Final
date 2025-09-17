@@ -6,7 +6,7 @@ from jinja2 import Environment, FileSystemLoader
 
 class epsilon(FoamFile):
     """
-    Representa el archivo 'U' (velocidad) de OpenFOAM, utilizando el motor
+    Representa el archivo 'epsilon' de OpenFOAM, utilizando el motor
     de plantillas Jinja2 para generar su contenido.
 
     Este enfoque externaliza completamente la estructura del archivo a una
@@ -100,7 +100,7 @@ class epsilon(FoamFile):
                         'options': [
                             {
                                 'name': 'epsilonWallFunction',
-                                'label': 'Función de Pared (epsilonWallFunction)',
+                                'label': 'epsilonWallFunction',
                                 'parameters': [
                                     {
                                         'name': 'value',
@@ -113,7 +113,7 @@ class epsilon(FoamFile):
                             },
                             {
                                 'name': 'inletOutlet',
-                                'label': 'Entrada/Salida',
+                                'label': 'inletOutlet',
                                 'parameters' : [
                                     {
                                         'name': 'inletValue',

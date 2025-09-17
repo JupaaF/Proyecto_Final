@@ -12,7 +12,7 @@ class nut(FoamFile):
         else:
             name_aux = "nut"
             
-        super().__init__(name=name_aux, folder="0", class_type="volScalarField")
+        super().__init__(name=name_aux, folder="0", class_type="volScalarField", object_name="nut")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
@@ -121,6 +121,11 @@ class nut(FoamFile):
                                         'default': 0
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'cyclic',
+                                'label': 'cyclic',
+                                'parameters' : []
                             },
                             {
                                 'name': 'empty',

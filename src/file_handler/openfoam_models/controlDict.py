@@ -103,9 +103,10 @@ class controlDict(FoamFile):
             'application': {
                 'label': 'Solver (application)',
                 'tooltip': 'Solver para flujo multifase (interFoam).',
-                'type': 'string',
-                'current': self.application,  # Fijo para damBreak
-                'group': 'Configuración General'
+                'type': 'choice',
+                'current': self.application, 
+                'group': 'Configuración General',
+                'options': ['interFoam', 'sedFoam']
             },
             'startFrom': {
                 'label': 'Comenzar desde (startFrom)',
@@ -134,7 +135,7 @@ class controlDict(FoamFile):
             },
             'endTime': {
                 'label': 'Tiempo Final (endTime)',
-                'tooltip': 'Duración de la simulación (típico: 1-5 segundos).',
+                'tooltip': 'Duración de la simulación.',
                 'type': 'float',
                 'current': self.endTime,
                 'group': 'Control de Tiempo'
@@ -189,7 +190,7 @@ class controlDict(FoamFile):
                 'label': 'Compresión de Archivos',
                 'tooltip': '"on" para reducir tamaño de archivos (recomendado en producción).',
                 'type': 'choice',
-                'options': ['on', 'off'],
+                'options': ['true','false'],
                 'current': self.writeCompression,
                 'group': 'Escritura de datos'
             },
@@ -215,7 +216,7 @@ class controlDict(FoamFile):
                 'current': self.timePrecision
             },
             'runTimeModifiable': {
-                'label': 'Modificable en Ejecución',
+                'label': 'runTimeModifiable',
                 'tooltip': '"on" para permitir cambios durante la simulación (útil para pruebas).',
                 'type': 'choice',
                 'options': ['on','off'],
@@ -225,7 +226,7 @@ class controlDict(FoamFile):
 
             # --- Parámetros Críticos para interFoam/damBreak ---
             'adjustTimeStep': {
-                'label': 'Ajustar Paso de Tiempo',
+                'label': 'adjustTimeStep',
                 'tooltip': 'Activar para ajuste automático basado en números de Courant.',
                 'type': 'choice',
                 'options': ['true', 'false'],
@@ -258,10 +259,10 @@ class controlDict(FoamFile):
                 'group': 'Control de Tiempo'
             },
             'functions': {
-                'label': 'Funciones para cosas',
+                'label': 'Funciones para cosas', #TODO: renombrar xd
                 'tooltip': 'Funciones para cosas',
                 'type': 'choice',
-                'options': ['damBreakOpenFoam','waterChannelOpenFoam','2DChannelSedFoam'],  # Más relevante que timeStep/runTime
+                'options': ['damBreakOpenFoam','waterChannelOpenFoam','2DChannelSedFoam', '3DScourSqrSedFoam'],  
                 'current': self.functions,
             }
         }

@@ -6,7 +6,7 @@ source /usr/lib/openfoam/openfoam2312/etc/bashrc
 # Cambia al directorio del caso
 cd /case
 
-blockMesh
+# blockMesh
 
 # Check if the setFieldsDict file exists
 if [ -f "system/setFieldsDict" ]; then

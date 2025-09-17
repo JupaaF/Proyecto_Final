@@ -1,4 +1,4 @@
-{# Plantilla Jinja2 para el archivo 'alpha.water' de OpenFOAM #}
+{# Plantilla Jinja2 para el archivo 'alphaPlastic' de OpenFOAM #}
 dimensions      [0 0 0 0 0 0 0];
 
 internalField   uniform {{internalField}};
@@ -23,9 +23,5 @@ boundaryField
         {% endfor %}
     }
     {% endfor %}
-    defaultFaces
-    {
-        type            empty;
-    }
 
 }
