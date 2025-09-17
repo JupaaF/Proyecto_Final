@@ -72,7 +72,7 @@ class granularRheologyProperties(FoamFile):
                 'label': 'FrictionModel',
                 'tooltip': 'Modelo matemático para la fricción granular.',
                 'type': 'choice',
-                'options': ['MuI','MuIv','Coulomb','Manning'], 
+                'options': ['MuI','MuIv','Coulomb','none'], 
                 'current': self.FrictionModel,
                 'required': True
                 }    

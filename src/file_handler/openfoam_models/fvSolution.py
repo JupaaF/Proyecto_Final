@@ -144,6 +144,11 @@ class fvSolution(FoamFile):
                         'name': 'waterChannelOpenFoam',
                         'label': 'waterChannel - OpenFOAM',
                         'parameters' : []
+                    },
+                    {
+                        'name': '2DChannelSedFoam',
+                        'label': '2DChannel - SedFOAM',
+                        'parameters' : []
                     }
                 ]
                 }

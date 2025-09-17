@@ -98,7 +98,7 @@ class k(FoamFile):
                         'options': [
                             {
                                 'name': 'kqRWallFunction',
-                                'label': 'Función de Pared (kqRWallFunction)',
+                                'label': 'kqRWallFunction',
                                 'parameters' : [
                                     {
                                         'name': 'value',
@@ -111,7 +111,7 @@ class k(FoamFile):
                             },
                             {
                                 'name': 'inletOutlet',
-                                'label': 'Entrada/Salida',
+                                'label': 'inletOutlet',
                                 'parameters' : [
                                     {
                                         'name': 'inletValue',
@@ -133,13 +133,13 @@ class k(FoamFile):
                                 'name': 'fixedValue',
                                 'label': 'fixedValue',
                                 'parameters' : [
-                                    {
-                                        'name': 'intensity',
-                                        'type': 'float',
-                                        'label': 'intensity',
-                                        'tooltip': 'intensity',
-                                        'default': 0
-                                    },
+                                    # {
+                                    #     'name': 'intensity',
+                                    #     'type': 'float',
+                                    #     'label': 'intensity',
+                                    #     'tooltip': 'intensity',
+                                    #     'default': 0
+                                    # },
                                     {
                                         'name': 'value',
                                         'type': 'float',
@@ -148,6 +148,16 @@ class k(FoamFile):
                                         'default': 0
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'zeroGradient',
+                                'label': 'zeroGradient',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
                             }
                         ]
                     }

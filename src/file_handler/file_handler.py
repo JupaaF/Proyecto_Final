@@ -106,7 +106,11 @@ class FileHandler:
     def get_case_path(self) -> Path:
         """Returns the root path of the case directory."""
         return self.case_path
-
+    
+    def get_template(self):
+        """Returns the template name."""
+        return self.template
+    
     def _get_template_config(self) -> Dict[str, Any]:
         """
         Loads the template configuration from the JSON file.

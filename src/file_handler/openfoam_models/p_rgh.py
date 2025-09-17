@@ -119,7 +119,7 @@ class p_rgh(FoamFile):
                             },
                             {
                                 'name': 'empty',
-                                'label': 'Empty',
+                                'label': 'empty',
                                 'parameters' : [
                                     {
                                     }

@@ -110,6 +110,11 @@ class U(FoamFile):
                                 'parameters':[]
                             },
                             {
+                                'name': 'slip',
+                                'label': 'Deslizamiento',
+                                'parameters':[]
+                            },
+                            {
                                 'name': 'pressureInletOutletVelocity',
                                 'label': 'Salida/Entrada por Presión',
                                 'parameters' : [
@@ -154,6 +159,29 @@ class U(FoamFile):
                                         'default': {'x':0,'y':0,'z':0},
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'fixedValue',
+                                'label': 'fixedValue',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'vector',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': {'x':0,'y':0,'z':0},
+                                    }
+                                ]
+                            },
+                            {
+                                'name': 'groovyBC',
+                                'label': 'groovyBC',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
                             }
                         ]
                     }

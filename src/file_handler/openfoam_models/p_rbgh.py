@@ -73,7 +73,7 @@ class p_rbgh(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (p_rgh)',
+                'label': 'Campo Interno (p_rbgh)',
                 'tooltip': 'Valor inicial de la presión modificada en el dominio.',
                 'type': 'float',
                 'current': self.internalField,
@@ -105,7 +105,7 @@ class p_rbgh(FoamFile):
                                     {
                                         'name': 'gradient',
                                         'type': 'float',
-                                        'label': 'Valor (uniforme)',
+                                        'label': 'gradient',
                                         'tooltip': 'Valor de presión para esta condición de borde.',
                                         'default': 0
                                     }
@@ -145,7 +145,7 @@ class p_rbgh(FoamFile):
                             },
                             {
                                 'name': 'empty',
-                                'label': 'Empty',
+                                'label': 'empty',
                                 'parameters' : [
                                     {
                                     }

@@ -98,7 +98,7 @@ class alpha(FoamFile):
                         'options': [
                             {
                                 'name': 'zeroGradient',
-                                'label': 'Gradiente Cero',
+                                'label': 'zeroGradient',
                                 'parameters': [
                                     {
                                         'name': 'value',
@@ -112,7 +112,7 @@ class alpha(FoamFile):
                             },
                             {
                                 'name': 'inletOutlet',
-                                'label': 'Valor Fijo',
+                                'label': 'inletOutlet',
                                 'parameters' : [
                                     {
                                         'name': 'inletValue',
@@ -142,6 +142,16 @@ class alpha(FoamFile):
                                         'default': 0
                                     },
                                 ]
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'simmetryPlane',
+                                'label': 'simmetryPlane',
+                                'parameters' : []
                             }
                         ]
                     }

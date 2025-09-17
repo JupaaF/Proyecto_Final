@@ -104,7 +104,8 @@ class fvSchemes(FoamFile):
                 'group': 'Esquemas de Divergencia',
                 'options': [
                     'damBreak',
-                    'waterChannel'
+                    'waterChannel',
+                    '2DChannel'
                 ]
             },
             'laplacianSchemes': {
@@ -113,7 +114,7 @@ class fvSchemes(FoamFile):
 En todos los casos, se utiliza el esquema de interpolación lineal para la interpolación de la difusividad. 
 Se utiliza la misma matriz de esquemas snGradSchemes basada en la no ortogonalidad máxima de la malla.''',
                 'type': 'choice',
-                'options': ['Gauss linear'],
+                'options': ['Gauss linear', '2DChannel'],
                 'current': self.laplacianSchemes,
                 'group': 'Esquemas de Laplaciano'
             },

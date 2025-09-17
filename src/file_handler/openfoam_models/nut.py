@@ -111,7 +111,7 @@ class nut(FoamFile):
                             },
                             {
                                 'name': 'calculated',
-                                'label': 'Calculado',
+                                'label': 'Calculated',
                                 'parameters' : [
                                     {
                                         'name': 'value',
@@ -121,6 +121,16 @@ class nut(FoamFile):
                                         'default': 0
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'simmetryPlane',
+                                'label': 'simmetryPlane',
+                                'parameters' : []
                             }
                         ]
                     }

@@ -5,6 +5,7 @@ import os
 import platform
 import subprocess
 from PySide6.QtWidgets import QMessageBox
+import re
 
 from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout, QFileDialog, QPlainTextEdit)
 from PySide6.QtCore import QUrl, QTimer,  QObject, QThread, Signal, QRunnable, Slot
@@ -304,7 +305,7 @@ class MainWindowController(QMainWindow):
         self.file_browser_manager.file_clicked.connect(self.open_parameters_view)
         self.ui.fileBrowserDock.setWidget(self.file_browser_manager.get_widget())
 
-        self.parameter_editor_manager = ParameterEditorManager(self.ui.parameterEditorScrollArea, self.file_handler, self._get_vtk_patch_names)
+        self.parameter_editor_manager = ParameterEditorManager(self.ui.parameterEditorScrollArea, self.file_handler, self._get_patch_names)
 
     def _setup_case_environment(self, mesh_file_path: Path):
         """Copia la geometría, inicializa Docker transforma la malla según el tipo de archivo 
@@ -376,8 +377,12 @@ class MainWindowController(QMainWindow):
             else:
                 self.file_handler.write_files()
                 self.file_handler.save_all_parameters_to_json()
-        
-        self._run_docker_script_in_thread("run_openfoam.sh")
+
+        #Acá está la logica de si usar OpenFOAM o SedFOAM segun el template!!!!!!!!!!!!!:
+        if(self.file_handler.get_template == 'damBreak' or self.file_handler.get_template == 'waterChannel'):
+            self._run_docker_script_in_thread("run_openfoam.sh")
+        else:
+            self._run_docker_script_in_thread("run_sedfoam.sh")
 
     def _run_docker_script_in_thread(self, script_name: str):
         """
@@ -418,7 +423,7 @@ class MainWindowController(QMainWindow):
         elif success:
             QMessageBox.information(self, "Ejecución de Docker", f"El script '{script_name}' se ejecutó correctamente.")
             if script_name in ["run_transform_UNV.sh", "run_transform_blockMeshDict.sh", "run_extrudeMesh.sh"]:
-                patch_names = self._get_vtk_patch_names()
+                patch_names = self._get_patch_names()
                 if patch_names:
                     self.file_handler.initialize_parameters_from_schema(patch_names)
                 self.file_handler.create_case_files()
@@ -481,15 +486,33 @@ class MainWindowController(QMainWindow):
                 for patch_name in selected_patches:
                     self.parameter_editor_manager.highlight_patch_group(patch_name, True)
 
-    def _get_vtk_patch_names(self) -> list[str]:
+    def _get_patch_names(self) -> list[str]:
         """Obtiene los nombres de los patches de VTK del directorio boundary."""
         if not self.file_handler:
             return []
+
+        boundary_path = self.file_handler.get_case_path() / "constant" / "polyMesh" / "boundary"
+        if not boundary_path.is_file():
+            return []
+        try:
+            with open(boundary_path, 'r', encoding='utf-8') as f:
+                content = f.read()
             
-        vtk_boundary_path = self.file_handler.get_case_path() / "VTK" / "case_0" / "boundary"
-        if vtk_boundary_path.is_dir():
-            return [item.stem for item in vtk_boundary_path.iterdir()]
-        return []
+            # Find the content between the first '(' and last ')'
+            start = content.find('(')
+            end = content.rfind(')')
+            if start == -1 or end == -1:
+                return []
+            
+            content = content[start:end]
+
+            # Find all words that are at the beginning of a line and are followed by a '{' on the next line.
+            patch_names = re.findall(r'^\s*([a-zA-Z0-9_.-]+)\s*\n\s*\{', content, re.MULTILINE)
+            return patch_names
+        except Exception as e:
+            print(f"Error parsing boundary file: {e}")
+            return []
+
 
     def show_geometry_visualizer(self, geom_file_path: Path):
         while self.vtk_layout.count():

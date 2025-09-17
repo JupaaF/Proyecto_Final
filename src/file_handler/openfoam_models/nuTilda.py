@@ -120,6 +120,11 @@ class nuTilda(FoamFile):
                                         'default': 0
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
                             }
                         ]
                     }

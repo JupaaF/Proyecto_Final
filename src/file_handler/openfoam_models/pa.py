@@ -73,7 +73,7 @@ class pa(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (p_rgh)',
+                'label': 'Campo Interno (pa)',
                 'tooltip': 'Valor inicial de la presión modificada en el dominio.',
                 'type': 'float',
                 'current': self.internalField,
@@ -105,7 +105,7 @@ class pa(FoamFile):
                                     {
                                         'name': 'gradient',
                                         'type': 'float',
-                                        'label': 'Valor (uniforme)',
+                                        'label': 'gradient',
                                         'tooltip': 'Valor de presión para esta condición de borde.',
                                         'default': 0
                                     }
@@ -113,11 +113,8 @@ class pa(FoamFile):
                             },
                             {
                                 'name': 'zeroGradient',
-                                'label': 'Empty',
-                                'parameters' : [
-                                    {
-                                    }
-                                ]
+                                'label': 'zeroGradient',
+                                'parameters' : [ ]
                             },
                             {
                                 'name': 'fixedValue',
@@ -147,11 +144,8 @@ class pa(FoamFile):
                             },
                             {
                                 'name': 'empty',
-                                'label': 'Empty',
-                                'parameters' : [
-                                    {
-                                    }
-                                ]
+                                'label': 'empty',
+                                'parameters' : []
                             },
                         ]
                     }

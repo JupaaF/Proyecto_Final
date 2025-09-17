@@ -154,3 +154,13 @@ functions
 
 
 {%endif%}
+
+
+
+{%if functions == "2DChannelSedFoam"%}
+libs (
+      "libgroovyBC.so"
+      "libgroovyStandardBCs.so"
+      "libWilcoxOmegaWallFunction.so"
+     );
+{%endif%}

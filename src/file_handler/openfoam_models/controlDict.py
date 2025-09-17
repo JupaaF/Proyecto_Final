@@ -216,9 +216,9 @@ class controlDict(FoamFile):
             },
             'runTimeModifiable': {
                 'label': 'Modificable en Ejecución',
-                'tooltip': '"yes" para permitir cambios durante la simulación (útil para pruebas).',
+                'tooltip': '"on" para permitir cambios durante la simulación (útil para pruebas).',
                 'type': 'choice',
-                'options': ['yes','no'],
+                'options': ['on','off'],
                 'current': self.runTimeModifiable,
                 'group': 'Avanzado'
             },
@@ -228,7 +228,7 @@ class controlDict(FoamFile):
                 'label': 'Ajustar Paso de Tiempo',
                 'tooltip': 'Activar para ajuste automático basado en números de Courant.',
                 'type': 'choice',
-                'options': ['yes', 'no'],
+                'options': ['true', 'false'],
                 'current': self.adjustTimeStep,  # Esencial para estabilidad en interFoam
                 'required': True,
                 'group': 'Control de Tiempo'
@@ -261,7 +261,7 @@ class controlDict(FoamFile):
                 'label': 'Funciones para cosas',
                 'tooltip': 'Funciones para cosas',
                 'type': 'choice',
-                'options': ['damBreakOpenFoam','waterChannelOpenFoam'],  # Más relevante que timeStep/runTime
+                'options': ['damBreakOpenFoam','waterChannelOpenFoam','2DChannelSedFoam'],  # Más relevante que timeStep/runTime
                 'current': self.functions,
             }
         }

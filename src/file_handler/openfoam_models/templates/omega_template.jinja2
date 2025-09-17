@@ -14,11 +14,15 @@ boundaryField
         
         {# Itera sobre todos los parámetros del patch y los escribe #}
         {% for key, value in patch.items() %}
+        {% if key == 'kn'%}
+        {{ key }}           {{ value }};
+        {% else %}
         {% if key not in ['patchName', 'type'] %}
         {% if value is mapping %}
         {{ key }}           uniform ({{ value.x }} {{ value.y }} {{ value.z }});
         {% else %}
         {{ key }}           uniform {{ value }};
+        {% endif %}
         {% endif %}
         {% endif %}
         {% endfor %}

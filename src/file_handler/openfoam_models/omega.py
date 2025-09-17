@@ -108,13 +108,17 @@ class omega(FoamFile):
                                         'default': 0
                                     }
                                 ]
+                            },{
+                                'name': 'zeroGradient',
+                                'label': 'zeroGradient',
+                                'parameters' : []
                             },
                             {
                                 'name': 'omegaWallFunction',
                                 'label': 'omegaWallFunction',
                                 'parameters' : [
                                     {
-                                        'name': 'value', #cambie esto
+                                        'name': 'value', 
                                         'type': 'float',
                                         'label': 'value',
                                         'tooltip': 'value',
@@ -141,6 +145,31 @@ class omega(FoamFile):
                                         'default': 0
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'wilcoxOmegaWallFunction',
+                                'label': 'wilcoxOmegaWallFunction',
+                                'parameters' : [
+                                    {
+                                        'name': 'value', 
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 594.884
+                                    },
+                                    {
+                                        'name': 'kn', 
+                                        'type': 'float',
+                                        'label': 'kn',
+                                        'tooltip': 'kn',
+                                        'default': 0.0002
+                                    }
+                                ]
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
                             }
                         ]
                     }
