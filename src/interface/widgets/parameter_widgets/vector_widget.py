@@ -21,31 +21,23 @@ class VectorWidget(BaseParameterWidget):
             safe_current_value['z'] = self.param_props.get('default').get('z',0)
 
 
-        self.x_edit = NoScrollDoubleSpinBox()
-        self.y_edit = NoScrollDoubleSpinBox()
-        self.z_edit = NoScrollDoubleSpinBox()
+        self.x_spinbox = NoScrollDoubleSpinBox()
+        self.y_spinbox = NoScrollDoubleSpinBox()
+        self.z_spinbox = NoScrollDoubleSpinBox()
 
-        self.x_edit.setDecimals(10)
-        self.y_edit.setDecimals(10)
-        self.z_edit.setDecimals(10)
+        self.x_spinbox.setValue(safe_current_value.get('x',0))
+        self.y_spinbox.setValue(safe_current_value.get('y',0))
+        self.z_spinbox.setValue(safe_current_value.get('z',0))
 
-        self.x_edit.setRange(-1.7e308, 1.7e308)
-        self.y_edit.setRange(-1.7e308, 1.7e308)
-        self.z_edit.setRange(-1.7e308, 1.7e308)
-
-        self.x_edit.setValue(safe_current_value.get('x',0))
-        self.y_edit.setValue(safe_current_value.get('y',0))
-        self.z_edit.setValue(safe_current_value.get('z',0))
-
-        self.x_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
-        self.y_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
-        self.z_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
+        self.x_spinbox.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
+        self.y_spinbox.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
+        self.z_spinbox.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.x_edit)
-        layout.addWidget(self.y_edit)
-        layout.addWidget(self.z_edit)
+        layout.addWidget(self.x_spinbox)
+        layout.addWidget(self.y_spinbox)
+        layout.addWidget(self.z_spinbox)
         self.setLayout(layout)
 
     def get_value(self):
@@ -54,9 +46,9 @@ class VectorWidget(BaseParameterWidget):
         Lanza un ValueError si alguno de los valores no es válido.
         """
         try:
-            x = float(self.x_edit.value())
-            y = float(self.y_edit.value())
-            z = float(self.z_edit.value())
+            x = float(self.x_spinbox.value())
+            y = float(self.y_spinbox.value())
+            z = float(self.z_spinbox.value())
             return {'x': x, 'y': y, 'z': z}
         except ValueError:
             raise

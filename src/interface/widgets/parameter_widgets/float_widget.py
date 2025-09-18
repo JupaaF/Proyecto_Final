@@ -35,7 +35,7 @@
 #         except ValueError:
 #             raise
 
-from PySide6.QtWidgets import QHBoxLayout, QDoubleSpinBox
+from PySide6.QtWidgets import QHBoxLayout
 from .base_widget import BaseParameterWidget
 from ..helpers import NoScrollDoubleSpinBox
 
@@ -50,15 +50,15 @@ class FloatWidget(BaseParameterWidget):
         current_value = self.param_props.get('current', '')
         if current_value is None:
             current_value = self.param_props.get('default',0)
-        self.line_edit = NoScrollDoubleSpinBox()
-        self.line_edit.setDecimals(10)
-        self.line_edit.setRange(-1.7e308, 1.7e308)
-        self.line_edit.setValue(current_value)
-        self.line_edit.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
+        self.spinbox = NoScrollDoubleSpinBox()
+
+        self.spinbox.setValue(current_value)
+        self.spinbox.format_display_value()
+        self.spinbox.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.line_edit)
+        layout.addWidget(self.spinbox)
         self.setLayout(layout)
 
     def get_value(self):
@@ -67,6 +67,6 @@ class FloatWidget(BaseParameterWidget):
         Lanza un ValueError si el texto no es un flotante válido.
         """
         try:
-            return float(self.line_edit.value())
+            return float(self.spinbox.value())
         except ValueError:
             raise

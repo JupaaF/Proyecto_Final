@@ -21,12 +21,12 @@ class controlDict(FoamFile):
         self.writeControl = 'adjustable'
         self.purgeWrite = 0
         self.writeFormat = 'ascii'
-        self.adjustTimeStep = 'yes'
+        self.adjustTimeStep = 'true'
         self.maxCo = 1
         self.maxAlphaCo = 1
         self.maxDeltaT = 1
-        self.writeCompression = 'off'
-        self.runTimeModifiable = 'yes'
+        self.writeCompression = 'false'
+        self.runTimeModifiable = 'on'
         self.writePrecision = 6
         self.functions = 'damBreakOpenFoam'
 

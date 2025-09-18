@@ -133,13 +133,14 @@ class k(FoamFile):
                                 'name': 'fixedValue',
                                 'label': 'fixedValue',
                                 'parameters' : [
-                                    # {
-                                    #     'name': 'intensity',
-                                    #     'type': 'float',
-                                    #     'label': 'intensity',
-                                    #     'tooltip': 'intensity',
-                                    #     'default': 0
-                                    # },
+                                    {
+                                        'name': 'intensity',
+                                        'type': 'float',
+                                        'label': 'intensity',
+                                        'tooltip': 'intensity',
+                                        'default': 0,
+                                        'optional': True
+                                    },
                                     {
                                         'name': 'value',
                                         'type': 'float',

@@ -123,6 +123,14 @@ class omega(FoamFile):
                                         'label': 'value',
                                         'tooltip': 'value',
                                         'default': 0
+                                    },
+                                    {
+                                        'name': 'blending', 
+                                        'type': 'string',
+                                        'label': 'blending',
+                                        'tooltip': 'blending',
+                                        'default': 'tanh',
+                                        'optional':True
                                     }
                                 ]
                             },

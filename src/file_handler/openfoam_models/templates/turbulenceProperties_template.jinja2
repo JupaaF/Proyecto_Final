@@ -1,14 +1,9 @@
 {# Plantilla Jinja2 para el archivo 'turbulenceProperties' de OpenFOAM #}
 
+simulationType       {{ simulation_type[0] }};
 
-{% if simulation_type == "laminar"%}
-simulationType       {{ simulation_type }};
-
-{%endif%}
-
-{% if simulation_type == "RASWaterChannel"%}
-
-simulationType       RAS;
+{%if simulation_type[0] == "RAS"%}
+{%if (simulation_type[1].model)[0] == 'kOmegaSST'%}
 
 RAS
 {
@@ -20,8 +15,7 @@ RAS
 }
 {%endif%}
 
-{% if simulation_type == "RASSedFoam"%} 
-simulationType       RAS;
+{%if (simulation_type[1].model)[0] == 'twophasekOmega'%}
 
 RAS
 {
@@ -73,3 +67,4 @@ RAS
 
 {%endif%}
 
+{%endif%}

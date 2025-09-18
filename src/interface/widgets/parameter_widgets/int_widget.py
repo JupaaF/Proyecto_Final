@@ -13,16 +13,16 @@ class IntWidget(BaseParameterWidget):
         current_value = self.param_props.get('current', '')
         if current_value is None:
             current_value = self.param_props.get('default',0)
-        self.line_edit = NoScrollSpinBox()
-        self.line_edit.setMaximum(2147483647)
-        self.line_edit.setMinimum(-2147483648)
-        self.line_edit.setValue(current_value)
-        self.line_edit.setButtonSymbols(NoScrollSpinBox.NoButtons)
+        self.spinbox = NoScrollSpinBox()
+        self.spinbox.setMaximum(2147483647)
+        self.spinbox.setMinimum(-2147483648)
+        self.spinbox.setValue(current_value)
+        self.spinbox.setButtonSymbols(NoScrollSpinBox.NoButtons)
         
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.line_edit)
+        layout.addWidget(self.spinbox)
         self.setLayout(layout)
 
     def get_value(self):
@@ -31,6 +31,6 @@ class IntWidget(BaseParameterWidget):
         Lanza un ValueError si el texto no es un entero válido.
         """
         try:
-            return int(self.line_edit.value())
+            return int(self.spinbox.value())
         except ValueError:
             raise

@@ -33,7 +33,7 @@ boundaryField
         {% endif %}
         {# Itera sobre todos los parámetros del patch y los escribe #}
         {% for key, value in patch.items() %}
-        {% if key == 'kn'%}
+        {% if key == 'kn' or key == 'blending'%}
         {{ key }}           {{ value }};
         {% else %}
         {% if key not in ['patchName', 'type'] %}

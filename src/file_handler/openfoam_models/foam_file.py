@@ -138,6 +138,12 @@ class FoamFile(ABC):
             if param_props.get('options') is None:
                 raise ValueError("Faltan las opciones, no hay opciones")
             
+            if not isinstance(param_value[0],str):
+                raise ValueError("El choice que me diste no es un string")
+
+            if not isinstance(param_value[1],dict):
+                raise ValueError("Valor invalido")
+            
         if param_type == "patches":
             if not isinstance(param_value,list):
                 raise ValueError("Valor invalido")

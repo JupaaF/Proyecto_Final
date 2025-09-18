@@ -88,7 +88,73 @@ class StrictDoubleValidator(QDoubleValidator):
 
         return state, ret_input, ret_pos
 
+
+def format_significant_decimals(value, max_decimals=10):
+    """
+    Formatea un número float mostrando solo los decimales significativos
+    hasta un máximo especificado.
+    """
+    if value == int(value):
+        return f"{int(value)}"  # Si es entero, sin decimales
+    
+    # Convertir a string y encontrar decimales significativos
+    str_value = f"{value:.{max_decimals}f}"
+    
+    # Eliminar ceros a la derecha
+    if '.' in str_value:
+        str_value = str_value.rstrip('0')
+        if str_value[-1] == '.':
+            str_value = str_value[:-1]
+    
+    return str_value
+
 class NoScrollDoubleSpinBox(QDoubleSpinBox):
+
+    def __init__(self,parent=None):
+        super().__init__(parent)
+        self.setDecimals(12)
+        self.setRange(-1.7e308, 1.7e308)
+        self.lineEdit().textEdited.connect(self.on_text_edited)
+        
+    def format_significant_decimals(self,value, max_decimals=10):
+        """
+        Formatea un número float mostrando solo los decimales significativos
+        hasta un máximo especificado.
+        """
+        if value == int(value):
+            return f"{int(value)}"  # Si es entero, sin decimales
+        
+        # Convertir a string y encontrar decimales significativos
+        str_value = f"{value:.{max_decimals}f}"
+        
+        # Eliminar ceros a la derecha
+        if '.' in str_value:
+            str_value = str_value.rstrip('0')
+            if str_value[-1] == '.':
+                str_value = str_value[:-1]
+        
+        return str_value
+
+    def on_text_edited(self, text):
+        # Permite edición libre sin formateo
+        pass
+    
+    def format_display_value(self):
+        """Método que hace lo mismo que focusOutEvent pero se puede llamar directamente"""
+        current_value = self.value()
+        formatted_text = self.format_significant_decimals(current_value)
+        self.lineEdit().setText(formatted_text)
+
+    def focusOutEvent(self, event):
+        # Al perder foco, formatea mostrando solo decimales significativos
+        super().focusOutEvent(event)
+        self.format_display_value()
+    
+    def stepBy(self, steps):
+        # Asegurar que el stepping mantenga el formateo
+        super().stepBy(steps)
+        self.format_display_value()
+
     def wheelEvent(self, event):
         event.ignore()
 

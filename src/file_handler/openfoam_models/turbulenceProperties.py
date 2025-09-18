@@ -18,13 +18,14 @@ class turbulenceProperties(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Valores por defecto
-        self.simulation_type = 'laminar'
+        self.simulation_type = []
 
     def _get_string(self) -> str:
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
         template = self.jinja_env.get_template("turbulenceProperties_template.jinja2")
+
         context = {
             'simulation_type': self.simulation_type
         }
@@ -78,14 +79,51 @@ class turbulenceProperties(FoamFile):
             'simulation_type': {
                 'label': 'Tipo de simulación',
                 'tooltip': 'Define el tipo de simulación de turbulencia (ej. laminar (sin turbulencia), RAS, LES).',
-                'type': 'choice',
+                'type': 'choice_with_options',
                 'current': self.simulation_type,
                 'group': 'Configuración General',
                 # 'options': [  #TODO: completar con los demas tipos que hayan
                 #     {'name': 'laminar', 'label': 'laminar'},
                 #     {'name': 'RAS', 'label': 'RAS'},
-                #     {'name': 'LES', 'label': 'LES'}
+                #     {'name': 'LES', 'label': 'LES'}'laminar','RASWaterChannel','LES','RASSedFoam'
                 # ]
-                'options': ['laminar','RASWaterChannel','LES','RASSedFoam']
+                'options': [
+                    {
+                        'name': 'laminar',
+                        'label': 'laminar',
+                        'parameters':[]
+                    },
+                    {
+                        'name': 'LES',
+                        'label': 'LES',
+                        'parameters':[]
+                    },
+                    {
+                        'name': 'RAS',
+                        'label': 'RAS',
+                        'parameters':[
+                            {
+                                'name': 'model',
+                                'label': 'modelo de turbulencia RAS',
+                                'tooltip': 'Tolerancia para el solver alpha.water.',
+                                'type': 'choice_with_options',
+                                'default': 'kOmegaSST',
+                                'options':[
+                                    {
+                                        'name': 'kOmegaSST',
+                                        'label': 'kOmegaSST',
+                                        'parameters':[]
+                                    },
+                                    {
+                                        'name': 'twophasekOmega',
+                                        'label': 'twophasekOmega',
+                                        'parameters':[]
+                                    },
+                                ]
+                            }
+                        ]
+                    },
+
+                ]
             }
         }
