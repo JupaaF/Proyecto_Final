@@ -238,7 +238,21 @@ class MainWindowController(QMainWindow):
                 
                 #Search for VTK directory
                 #TODO: CAMBIAAAAAAR LOGICA PARA QUE SE EJECUTE ACÁ UN BLOCKMESH
-                self._check_mesh_and_visualize()
+                # self._check_mesh_and_visualize()
+                 # Check for mesh and geometry
+                vtk_path = self.file_handler.get_case_path() / "VTK"
+                block_mesh_dict_system_path = self.file_handler.get_case_path() / "system" / "blockMeshDict"
+                block_mesh_dict_case_path = self.file_handler.get_case_path() / "blockMeshDict"
+
+                if vtk_path.is_dir():
+                    self._check_mesh_and_visualize()
+                elif block_mesh_dict_system_path.is_file():
+                    pass
+                elif block_mesh_dict_case_path.is_file():
+                    pass
+                else:
+                    QMessageBox.warning(self, "Geometría Faltante", "No se encontró la geometría del caso. Por favor, asegúrese de que la carpeta VTK o el archivo blockMeshDict existan.")
+
 
                 self.file_handler.load_all_parameters_from_json() # Load parameters from the JSON
                 self.file_handler.create_case_files()
@@ -254,6 +268,10 @@ class MainWindowController(QMainWindow):
                     # If no file was previously open, open a default one or just refresh the file browser
                     self.file_browser_manager.update_root_path()
 
+                if block_mesh_dict_case_path.is_file():
+                    self._run_docker_script_in_thread("run_transform_blockMeshDict.sh")
+                elif block_mesh_dict_system_path.is_file():
+                    self._run_docker_script_in_thread("run_transform_blockMeshDict.sh")
 
             except Exception as e:
                 QMessageBox.critical(self, "Error al Cargar", f"Error al cargar la simulación: {e}")
