@@ -111,7 +111,7 @@ class nut(FoamFile):
                             },
                             {
                                 'name': 'calculated',
-                                'label': 'Calculated',
+                                'label': 'calculated',
                                 'parameters' : [
                                     {
                                         'name': 'value',

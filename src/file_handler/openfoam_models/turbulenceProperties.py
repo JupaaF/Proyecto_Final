@@ -105,7 +105,7 @@ class turbulenceProperties(FoamFile):
                             {
                                 'name': 'model',
                                 'label': 'modelo de turbulencia RAS',
-                                'tooltip': 'Tolerancia para el solver alpha.water.',
+                                'tooltip': '',
                                 'type': 'choice_with_options',
                                 'default': 'kOmegaSST',
                                 'options':[

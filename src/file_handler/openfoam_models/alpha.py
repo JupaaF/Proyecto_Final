@@ -80,15 +80,15 @@ class alpha(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (alpha.water)',
-                'tooltip': 'Define el valor inicial de alpha.water en todo el dominio (0 a 1).',
+                'label': 'InternalField (alpha)',
+                'tooltip': 'Define el valor inicial de alpha en todo el dominio (0 a 1).',
                 'type': 'float',
                 'current': self.internalField,
                 'group': 'Campo Interno',
             },
             'boundaryField': {
                 'label': 'Condiciones de Borde',
-                'tooltip': 'Define las condiciones de alpha.water en los límites del dominio.',
+                'tooltip': 'Define las condiciones de alpha en los límites del dominio.',
                 'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',

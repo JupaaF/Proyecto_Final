@@ -143,9 +143,34 @@ Un gradiente normal a la superficie se evalúa en una cara de celda.
             },
             'wallDist': {
                 'label': 'wallDist',
-                'tooltip': 'No tengo idea que es, la distnacia a la pared supongo',
-                'type': 'choice',
-                'options': ['meshWave'],
+                'tooltip': 'Método para calcular la distancia a la pared',
+                'type': 'choice_with_options',
+                'options': [
+                    {
+                        'name': 'meshWave',
+                        'label': 'meshWave',
+                        'parameters':[
+                            {
+                                'name': 'correctWalls',
+                                'label': 'correctWalls',
+                                'tooltip': 'Opcionalmente, corrige la distancia desde las celdas cercanas a la pared hasta el límite.',
+                                'type': 'string',
+                                'default': 'false'
+                            }]
+                    },
+                    {
+                        'name': 'directionalMeshWave',
+                        'label': 'directionalMeshWave',
+                        'parameters':[
+                            {
+                                'name': 'normal',
+                                'label': 'normal',
+                                'tooltip': 'La componente de dirección a ignorar.',
+                                'type': 'vector',
+                                'default': {'x': 0, 'y': 0, 'z': 1}
+                            }]
+
+                    }],
                 'current': self.wallDist,
                 'group': 'Esquemas de Gradiente de Superficie',
                 'optional' : True

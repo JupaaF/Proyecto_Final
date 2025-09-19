@@ -86,7 +86,7 @@ class delta(FoamFile):
             },
             'boundaryField': {
                 'label': 'Condiciones de Borde',
-                'tooltip': 'Define las condiciones de alpha.water en los límites del dominio.',
+                'tooltip': 'Define las condiciones de delta en los límites del dominio.',
                 'type': 'patches',
                 'current': self.boundaryField,
                 'group': 'Condiciones de Borde',

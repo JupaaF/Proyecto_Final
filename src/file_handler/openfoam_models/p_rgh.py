@@ -93,7 +93,7 @@ class p_rgh(FoamFile):
                         'options': [
                             {
                                 'name': 'fixedFluxPressure',
-                                'label': 'Presión con Flujo Fijo (fixedFluxPressure)',
+                                'label': 'fixedFluxPressure',
                                 'parameters' : [
                                     {
                                         'name': 'value',
@@ -106,7 +106,7 @@ class p_rgh(FoamFile):
                             },
                             {
                                 'name': 'totalPressure',
-                                'label': 'Presión Total',
+                                'label': 'totalPressure',
                                 'parameters' : [
                                     {
                                         'name': 'p0', #cambie esto

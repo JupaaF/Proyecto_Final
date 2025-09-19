@@ -105,7 +105,7 @@ class nuTilda(FoamFile):
                             },
                             {
                                 'name': 'inletOutlet',
-                                'label': 'Valor Fijo',
+                                'label': 'inletOutlet',
                                 'parameters' : [
                                     {
                                         'name': 'inletValue',

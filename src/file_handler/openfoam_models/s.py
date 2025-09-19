@@ -93,7 +93,7 @@ class s(FoamFile):
                         'options': [
                             {
                                 'name': 'fixedValue',
-                                'label': 'Valor Fijo',
+                                'label': 'fixedValue',
                                 'parameters' : [
                                     {
                                         'name': 'value',
@@ -106,7 +106,7 @@ class s(FoamFile):
                             },
                             {
                                 'name': 'zeroGradient',
-                                'label': 'Gradiente zero',
+                                'label': 'zeroGradient',
                                 'parameters' : [
                                     {
                                         'name': 'value',
@@ -120,7 +120,7 @@ class s(FoamFile):
                             },
                             {
                                 'name': 'inletOutlet',
-                                'label': 'Entrada/Salida',
+                                'label': 'inletOutlet',
                                 'parameters' : [
                                     {
                                         'name': 'inletValue',
