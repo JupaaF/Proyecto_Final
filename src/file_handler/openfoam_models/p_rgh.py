@@ -15,6 +15,7 @@ class p_rgh(FoamFile):
         # Valores por defecto
         self.internalField = 0
         self.boundaryField = []
+        self.unitDimensions = [1, -1, -2, 0, 0, 0, 0]
 
     def _get_string(self) -> str:
         """
@@ -22,6 +23,7 @@ class p_rgh(FoamFile):
         """
         template = self.jinja_env.get_template("p_rgh_template.jinja2")
         context = {
+            'uDim':self.unitDimensions,
             'internalField': self.internalField,
             'boundaryField': self.boundaryField
         }
@@ -128,5 +130,11 @@ class p_rgh(FoamFile):
                         ]
                     }
                 }
+            },
+            'unitDimensions': {
+                'label': 'Dimension de unidades',
+                'tooltip': 'Unidades de los parametros',
+                'type': 'dimensions',
+                'current': self.unitDimensions,
             }
         }

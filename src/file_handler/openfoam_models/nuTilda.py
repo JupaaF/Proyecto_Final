@@ -21,6 +21,7 @@ class nuTilda(FoamFile):
         # Inicializa los parámetros con valores por defecto
         self.internalField = 0
         self.boundaryField = []
+        self.unitDimensions = [0, 2, -1, 0, 0, 0, 0]
 
     def _get_string(self) -> str:
         """
@@ -29,6 +30,7 @@ class nuTilda(FoamFile):
         """
         template = self.jinja_env.get_template("nuTilda_template.jinja2")
         context = {
+            'uDim':self.unitDimensions,
             'internalField': self.internalField,
             'boundaryField': self.boundaryField
         }
@@ -129,6 +131,12 @@ class nuTilda(FoamFile):
                         ]
                     }
                 }
+            },
+            'unitDimensions': {
+                'label': 'Dimension de unidades',
+                'tooltip': 'Unidades de los parametros',
+                'type': 'dimensions',
+                'current': self.unitDimensions,
             }
         }
     
