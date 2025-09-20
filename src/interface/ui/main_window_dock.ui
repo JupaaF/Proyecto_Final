@@ -52,8 +52,7 @@
      <string>Simulación</string>
     </property>
     <addaction name="actionEjecutar_Simulacion"/>
-    <addaction name="actionConfigurar_Simulacion_en_Paralelo"/>
-    <addaction name="actionEjecutar_Simulaci_n_en_Paralelo"/>
+    <addaction name="actionEjecutar_Simulacion_en_Paralelo"/>
     <addaction name="actionLimpiar_Resultados"/>
     <addaction name="actionDetener_Simulacion"/>
     <addaction name="actionVisualizarEnParaview"/>
@@ -238,14 +237,9 @@
     <string>Limpiar Resultados de Simulación</string>
    </property>
   </action>
-  <action name="actionEjecutar_Simulaci_n_en_Paralelo">
+  <action name="actionEjecutar_Simulacion_en_Paralelo">
    <property name="text">
     <string>Ejecutar Simulación en Paralelo</string>
-   </property>
-  </action>
-  <action name="actionConfigurar_Simulacion_en_Paralelo">
-   <property name="text">
-    <string>Configurar Simulación en Paralelo</string>
    </property>
   </action>
  </widget>

@@ -13,7 +13,8 @@
             "p_rgh",
             "setFieldsDict",
             "transportProperties",
-            "turbulenceProperties"
+            "turbulenceProperties",
+            "decomposeParDict"
         ]
     },
     {
@@ -33,7 +34,8 @@
             "controlDict",
             "fvSchemes",
             "fvSolution",
-            "setFieldsDict"
+            "setFieldsDict",
+            "decomposeParDict"
         ]
     },
     {
@@ -61,7 +63,8 @@
             "ppProperties",
             "controlDict",
             "fvSchemes",
-            "fvSolution"
+            "fvSolution",
+            "decomposeParDict"
         ]
     },
     {
@@ -93,7 +96,8 @@
             "controlDict",
             "fvSchemes",
             "fvSolution",
-            "funkySetFieldsDict"
+            "funkySetFieldsDict",
+            "decomposeParDict"
         ]
     }
 ]

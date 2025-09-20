@@ -34,6 +34,7 @@ from .openfoam_models.Theta import Theta
 from .openfoam_models.delta import delta
 from .openfoam_models.alphaPlastic import alphaPlastic
 from .openfoam_models.funkySetFieldsDict import funkySetFieldsDict
+from .openfoam_models.decomposeParDict import decomposeParDict
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -70,7 +71,8 @@ FILE_CLASS_MAP = {
     "Theta": Theta,
     "delta": delta,
     "alphaPlastic": alphaPlastic,
-    "funkySetFieldsDict": funkySetFieldsDict
+    "funkySetFieldsDict": funkySetFieldsDict,
+    "decomposeParDict": decomposeParDict
 }
 
 class FileHandler:
