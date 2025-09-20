@@ -6,8 +6,14 @@ class p_rbgh(FoamFile):
     """
     Representa el archivo 'p_rbgh' de OpenFOAM.
     """
-    def __init__(self):
-        super().__init__(name="p_rbgh", folder="0", class_type="volScalarField")
+    def __init__(self, second_part=None):
+        if second_part != None:
+            name_aux = "p_rbgh" + "." + second_part
+            object_name = "p_rbgh" + "_" + second_part
+        else:
+            name_aux = "p_rbgh"
+            object_name = None
+        super().__init__(name=name_aux, folder="0", class_type="volScalarField",object_name=object_name)
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
