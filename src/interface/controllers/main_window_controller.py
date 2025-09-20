@@ -35,16 +35,17 @@ class DockerWorker(QObject):
     finished = Signal(bool, str)  # Signal to indicate completion (success, script_name)
     log_received = Signal(str)
 
-    def __init__(self, docker_handler: DockerHandler, script_name: str):
+    def __init__(self, docker_handler: DockerHandler, script_name: str, num_processors: int = 1):
         super().__init__()
         self.docker_handler = docker_handler
         self.script_name = script_name
+        self.num_processors = num_processors
 
     @Slot()
     def run(self):
         """Executes the Docker script and emits the finished signal."""
         try:
-            for line in self.docker_handler.execute_script_in_docker(self.script_name):
+            for line in self.docker_handler.execute_script_in_docker(self.script_name, self.num_processors):
                 self.log_received.emit(line)
             self.finished.emit(True, self.script_name)
         except Exception as e:
@@ -335,7 +336,6 @@ class MainWindowController(QMainWindow):
             QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución. Por favor, inicie Docker Desktop.")
             return
        
-    
         # Save parameters from the main editor to memory
         if self.parameter_editor_manager and not self.parameter_editor_manager.save_parameters():
             return  # Abort if main parameters are invalid
@@ -344,15 +344,13 @@ class MainWindowController(QMainWindow):
         self.file_handler.write_files()
         self.file_handler.save_all_parameters_to_json() # Create a snapshot
 
-            # data = wizard.get_data()
-            # num_processors = data.get('num_processors', 1)
+        QMessageBox.information(self, "Información", f"Configuración paralela guardada. Ejecutando en paralelo.")
 
-            # if num_processors > 1:
-            #     QMessageBox.information(self, "Información", f"Configuración paralela guardada. Ejecutando con {num_processors} procesadores.")
-            #     self._run_docker_script_in_thread("run_openfoam_parallel.sh", num_processors)
-            # else:
-            #     QMessageBox.warning(self, "Ejecución Simple", "El número de procesadores es 1. Ejecutar simulación simple en su lugar.")
-
+        num_processors = self.file_handler.get_number_of_processors()
+        
+        # VER LOGICA DE OPENFOAM O SEDFOAM
+        self._run_docker_script_in_thread("run_openfoam_parallel.sh", num_processors)
+      
 
     def _initialize_file_handler(self, case_name: str, template: str = None,file_names:list = None):
         """Inicializa el manejador de archivos para el caso."""
@@ -444,7 +442,7 @@ class MainWindowController(QMainWindow):
         else:
             self._run_docker_script_in_thread("run_sedfoam.sh")
 
-    def _run_docker_script_in_thread(self, script_name: str):
+    def _run_docker_script_in_thread(self, script_name: str, num_processors: int = 1):
         """
         Runs a Docker script in a separate thread to avoid freezing the GUI.
         """
@@ -453,7 +451,8 @@ class MainWindowController(QMainWindow):
         self.is_running_task = True
         
         self.thread = QThread()
-        self.worker = DockerWorker(self.docker_handler, script_name)
+        # self.worker = DockerWorker(self.docker_handler, script_name)
+        self.worker = DockerWorker(self.docker_handler, script_name, num_processors)
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)

@@ -398,3 +398,19 @@ class FileHandler:
                     self.files[file_name].update_parameters(params)
                 except (KeyError, AttributeError, TypeError, ValueError) as e:
                     raise ParameterError(f"Invalid parameters for '{file_name}' in JSON file: {e}")
+    
+    def get_number_of_processors(self) -> int:
+        json_path = self.case_path / self.JSON_PARAMS_FILE
+        if not json_path.exists():
+            raise FileHandlerError(f"Parameters JSON file not found at {json_path}")
+        try:
+            with open(json_path, 'r') as f:
+                saved_data = json.load(f)
+        except json.JSONDecodeError:
+            raise FileHandlerError(f"Failed to decode JSON from {json_path}")
+
+        try:
+            numberOfSubdomains_value = saved_data['parameters']['decomposeParDict']['numberOfSubdomains']
+            return numberOfSubdomains_value
+        except KeyError as e:
+            print(f"Error: La clave {e} no se encontró en el JSON.")
