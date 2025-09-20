@@ -277,7 +277,7 @@ class FileHandler:
                     new_params_to_update[param_name] = new_boundary_field
 
                 # Initialize 'choice_with_options' parameters if they are not already set
-                elif param_type == 'choice_with_options' and not current_value:
+                elif param_type == 'choice_with_options' and not current_value and not param_props.get('optional'):
                     
                     new_params_to_update[param_name] = self.initialize_parameters_from_choice_with_options(param_props)
 
