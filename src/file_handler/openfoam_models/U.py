@@ -23,6 +23,7 @@ class U(FoamFile):
         # Inicializa los parámetros con valores por defecto
         self.internalField = {'x': 0, 'y': 0, 'z': 0}
         self.boundaryField = []
+        self.testDimensions = [0, 1, -1, 0, 0, 0, 0]  # Default for velocity
 
     def _get_string(self) -> str:
         """
@@ -197,6 +198,14 @@ class U(FoamFile):
                         ]
                     }
                 }
+            },
+            'testDimensions': {
+                'label': 'Dimensiones de Prueba',
+                'tooltip': 'Parámetro de prueba para el widget de dimensiones.',
+                'type': 'dimensions',
+                'current': self.testDimensions,
+                'default': [0, 1, -1, 0, 0, 0, 0],
+                'group': 'Grupo de Prueba',
             }
         }
     

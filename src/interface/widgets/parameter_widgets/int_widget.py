@@ -14,12 +14,8 @@ class IntWidget(BaseParameterWidget):
         if current_value is None:
             current_value = self.param_props.get('default',0)
         self.spinbox = NoScrollSpinBox()
-        self.spinbox.setMaximum(2147483647)
-        self.spinbox.setMinimum(-2147483648)
         self.spinbox.setValue(current_value)
-        self.spinbox.setButtonSymbols(NoScrollSpinBox.NoButtons)
         
-
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.spinbox)

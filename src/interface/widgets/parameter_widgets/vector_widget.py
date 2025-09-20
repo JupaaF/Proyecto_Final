@@ -20,7 +20,6 @@ class VectorWidget(BaseParameterWidget):
         if safe_current_value.get('z') is None:
             safe_current_value['z'] = self.param_props.get('default').get('z',0)
 
-
         self.x_spinbox = NoScrollDoubleSpinBox()
         self.y_spinbox = NoScrollDoubleSpinBox()
         self.z_spinbox = NoScrollDoubleSpinBox()
@@ -28,10 +27,6 @@ class VectorWidget(BaseParameterWidget):
         self.x_spinbox.setValue(safe_current_value.get('x',0))
         self.y_spinbox.setValue(safe_current_value.get('y',0))
         self.z_spinbox.setValue(safe_current_value.get('z',0))
-
-        self.x_spinbox.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
-        self.y_spinbox.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
-        self.z_spinbox.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)

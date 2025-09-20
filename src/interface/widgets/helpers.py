@@ -114,9 +114,10 @@ class NoScrollDoubleSpinBox(QDoubleSpinBox):
         super().__init__(parent)
         self.setDecimals(12)
         self.setRange(-1.7e308, 1.7e308)
+        self.setButtonSymbols(NoScrollDoubleSpinBox.NoButtons)
         self.lineEdit().textEdited.connect(self.on_text_edited)
         
-    def format_significant_decimals(self,value, max_decimals=10):
+    def format_significant_decimals(self,value, max_decimals=15):
         """
         Formatea un número float mostrando solo los decimales significativos
         hasta un máximo especificado.
@@ -159,6 +160,13 @@ class NoScrollDoubleSpinBox(QDoubleSpinBox):
         event.ignore()
 
 class NoScrollSpinBox(QSpinBox):
+
+    def __init__(self,parent=None):
+        super().__init__(parent)
+        self.setMaximum(2147483647)
+        self.setMinimum(-2147483648)
+        self.setButtonSymbols(NoScrollSpinBox.NoButtons)
+        
     def wheelEvent(self, event):
         event.ignore()
 

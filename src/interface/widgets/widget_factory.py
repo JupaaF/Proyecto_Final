@@ -2,6 +2,7 @@ from .parameter_widgets.string_widget import StringWidget
 from .parameter_widgets.int_widget import IntWidget
 from .parameter_widgets.float_widget import FloatWidget
 from .parameter_widgets.vector_widget import VectorWidget
+from .parameter_widgets.dimensions_widget import DimensionsWidget
 from .parameter_widgets.choice_widget import ChoiceWidget
 from .parameter_widgets.choice_with_options_widget import ChoiceWithOptionsWidget
 from .parameter_widgets.patches_widget import PatchesWidget
@@ -28,6 +29,7 @@ class WidgetFactory:
             'int': IntWidget,
             'float': FloatWidget,
             'vector': VectorWidget,
+            'dimensions': DimensionsWidget,
             'choice': ChoiceWidget,
             'choice_with_options': ChoiceWithOptionsWidget,
             'patches': PatchesWidget,
