@@ -155,8 +155,9 @@ Un gradiente normal a la superficie se evalúa en una cara de celda.
                                 'label': 'correctWalls',
                                 'tooltip': 'Opcionalmente, corrige la distancia desde las celdas cercanas a la pared hasta el límite.',
                                 'type': 'string',
-                                'default': 'false'
-                            }]
+                                'default': 'false',
+                            }    
+                        ]
                     },
                     {
                         'name': 'directionalMeshWave',

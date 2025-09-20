@@ -79,26 +79,38 @@ class FileHandler:
 
     JSON_PARAMS_FILE = "parameters.json"
     
-    def __init__(self, case_path: Path, template: str = None):
+    def __init__(self, case_path: Path, template: str = None, file_names: list = None):
         """
         Initializes the FileHandler for a given case.
 
         Args:
             case_path: The absolute path to the simulation case directory.
             template: The name of the template to use.
+            file_names: A list of file names to initialize.
 
         Raises:
+            ValueError: If both or neither template and file_names are provided.
             TemplateError: If the template is invalid or essential files are missing.
             FileHandlerError: If there's an issue writing initial files.
         """
         self.case_path = case_path
         self.template = template
+        self.file_names = file_names
         self.files: Dict[str, FoamFile] = {}
+
+        if template and file_names:
+            raise ValueError("Provide either a template or a list of file names, not both.")
         
+        if not template and not file_names:
+            raise ValueError("Provide either a template or a list of file names.")
+
         try:
-            self._initialize_file_objects()
-        except TemplateError as e:
-            logger.error(f"Failed to initialize file objects from template: {e}")
+            if template:
+                self._initialize_from_template()
+            elif file_names:
+                self._initialize_from_names()
+        except (TemplateError, FileHandlerError) as e:
+            logger.error(f"Failed to initialize file objects: {e}")
             raise
 
         essential_files = ['controlDict', 'fvSolution', 'fvSchemes']
@@ -144,7 +156,7 @@ class FileHandler:
 
         raise TemplateError(f"Template with id '{self.template}' not found in templates.json")
 
-    def _initialize_file_objects(self) -> None:
+    def _initialize_from_template(self) -> None:
         """
         Initializes the FoamFile objects based on the selected template.
         It reads the template configuration and instantiates only the required files.
@@ -153,12 +165,20 @@ class FileHandler:
             TemplateError: If a file in the template is not found in FILE_CLASS_MAP.
         """
         template_config = self._get_template_config()
-        required_files = template_config.get("files", [])
-        
+        self.file_names = template_config.get("files", [])
+        self._initialize_from_names()
+
+    def _initialize_from_names(self) -> None:
+        """
+        Initializes the FoamFile objects from a list of file names.
+        It instantiates the required files with their default values.
+
+        Raises:
+            TemplateError: If a file in the list is not found in FILE_CLASS_MAP.
+        """
         initialized_files = {}
-        for file_name in required_files:
+        for file_name in self.file_names:
             second_part = None
-            #Acá se procesa el file_name y se divide para ver si se tiene que especificar una terminación especial
             parts_of_file_name = file_name.split('.')
             file_name_aux = file_name
             if len(parts_of_file_name) > 1:
@@ -167,14 +187,13 @@ class FileHandler:
 
             if file_name in FILE_CLASS_MAP:
                 foam_class = FILE_CLASS_MAP[file_name]
-                if second_part != None:
-                    # creo la clase especialmente con argumento
+                if second_part is not None:
                     initialized_files[file_name_aux] = foam_class(second_part)
                 else:
                     initialized_files[file_name] = foam_class()
             else:
                 raise TemplateError(f"Class for file '{file_name}' not found in FILE_CLASS_MAP.")
-
+        
         self.files = initialized_files
 
     def create_case_files(self) -> None:
@@ -329,6 +348,7 @@ class FileHandler:
 
         saved_data = {
             "template": self.template,
+            "file_names": self.file_names,
             "parameters": all_params_values
         }
 
@@ -342,10 +362,7 @@ class FileHandler:
     def load_all_parameters_from_json(self) -> None:
         """
         Loads all parameters from the JSON file and updates the corresponding FoamFile objects.
-
-        Raises:
-            FileHandlerError: If the JSON file is not found or cannot be parsed.
-            ParameterError: If the parameters in the JSON are invalid.
+        If the template or file list in the JSON differs from the current one, it re-initializes the files.
         """
         json_path = self.case_path / self.JSON_PARAMS_FILE
         if not json_path.exists():
@@ -358,10 +375,19 @@ class FileHandler:
             raise FileHandlerError(f"Failed to decode JSON from {json_path}")
 
         loaded_template = saved_data.get("template")
+        loaded_file_names = saved_data.get("file_names")
+
+        # Check if the configuration has changed and re-initialize if needed
         if loaded_template and loaded_template != self.template:
-            logger.warning(f"Loaded template '{loaded_template}' differs from initial template '{self.template}'.")
+            logger.warning(f"Template changed from '{self.template}' to '{loaded_template}'. Re-initializing files.")
             self.template = loaded_template
-            # A more robust implementation might re-initialize files here.
+            self.file_names = None
+            self._initialize_from_template()
+        elif loaded_file_names and loaded_file_names != self.file_names:
+            logger.warning("File list changed. Re-initializing files.")
+            self.file_names = loaded_file_names
+            self.template = None
+            self._initialize_from_names()
 
         loaded_params = saved_data.get("parameters", {})
         for file_name, params in loaded_params.items():

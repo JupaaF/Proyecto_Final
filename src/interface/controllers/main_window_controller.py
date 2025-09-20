@@ -201,7 +201,10 @@ class MainWindowController(QMainWindow):
 
         self.setWindowTitle(f"{DEFAULT_WINDOW_TITLE} - {case_name}")
 
-        self._initialize_file_handler(case_name, data["template"])
+        template = data.get("template")
+        file_names = data.get("file_names")
+
+        self._initialize_file_handler(case_name, template=template, file_names=file_names)
         self._setup_managers()
         self._setup_case_environment(Path(data["mesh_file"]))
 
@@ -231,12 +234,16 @@ class MainWindowController(QMainWindow):
                 with open(json_path, 'r') as f:
                     saved_data = json.load(f)
                 loaded_template = saved_data.get("template")
-                if not loaded_template:
-                    QMessageBox.warning(self, "Error al Cargar", "El archivo parameters.json no especifica un template.")
+                loaded_file_names = saved_data.get("file_names")
+
+                if loaded_template:
+                    self._initialize_file_handler(case_path.name, template=loaded_template)
+                elif loaded_file_names:
+                    self._initialize_file_handler(case_path.name, file_names=loaded_file_names)
+                else:
+                    QMessageBox.warning(self, "Error al Cargar", "El archivo parameters.json no especifica un template o una lista de archivos.")
                     return
 
-                # Initialize FileHandler with the loaded template
-                self._initialize_file_handler(case_path.name, loaded_template)
                 self._setup_managers() # Re-setup managers with the new file_handler
                 
                 #Search for VTK directory
@@ -362,9 +369,9 @@ class MainWindowController(QMainWindow):
             #     QMessageBox.warning(self, "Ejecución Simple", "El número de procesadores es 1. Ejecutar simulación simple en su lugar.")
 
 
-    def _initialize_file_handler(self, case_name: str, template: str):
+    def _initialize_file_handler(self, case_name: str, template: str = None,file_names:list = None):
         """Inicializa el manejador de archivos para el caso."""
-        self.file_handler = FileHandler(RUTA_LOCAL / case_name, template)
+        self.file_handler = FileHandler(RUTA_LOCAL / case_name, template=template,file_names=file_names)
 
     def _setup_managers(self):
         """Configura los manejadores de la interfaz (navegador de archivos y editor)."""
