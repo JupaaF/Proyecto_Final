@@ -1,0 +1,24 @@
+numberOfSubdomains {{ numberOfSubdomains }};
+
+method          {{ method }};
+
+// Coefficients for the selected decomposition method
+{{ method }}Coeffs
+{
+{%- if method == 'simple' %}
+    n               ({{ params.n.x }} {{ params.n.y }} {{ params.n.z }});
+    delta           {{ params.delta }};
+{%- elif method == 'hierarchical' %}
+    n               ({{ params.n.x }} {{ params.n.y }} {{ params.n.z }});
+    order           {{ params.order }};
+    delta           {{ params.delta }};
+{%- elif method == 'scotch' %}
+    // Scotch method does not require specific coefficients in this block.
+{%- elif method == 'metis' %}
+    method          {{ params.method }};
+{%- endif %}
+}
+
+
+
+

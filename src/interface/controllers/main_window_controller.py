@@ -19,6 +19,7 @@ from file_handler.file_handler import FileHandler
 
 from .widget_geometria import GeometryView
 from .simulation_wizard_controller import SimulationWizardController
+from .parallel_wizard_controller import ParallelWizardController
 from .file_browser_manager import FileBrowserManager
 from .parameter_editor_manager import ParameterEditorManager
 
@@ -99,6 +100,8 @@ class MainWindowController(QMainWindow):
         self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
         self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
         self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
+        # self.ui.actionEjecutar_Simulacion_en_Paralelo.triggered.connect(self.execute_simulation)
+        self.ui.actionConfigurar_Simulacion_en_Paralelo.triggered.connect(self.open_configure_parallel_simulation)
         self.ui.actionLimpiar_Resultados.triggered.connect(self.clean_simulation_results)
         self.ui.actionVisualizarEnParaview.triggered.connect(self.launch_paraview_action)
         self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
@@ -311,6 +314,52 @@ class MainWindowController(QMainWindow):
 
                 except Exception as e:
                     QMessageBox.critical(self, "Error de Copia", f"No se pudo copiar el archivo: {e}")
+    
+    def open_configure_parallel_simulation(self):
+        """Abre el asistente para configurar una simulación en paralelo."""
+        if not self.file_handler:
+            QMessageBox.warning(self, "Acción Requerida", "Por favor, cargue o cree una simulación primero.")
+            return
+
+        if not self._prompt_save_changes():
+            return  # Abort if user cancels
+
+        docker_handler = DockerHandler(self.file_handler.get_case_path())
+        if not docker_handler.is_docker_running():
+            QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución. Por favor, inicie Docker Desktop.")
+            return
+
+        # Ensure decomposeParDict exists so the wizard can edit it.
+        # Create with default values if it doesn't exist.
+        # decompose_par_dict_path = self.file_handler.get_case_path() / "system" / "decomposeParDict"
+        # if not decompose_par_dict_path.exists():
+        #     default_data = {'num_processors': 2, 'method': 'simple', 'n_x': 2, 'n_y': 1, 'n_z': 1}
+        #     self.file_handler.create_decompose_par_dict(default_data)
+
+        # wizard = ParallelWizardController(self.file_handler, self)
+        wizard = ParallelWizardController(self)
+        if wizard.exec() == QDialog.Accepted:
+            # Save parameters from the main editor to memory
+            if self.parameter_editor_manager and not self.parameter_editor_manager.save_parameters():
+                return  # Abort if main parameters are invalid
+
+            # # Save parameters from the wizard's editor to memory
+            # if not wizard.save_parameters():
+            #     QMessageBox.critical(self, "Error en Parámetros", "No se pudieron guardar los parámetros de la configuración paralela. Verifique los valores.")
+            #     return
+
+            # # Now that all parameters are updated in memory, write all files to disk
+            # self.file_handler.write_files()
+            # self.file_handler.save_all_parameters_to_json() # Create a snapshot
+
+            # data = wizard.get_data()
+            # num_processors = data.get('num_processors', 1)
+
+            # if num_processors > 1:
+            #     QMessageBox.information(self, "Información", f"Configuración paralela guardada. Ejecutando con {num_processors} procesadores.")
+            #     self._run_docker_script_in_thread("run_openfoam_parallel.sh", num_processors)
+            # else:
+            #     QMessageBox.warning(self, "Ejecución Simple", "El número de procesadores es 1. Ejecutar simulación simple en su lugar.")
 
 
     def _initialize_file_handler(self, case_name: str, template: str):
