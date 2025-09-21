@@ -12,13 +12,7 @@ class decomposeParDict(FoamFile):
 
         # Default values
         self.numberOfSubdomains = 2
-        self.method = [
-            "simple",
-            {
-                "n": {"x": 2, "y": 1, "z": 1},
-                "delta": 0.001
-            }
-        ]
+        self.method = []
 
     def _get_string(self):
         template = self.jinja_env.get_template("decomposeParDict_template.jinja2")
@@ -99,7 +93,8 @@ class decomposeParDict(FoamFile):
                                 'label': 'Delta',
                                 'tooltip': 'Tolerancia geométrica.',
                                 'type': 'float',
-                                'default': 0.001
+                                'default': 0.001,
+                                'optional': True
                             }
                         ]
                     },

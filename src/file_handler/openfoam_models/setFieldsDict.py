@@ -15,6 +15,7 @@ class setFieldsDict(FoamFile):
         # Valores por defecto para la caja
         self.box_min = {'x': 0, 'y': 0, 'z': -1}
         self.box_max = {'x': 0.1461, 'y': 0.292, 'z': 1}
+        self.filePhase = 'alpha.water'
 
     def _get_string(self) -> str:
         """
@@ -22,6 +23,7 @@ class setFieldsDict(FoamFile):
         """
         template = self.jinja_env.get_template("setFieldsDict_template.jinja2")
         context = {
+            'filePhase': self.filePhase,
             'box_min': self.box_min,
             'box_max': self.box_max
         }
@@ -84,6 +86,13 @@ class setFieldsDict(FoamFile):
                 'tooltip': 'Coordenadas máximas de la caja para setFields.',
                 'type': 'vector',
                 'current': self.box_max,
+                'group': 'Región de Inicialización',
+            },
+            'filePhase':{
+                'label': 'Archivo y phase a agregar',
+                'tooltip': 'Algo',#TODO
+                'type': 'string',
+                'current': self.filePhase,
                 'group': 'Región de Inicialización',
             }
         }

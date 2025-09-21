@@ -19,7 +19,7 @@ from file_handler.file_handler import FileHandler
 
 from .widget_geometria import GeometryView
 from .simulation_wizard_controller import SimulationWizardController
-from .parallel_wizard_controller import ParallelWizardController
+# from .parallel_wizard_controller import ParallelWizardController
 from .file_browser_manager import FileBrowserManager
 from .parameter_editor_manager import ParameterEditorManager
 

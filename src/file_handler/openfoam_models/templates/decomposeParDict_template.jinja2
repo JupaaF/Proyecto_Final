@@ -7,7 +7,9 @@ method          {{ method }};
 {
 {%- if method == 'simple' %}
     n               ({{ params.n.x }} {{ params.n.y }} {{ params.n.z }});
+    {%if params.delta is not none%}
     delta           {{ params.delta }};
+    {%endif%}
 {%- elif method == 'hierarchical' %}
     n               ({{ params.n.x }} {{ params.n.y }} {{ params.n.z }});
     order           {{ params.order }};

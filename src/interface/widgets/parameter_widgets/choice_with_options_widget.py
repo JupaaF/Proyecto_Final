@@ -73,12 +73,10 @@ class ChoiceWithOptionsWidget(BaseParameterWidget):
         for param_props in parameters_schema_list:
             
             param_name = param_props['name']
-            print(param_name)
             new_props = param_props.copy()
             if param_name in current_sub_values:
                 new_props['current'] = current_sub_values[param_name]
-                print(new_props['current'])
-            else:
+            elif param_props.get('optional') is None:
                 new_props['current'] = param_props.get('default')
             parameters_schema_dict[param_name] = new_props
 
