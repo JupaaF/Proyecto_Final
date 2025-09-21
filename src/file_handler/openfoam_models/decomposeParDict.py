@@ -45,6 +45,9 @@ class decomposeParDict(FoamFile):
             if not hasattr(self, key):
                 continue
             
+            if value is None:
+                setattr(self, key, None)
+                continue
             props = param_props[key]
             type_data = props['type']
 

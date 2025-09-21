@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLineEdit, QHBoxLayout
+from PySide6.QtWidgets import QHBoxLayout,QTextEdit
 from .base_widget import BaseParameterWidget
 
 class StringWidget(BaseParameterWidget):
@@ -10,7 +10,9 @@ class StringWidget(BaseParameterWidget):
         Configura un QLineEdit para la edición del texto.
         """
         current_value = self.param_props.get('current', '')
-        self.line_edit = QLineEdit(str(current_value))
+        if current_value is None:
+            current_value = self.param_props.get('default','')
+        self.line_edit = QTextEdit(str(current_value))
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -21,4 +23,4 @@ class StringWidget(BaseParameterWidget):
         """
         Devuelve el texto actual del QLineEdit.
         """
-        return self.line_edit.text()
+        return self.line_edit.toPlainText()

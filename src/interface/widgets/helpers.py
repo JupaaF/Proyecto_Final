@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QComboBox, QDialog, QVBoxLayout, QCheckBox,
-                               QDialogButtonBox, QDoubleSpinBox,QSpinBox)
+                               QDialogButtonBox, QDoubleSpinBox,QSpinBox,QPlainTextEdit)
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 
 

@@ -183,7 +183,7 @@ class alpha(FoamFile):
                 'label': 'Contenido de experto',
                 'tooltip': 'Cosas que van directamente al archivo',
                 'type': 'string',
-                'default': "",
+                'default': '',
                 'current': self.customContent,
                 'optional': True
             }

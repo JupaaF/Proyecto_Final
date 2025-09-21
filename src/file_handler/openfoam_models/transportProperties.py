@@ -102,15 +102,16 @@ class transportProperties(FoamFile):
                                 'name': 'water_transportModel',
                                 'label': 'water transportModel',
                                 'tooltip': 'Modelo de transporte para el agua.' ,
-                                'type': 'string',
+                                'type': 'choice',
+                                'options': ['Newtonian'],
                                 'default': 'Newtonian'
                             },
                             {
                                 'name': 'water_nu',
                                 'label': 'water nu',
                                 'tooltip': 'water nu',
-                                'type': 'string',
-                                'default': '1e-06'
+                                'type': 'float',
+                                'default': 1e-06
                             },
                             {
                                 'name': 'water_rho',
@@ -123,15 +124,16 @@ class transportProperties(FoamFile):
                                 'name': 'air_transportModel',
                                 'label': 'air transportModel',
                                 'tooltip': 'Modelo de transporte para el aire.',
-                                'type': 'string',
+                                'type': 'choice',
+                                'options':['Newtonian'],
                                 'default': 'Newtonian'
                             },
                             {
                                 'name': 'air_nu',
                                 'label': 'air nu',
                                 'tooltip': 'air nu',
-                                'type': 'string',
-                                'default': '1.48e-05'
+                                'type': 'float',
+                                'default': 1.48e-05
                             },
                             {
                                 'name': 'air_rho',
@@ -151,15 +153,15 @@ class transportProperties(FoamFile):
                                 'name': 'da',
                                 'label': 'Diámetro Fase A',
                                 'tooltip': 'Diámetro de las partículas.' ,
-                                'type': 'string',
-                                'default': '1.e-7'
+                                'type': 'float',
+                                'default': 1e-7
                             },                             #TODO: ver el tipo y si
                             {
                                 'name': 'db',
                                 'label': 'Diámetro Fase B',
                                 'tooltip': 'Diámetro de las partículas.' ,
-                                'type': 'string',
-                                'default': '1.e-7'
+                                'type': 'float',
+                                'default': 1e-7
                             }
                             ]
                     },
@@ -171,15 +173,15 @@ class transportProperties(FoamFile):
                                 'name': 'da',
                                 'label': 'Diámetro Fase A',
                                 'tooltip': 'Diámetro de las partículas.' ,
-                                'type': 'string',
-                                'default': '0.26e-3'
+                                'type': 'float',
+                                'default': 0.26e-3
                             },                             #TODO: ver el tipo y si
                             {
                                 'name': 'db',
                                 'label': 'Diámetro Fase B',
                                 'tooltip': 'Diámetro de las partículas.' ,
-                                'type': 'string',
-                                'default': '10e-6'
+                                'type': 'float',
+                                'default': 10e-6
                             }
                         ]
                     }
