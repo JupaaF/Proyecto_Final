@@ -472,10 +472,11 @@ class MainWindowController(QMainWindow):
                 self.file_handler.write_files()
                 self.file_handler.save_all_parameters_to_json()
 
+        solver = self.file_handler.get_solver()
         #Acá está la logica de si usar OpenFOAM o SedFOAM segun el template!!!!!!!!!!!!!:
-        if(self.file_handler.get_template() == 'damBreak' or self.file_handler.get_template() == 'waterChannel'):
+        if solver == 'interFoam':
             self._run_docker_script_in_thread("run_openfoam.sh")
-        else:
+        elif solver == 'sedFoam':
             self._run_docker_script_in_thread("run_sedfoam.sh")
 
     def _run_docker_script_in_thread(self, script_name: str, num_processors: int = 1):

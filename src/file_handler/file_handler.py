@@ -414,3 +414,19 @@ class FileHandler:
             return numberOfSubdomains_value
         except KeyError as e:
             print(f"Error: La clave {e} no se encontró en el JSON.")
+
+    def get_solver(self) -> str:
+        json_path = self.case_path / self.JSON_PARAMS_FILE
+        if not json_path.exists():
+            raise FileHandlerError(f"Parameters JSON file not found at {json_path}")
+        try:
+            with open(json_path, 'r') as f:
+                saved_data = json.load(f)
+        except json.JSONDecodeError:
+            raise FileHandlerError(f"Failed to decode JSON from {json_path}")
+
+        try:
+            solver_value = saved_data['parameters']['controlDict']['application']
+            return solver_value
+        except KeyError as e:
+            print(f"Error: La clave {e} no se encontró en el JSON.")
