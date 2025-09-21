@@ -7,6 +7,14 @@ NUM_PROCS=${1:-1}
 # Change to the case directory
 cd /case
 
+# Check if the setFieldsDict file exists
+if [ -f "system/setFieldsDict" ]; then
+    echo "setFieldsDict found. Running setFields..."
+    setFields
+else
+    echo "setFieldsDict not found. Skipping setFields."
+fi
+
 # Check if we are actually running in parallel
 if [ "$NUM_PROCS" -gt 1 ]; then
     echo "--- Starting parallel execution with $NUM_PROCS processors. ---"
@@ -19,21 +27,24 @@ if [ "$NUM_PROCS" -gt 1 ]; then
         exit 1
     fi
 
-    # # Run the solver in parallel
-    # echo "Running interFoam in parallel..."
+    # Run the solver in parallel
+    echo "Running interFoam in parallel..."
+    # Se usa -fileHandler collated para optimizar la E/S, como se recomienda para
+    # flujos de trabajo modernos y para reducir el número de archivos de salida.
+    mpirun -np "$NUM_PROCS" interFoam -parallel -fileHandler collated
     # mpirun -np "$NUM_PROCS" interFoam -parallel
-    # if [ $? -ne 0 ]; then
-    #     echo "Error: mpirun failed."
-    #     exit 1
-    # fi
+    if [ $? -ne 0 ]; then
+        echo "Error: mpirun failed."
+        exit 1
+    fi
 
-    # # Reconstruct the case
-    # echo "Reconstructing domain..."
-    # reconstructPar
-    # if [ $? -ne 0 ]; then
-    #     echo "Error: reconstructPar failed."
-    #     exit 1
-    # fi
+    # Reconstruct the case
+    echo "Reconstructing domain..."
+    reconstructPar 
+    if [ $? -ne 0 ]; then
+        echo "Error: reconstructPar failed."
+        exit 1
+    fi
     
     echo "--- Parallel execution finished successfully. ---"
 else

@@ -22,9 +22,9 @@ class transportProperties(FoamFile):
         template = self.jinja_env.get_template("transportProperties_template.jinja2")
         
         # Convierte la lista de parámetros en un diccionario para simplificar el manejo en el jinja
-        if self.selected_solver:
-            params_dict = self.selected_solver[1].copy()
-            params_dict['solver_selected'] = self.selected_solver[0]
+        # if self.selected_solver:
+        params_dict = self.selected_solver[1].copy()
+        params_dict['solver_selected'] = self.selected_solver[0]
 
         context = {
             'params': params_dict
@@ -142,7 +142,7 @@ class transportProperties(FoamFile):
                         
                     },
                     {
-                    'name': '2DChannel',
+                        'name': '2DChannel',
                         'label': '2DChannel-SedFOAM',
                         'parameters':[
                             {
@@ -162,7 +162,7 @@ class transportProperties(FoamFile):
                             ]
                     },
                     {
-                    'name': '3DScourSqr',
+                        'name': '3DScourSqr',
                         'label': '3DScourSqr-SedFOAM',
                         'parameters':[
                             {
@@ -179,7 +179,7 @@ class transportProperties(FoamFile):
                                 'type': 'string',
                                 'default': '10e-6'
                             }
-                            ]
+                        ]
                     }
                 ]
             }
