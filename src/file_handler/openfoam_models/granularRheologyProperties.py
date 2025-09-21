@@ -14,6 +14,7 @@ class granularRheologyProperties(FoamFile):
         
         # Valores por defecto
         self.FrictionModel = "MuIv"
+        self.customContent = None
 
     def _get_string(self) -> str:
         """
@@ -22,7 +23,8 @@ class granularRheologyProperties(FoamFile):
         template = self.jinja_env.get_template("granularRheologyProperties_template.jinja2")
 
         context = {
-            'FrictionModel': self.FrictionModel
+            'FrictionModel': self.FrictionModel,
+            'customContent': self.customContent
         }
 
         content = template.render(context)
@@ -75,7 +77,15 @@ class granularRheologyProperties(FoamFile):
                 'options': ['MuI','MuIv','Coulomb','none'], 
                 'current': self.FrictionModel,
                 'required': True
-                }    
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
+            }
         }
        
 

@@ -13,6 +13,7 @@ class decomposeParDict(FoamFile):
         # Default values
         self.numberOfSubdomains = 2
         self.method = []
+        self.customContent = None
 
     def _get_string(self):
         template = self.jinja_env.get_template("decomposeParDict_template.jinja2")
@@ -28,7 +29,8 @@ class decomposeParDict(FoamFile):
         context = {
             'numberOfSubdomains': self.numberOfSubdomains,
             'method': method_name,
-            'params': method_params
+            'params': method_params,
+            'customContent': self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -146,5 +148,13 @@ class decomposeParDict(FoamFile):
                         ]
                     }
                 ]
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }

@@ -23,7 +23,8 @@ class U(FoamFile):
         # Inicializa los parámetros con valores por defecto
         self.internalField = {'x': 0, 'y': 0, 'z': 0}
         self.boundaryField = []
-        self.unitDimensions = [0, 1, -1, 0, 0, 0, 0]  # Default for velocity
+        self.unitDimensions = [0, 1, -1, 0, 0, 0, 0]
+        self.customContent = None  # Default for velocity
 
     def _get_string(self) -> str:
         """
@@ -33,6 +34,7 @@ class U(FoamFile):
         template = self.jinja_env.get_template("U_template.jinja2")
 
         context = {
+            'customContent':self.customContent,
             'uDim':self.unitDimensions,
             'internalField': self.internalField,
             'boundaryField': self.boundaryField
@@ -205,6 +207,14 @@ class U(FoamFile):
                 'tooltip': 'Unidades de los parametros',
                 'type': 'dimensions',
                 'current': self.unitDimensions,
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }
     

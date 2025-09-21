@@ -22,6 +22,7 @@ class p_rgh(FoamFile):
         self.internalField = 0
         self.boundaryField = []
         self.unitDimensions = [1, -1, -2, 0, 0, 0, 0]
+        self.customContent = None
 
     def _get_string(self) -> str:
         """
@@ -31,7 +32,8 @@ class p_rgh(FoamFile):
         context = {
             'uDim':self.unitDimensions,
             'internalField': self.internalField,
-            'boundaryField': self.boundaryField
+            'boundaryField': self.boundaryField,
+            'customContent': self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -138,5 +140,13 @@ class p_rgh(FoamFile):
                 'tooltip': 'Unidades de los parametros',
                 'type': 'dimensions',
                 'current': self.unitDimensions,
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }

@@ -33,6 +33,7 @@ class controlDict(FoamFile):
         # Valores para parámetros opcionales
         self.timeFormat = None
         self.timePrecision = None
+        self.customContent = None
         
     def _get_string(self):
         template = self.jinja_env.get_template("controlDict_template.jinja2")
@@ -55,7 +56,8 @@ class controlDict(FoamFile):
             'runTimeModifiable': self.runTimeModifiable,
             'timeFormat': self.timeFormat,
             'timePrecision': self.timePrecision,
-            'functions': self.functions
+            'functions': self.functions,
+            'customContent': self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -264,5 +266,13 @@ class controlDict(FoamFile):
                 'type': 'choice',
                 'options': ['damBreakOpenFoam','waterChannelOpenFoam','2DChannelSedFoam', '3DScourSqrSedFoam'],  
                 'current': self.functions,
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }

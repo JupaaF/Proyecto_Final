@@ -11,6 +11,8 @@ class ppProperties(FoamFile):
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
+
+        self.customContent = None
         
         # Valores por defecto
         
@@ -22,7 +24,7 @@ class ppProperties(FoamFile):
         template = self.jinja_env.get_template("ppProperties_template.jinja2")
 
         context = {
-            
+            'customContent': self.customContent
         }
 
         content = template.render(context)
@@ -68,7 +70,14 @@ class ppProperties(FoamFile):
         Devuelve un diccionario con los parámetros editables y sus valores actuales.
         """
         return { # Por ahora no hay param editables
-            
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
+            }
         }
        
 

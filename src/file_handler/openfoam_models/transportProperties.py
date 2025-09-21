@@ -14,6 +14,7 @@ class transportProperties(FoamFile):
         
         # Valores por defecto
         self.selected_solver = []
+        self.customContent = None
 
     def _get_string(self) -> str:
         """
@@ -27,7 +28,8 @@ class transportProperties(FoamFile):
         params_dict['solver_selected'] = self.selected_solver[0]
 
         context = {
-            'params': params_dict
+            'params': params_dict,
+            'customContent':self.customContent
         }
 
         content = template.render(context)
@@ -182,6 +184,14 @@ class transportProperties(FoamFile):
                         ]
                     }
                 ]
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }
 

@@ -19,6 +19,7 @@ class turbulenceProperties(FoamFile):
         
         # Valores por defecto
         self.simulation_type = []
+        self.customContent = None
 
     def _get_string(self) -> str:
         """
@@ -27,7 +28,8 @@ class turbulenceProperties(FoamFile):
         template = self.jinja_env.get_template("turbulenceProperties_template.jinja2")
 
         context = {
-            'simulation_type': self.simulation_type
+            'simulation_type': self.simulation_type,
+            'customContent' : self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -125,5 +127,13 @@ class turbulenceProperties(FoamFile):
                     },
 
                 ]
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }

@@ -39,9 +39,9 @@ boundaryField
         {% endfor %}
     }
     {% endfor %}
-    defaultFaces
-    {
-        type            empty;
-    }
 
 }
+
+{%if customContent is not none%}
+{{customContent}}
+{%endif%}

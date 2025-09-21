@@ -21,6 +21,7 @@ class k(FoamFile):
         self.internalField = 0.01
         self.boundaryField = []
         self.unitDimensions = [0, 2, -2, 0, 0, 0, 0]
+        self.customContent = None
 
     def _get_string(self) -> str:
         """
@@ -30,7 +31,8 @@ class k(FoamFile):
         context = {
             'uDim':self.unitDimensions,
             'internalField': self.internalField,
-            'boundaryField': self.boundaryField
+            'boundaryField': self.boundaryField,
+            'customContent': self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -181,6 +183,14 @@ class k(FoamFile):
                 'tooltip': 'Unidades de los parametros',
                 'type': 'dimensions',
                 'current': self.unitDimensions,
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }
 

@@ -16,6 +16,7 @@ class setFieldsDict(FoamFile):
         self.box_min = {'x': 0, 'y': 0, 'z': -1}
         self.box_max = {'x': 0.1461, 'y': 0.292, 'z': 1}
         self.filePhase = 'alpha.water'
+        self.customContent = None
 
     def _get_string(self) -> str:
         """
@@ -25,7 +26,8 @@ class setFieldsDict(FoamFile):
         context = {
             'filePhase': self.filePhase,
             'box_min': self.box_min,
-            'box_max': self.box_max
+            'box_max': self.box_max,
+            'customContent': self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -94,5 +96,13 @@ class setFieldsDict(FoamFile):
                 'type': 'string',
                 'current': self.filePhase,
                 'group': 'Región de Inicialización',
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }

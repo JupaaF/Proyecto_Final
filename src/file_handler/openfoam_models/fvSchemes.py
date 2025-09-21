@@ -20,6 +20,7 @@ class fvSchemes(FoamFile):
         self.interpolationSchemes = 'linear'
         self.snGradSchemes = 'corrected'
         self.wallDist = None
+        self.customContent = None
 
     def _get_string(self):
         template = self.jinja_env.get_template("fvSchemes_template.jinja2")
@@ -30,7 +31,8 @@ class fvSchemes(FoamFile):
             'laplacianSchemes': self.laplacianSchemes,
             'interpolationSchemes': self.interpolationSchemes,
             'snGradSchemes': self.snGradSchemes,
-            'wallDist': self.wallDist
+            'wallDist': self.wallDist,
+            'customContent': self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -175,5 +177,13 @@ Un gradiente normal a la superficie se evalúa en una cara de celda.
                 'current': self.wallDist,
                 'group': 'Esquemas de Gradiente de Superficie',
                 'optional' : True
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }

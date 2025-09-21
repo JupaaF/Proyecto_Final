@@ -12,6 +12,7 @@ class funkySetFieldsDict(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
+        self.customContent = None
         # Valores por defecto para la caja
         
 
@@ -21,7 +22,7 @@ class funkySetFieldsDict(FoamFile):
         """
         template = self.jinja_env.get_template("funkySetFieldsDict_template.jinja2")
         context = {
-            
+            'customContent': self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -84,4 +85,12 @@ class funkySetFieldsDict(FoamFile):
             #     'current': self.box_max,
             #     'group': 'Región de Inicialización',
             # }
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
+            }
         }

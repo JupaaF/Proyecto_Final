@@ -14,6 +14,7 @@ class g(FoamFile):
         
         # Valor por defecto para la gravedad
         self.value = {'x': 0, 'y': -9.81, 'z': 0}
+        self.customContent = None
 
     def _get_string(self) -> str:
         """
@@ -21,7 +22,8 @@ class g(FoamFile):
         """
         template = self.jinja_env.get_template("g_template.jinja2")
         context = {
-            'value': self.value
+            'value': self.value,
+            'customContent': self.customContent
         }
         content = template.render(context)
         return self.get_header() + content
@@ -76,6 +78,14 @@ class g(FoamFile):
                 'type': 'vector',
                 'current': self.value,
                 'group': 'Constantes Físicas',
+            },
+            'customContent': {
+                'label': 'Contenido de experto',
+                'tooltip': 'Cosas que van directamente al archivo',
+                'type': 'string',
+                'default': "",
+                'current': self.customContent,
+                'optional': True
             }
         }
 
