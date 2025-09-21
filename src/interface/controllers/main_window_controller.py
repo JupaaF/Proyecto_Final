@@ -143,7 +143,7 @@ class MainWindowController(QMainWindow):
                 except ValueError:
                     is_numeric = False
 
-                if is_numeric and item.name != "0":
+                if (is_numeric and item.name != "0") or "process" in item.name or item.name == "postProcessing":
                     try:
                         shutil.rmtree(item)
                         deleted_folders.append(item.name)
