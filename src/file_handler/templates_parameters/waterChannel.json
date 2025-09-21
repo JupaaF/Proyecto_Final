@@ -1,0 +1,397 @@
+{
+    "template": "waterChannel",
+    "file_names": [
+        "U",
+        "alpha.water",
+        "k",
+        "nut",
+        "omega",
+        "p_rgh",
+        "s",
+        "g",
+        "transportProperties",
+        "turbulenceProperties",
+        "controlDict",
+        "fvSchemes",
+        "fvSolution",
+        "setFieldsDict",
+        "decomposeParDict"
+    ],
+    "parameters": {
+        "U": {
+            "internalField": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "flowRateInletVelocity",
+                    "volumetricFlowRate": 50
+                },
+                {
+                    "patchName": "walls",
+                    "type": "noSlip"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "inletOutlet",
+                    "inletValue": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "pressureInletOutletVelocity",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "unitDimensions": [
+                0,
+                1,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "alpha.water": {
+            "internalField": 0.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "fixedValue",
+                    "value": 1.0
+                },
+                {
+                    "patchName": "walls",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "inletOutlet",
+                    "inletValue": 0.0,
+                    "value": 0.0
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "k": {
+            "internalField": 0.0001,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "fixedValue",
+                    "value": 0.0001,
+                    "intensity": 0.05
+                },
+                {
+                    "patchName": "walls",
+                    "type": "kqRWallFunction",
+                    "value": 0.0001
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "inletOutlet",
+                    "inletValue": 0.0001,
+                    "value": 0.0001
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "inletOutlet",
+                    "inletValue": 0.0001,
+                    "value": 0.0001
+                }
+            ],
+            "unitDimensions": [
+                0,
+                2,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "nut": {
+            "internalField": 0.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "walls",
+                    "type": "nutkWallFunction",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "calculated",
+                    "value": 0.0
+                }
+            ],
+            "unitDimensions": [
+                0,
+                2,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "omega": {
+            "internalField": 0.003,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "fixedValue",
+                    "value": 0.003
+                },
+                {
+                    "patchName": "walls",
+                    "type": "omegaWallFunction",
+                    "value": 0.003
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "inletOutlet",
+                    "inletValue": 0.003,
+                    "value": 0.003
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "inletOutlet",
+                    "inletValue": 0.003,
+                    "value": 0.003
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "p_rgh": {
+            "internalField": 0.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "fixedFluxPressure",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "walls",
+                    "type": "fixedFluxPressure",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "fixedFluxPressure",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "totalPressure",
+                    "p0": 0.0
+                }
+            ],
+            "unitDimensions": [
+                1,
+                -1,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "s": {
+            "internalField": 0.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "fixedValue",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "walls",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "inletOutlet",
+                    "inletValue": 0.0,
+                    "value": 0.0
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "g": {
+            "value": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -9.81
+            },
+            "customContent": null
+        },
+        "transportProperties": {
+            "selected_solver": [
+                "interFoam",
+                {
+                    "sigma": 0.07,
+                    "water_transportModel": "Newtonian",
+                    "water_nu": 1e-06,
+                    "water_rho": 1000,
+                    "air_transportModel": "Newtonian",
+                    "air_nu": 1.48e-05,
+                    "air_rho": 1
+                }
+            ],
+            "customContent": null
+        },
+        "turbulenceProperties": {
+            "simulation_type": [
+                "RAS",
+                {
+                    "model": [
+                        "kOmegaSST",
+                        {}
+                    ]
+                }
+            ],
+            "customContent": null
+        },
+        "controlDict": {
+            "application": "interFoam",
+            "startFrom": "startTime",
+            "startTime": 0.0,
+            "stopAt": "endTime",
+            "endTime": 200.0,
+            "deltaT": 0.1,
+            "writeControl": "adjustable",
+            "writeInterval": 10.0,
+            "purgeWrite": 0,
+            "writeFormat": "ascii",
+            "writePrecision": 6,
+            "writeCompression": "true",
+            "timeFormat": "general",
+            "timePrecision": 6,
+            "runTimeModifiable": "on",
+            "adjustTimeStep": "true",
+            "maxCo": 6.0,
+            "maxAlphaCo": 6.0,
+            "maxDeltaT": 1.0,
+            "functions": "waterChannelOpenFoam",
+            "customContent": null
+        },
+        "fvSchemes": {
+            "ddtSchemes": "Euler",
+            "gradSchemes": "Gauss linear",
+            "divSchemes": "waterChannel",
+            "laplacianSchemes": "Gauss linear",
+            "interpolationSchemes": "linear",
+            "snGradSchemes": "corrected",
+            "wallDist": [
+                "meshWave",
+                {
+                    "correctWalls": "false"
+                }
+            ],
+            "customContent": null
+        },
+        "fvSolution": {
+            "selected_solver": [
+                "waterChannelOpenFoam",
+                {}
+            ],
+            "customContent": null
+        },
+        "setFieldsDict": {
+            "box_min": {
+                "x": -10.0,
+                "y": -20.0,
+                "z": -10.0
+            },
+            "box_max": {
+                "x": 50.0,
+                "y": 20.0,
+                "z": 2.2
+            },
+            "filePhase": "alpha.water",
+            "customContent": null
+        },
+        "decomposeParDict": {
+            "numberOfSubdomains": 2,
+            "method": [
+                "simple",
+                {
+                    "n": {
+                        "x": 2.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "n_str": "(2.0 1.0 1.0)"
+                }
+            ],
+            "customContent": null
+        }
+    }
+}

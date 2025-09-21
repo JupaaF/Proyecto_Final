@@ -1,0 +1,494 @@
+{
+    "template": "2DChannel",
+    "file_names": [
+        "U.a",
+        "U.b",
+        "alpha.a",
+        "k.b",
+        "nut.b",
+        "omega.b",
+        "p_rbgh",
+        "pa",
+        "g",
+        "transportProperties",
+        "granularRheologyProperties",
+        "filterProperties",
+        "forceProperties",
+        "turbulenceProperties.a",
+        "turbulenceProperties.b",
+        "twophaseRASProperties",
+        "interfacialProperties",
+        "kineticTheoryProperties",
+        "ppProperties",
+        "controlDict",
+        "fvSchemes",
+        "fvSolution",
+        "decomposeParDict"
+    ],
+    "parameters": {
+        "U.a": {
+            "internalField": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "groovyBC"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "pressureInletOutletVelocity",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "top",
+                    "type": "slip"
+                },
+                {
+                    "patchName": "walls",
+                    "type": "fixedValue",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "front",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "back",
+                    "type": "empty"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                1,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "U.b": {
+            "internalField": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "groovyBC"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "pressureInletOutletVelocity",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "top",
+                    "type": "slip"
+                },
+                {
+                    "patchName": "walls",
+                    "type": "fixedValue",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "front",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "back",
+                    "type": "empty"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                1,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "alpha.a": {
+            "internalField": 0.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "top",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "walls",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "front",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "back",
+                    "type": "empty"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "k.b": {
+            "internalField": 1e-09,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "fixedValue",
+                    "value": 0.0001
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "top",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "walls",
+                    "type": "fixedValue",
+                    "value": 1e-06
+                },
+                {
+                    "patchName": "front",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "back",
+                    "type": "empty"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                2,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "nut.b": {
+            "internalField": 0.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "top",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "walls",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "front",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "back",
+                    "type": "empty"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                2,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "omega.b": {
+            "internalField": 1.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "fixedValue",
+                    "value": 1.0
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "top",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "walls",
+                    "type": "wilcoxOmegaWallFunction",
+                    "value": 594.884,
+                    "kn": 0.0002
+                },
+                {
+                    "patchName": "front",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "back",
+                    "type": "empty"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "p_rbgh": {
+            "internalField": 0.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "fixedValue",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "top",
+                    "type": "fixedFluxPressure",
+                    "value": 2262.02,
+                    "gradient": 0.0
+                },
+                {
+                    "patchName": "walls",
+                    "type": "fixedFluxPressure",
+                    "value": 0.0,
+                    "gradient": 0.0
+                },
+                {
+                    "patchName": "front",
+                    "type": "empty",
+                    "null": ""
+                },
+                {
+                    "patchName": "back",
+                    "type": "empty",
+                    "null": ""
+                }
+            ],
+            "unitDimensions": [
+                1,
+                -1,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "pa": {
+            "internalField": 0.0,
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "fixedValue",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "top",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "walls",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "front",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "back",
+                    "type": "empty"
+                }
+            ],
+            "unitDimensions": [
+                1,
+                -1,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "g": {
+            "value": {
+                "x": 0.0,
+                "y": -9.81,
+                "z": 0.0
+            },
+            "customContent": null
+        },
+        "transportProperties": {
+            "selected_solver": [
+                "2DChannel",
+                {
+                    "da": 1e-07,
+                    "db": 1e-07
+                }
+            ],
+            "customContent": null
+        },
+        "granularRheologyProperties": {
+            "FrictionModel": "MuI",
+            "customContent": null
+        },
+        "filterProperties": {
+            "customContent": null
+        },
+        "forceProperties": {
+            "customContent": null
+        },
+        "turbulenceProperties.a": {
+            "simulation_type": [
+                "laminar",
+                {}
+            ],
+            "customContent": null
+        },
+        "turbulenceProperties.b": {
+            "simulation_type": [
+                "RAS",
+                {
+                    "model": [
+                        "twophasekOmega",
+                        {}
+                    ]
+                }
+            ],
+            "customContent": null
+        },
+        "twophaseRASProperties": {
+            "customContent": null
+        },
+        "interfacialProperties": {
+            "customContent": null
+        },
+        "kineticTheoryProperties": {
+            "customContent": null
+        },
+        "ppProperties": {
+            "customContent": null
+        },
+        "controlDict": {
+            "application": "sedFoam",
+            "startFrom": "startTime",
+            "startTime": 0.0,
+            "stopAt": "endTime",
+            "endTime": 5.0,
+            "deltaT": 0.01,
+            "writeControl": "adjustable",
+            "writeInterval": 1.0,
+            "purgeWrite": 0,
+            "writeFormat": "binary",
+            "writePrecision": 6,
+            "writeCompression": "false",
+            "timeFormat": null,
+            "timePrecision": null,
+            "runTimeModifiable": "on",
+            "adjustTimeStep": "true",
+            "maxCo": 0.9,
+            "maxAlphaCo": 0.9,
+            "maxDeltaT": 0.001,
+            "functions": "2DChannelSedFoam",
+            "customContent": null
+        },
+        "fvSchemes": {
+            "ddtSchemes": "Euler",
+            "gradSchemes": "Gauss linear",
+            "divSchemes": "2DChannel",
+            "laplacianSchemes": "Gauss linear",
+            "interpolationSchemes": "linear",
+            "snGradSchemes": "corrected",
+            "wallDist": null,
+            "customContent": "\nfluxRequired\n{\n    default         no;\n    p_rbgh               ;\n}\n"
+        },
+        "fvSolution": {
+            "selected_solver": [
+                "2DChannelSedFoam",
+                {}
+            ],
+            "customContent": null
+        },
+        "decomposeParDict": {
+            "numberOfSubdomains": 4,
+            "method": [
+                "scotch",
+                {}
+            ],
+            "customContent": null
+        }
+    }
+}

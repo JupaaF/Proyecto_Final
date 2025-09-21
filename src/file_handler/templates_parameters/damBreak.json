@@ -22,6 +22,27 @@
             },
             "boundaryField": [
                 {
+                    "patchName": "leftWall",
+                    "type": "noSlip"
+                },
+                {
+                    "patchName": "rightWall",
+                    "type": "noSlip"
+                },
+                {
+                    "patchName": "lowerWall",
+                    "type": "noSlip"
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "pressureInletOutletVelocity",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
                     "patchName": "defaultFaces",
                     "type": "empty"
                 }
@@ -45,7 +66,7 @@
             "endTime": 1.0,
             "deltaT": 0.001,
             "writeControl": "adjustable",
-            "writeInterval": 0.05,
+            "writeInterval": 0.1,
             "purgeWrite": 0,
             "writeFormat": "ascii",
             "writePrecision": 6,
@@ -91,8 +112,26 @@
             "internalField": 0.0,
             "boundaryField": [
                 {
-                    "patchName": "defaultFaces",
+                    "patchName": "leftWall",
                     "type": "zeroGradient"
+                },
+                {
+                    "patchName": "rightWall",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lowerWall",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "defaultFaces",
+                    "type": "inletOutlet",
+                    "inletValue": 0.0,
+                    "value": 0.0
                 }
             ],
             "unitDimensions": [
@@ -108,15 +147,35 @@
         },
         "g": {
             "value": {
-                "x": 0.0,
+                "x": 0,
                 "y": -9.81,
-                "z": 0.0
+                "z": 0
             },
             "customContent": null
         },
         "p_rgh": {
             "internalField": 0.0,
             "boundaryField": [
+                {
+                    "patchName": "leftWall",
+                    "type": "fixedFluxPressure",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "rightWall",
+                    "type": "fixedFluxPressure",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "lowerWall",
+                    "type": "fixedFluxPressure",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "atmosphere",
+                    "type": "totalPressure",
+                    "p0": 0.0
+                },
                 {
                     "patchName": "defaultFaces",
                     "type": "empty"
