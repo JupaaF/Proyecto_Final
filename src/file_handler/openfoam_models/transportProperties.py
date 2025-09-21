@@ -92,7 +92,7 @@ class transportProperties(FoamFile):
                         'parameters':[
                             {
                                 'name': 'sigma',
-                                'label': 'Tensión Superficial (sigma)',
+                                'label': 'sigma',
                                 'tooltip': 'Coeficiente de tensión superficial entre fases.',
                                 'type': 'float',
                                 'default': 0.07,

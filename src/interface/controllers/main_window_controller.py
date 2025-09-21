@@ -384,8 +384,13 @@ class MainWindowController(QMainWindow):
 
         num_processors = self.file_handler.get_number_of_processors()
         
-        # VER LOGICA DE OPENFOAM O SEDFOAM
-        self._run_docker_script_in_thread("run_openfoam_parallel.sh", num_processors)
+        solver = self.file_handler.get_solver()
+        #Acá está la logica de si usar OpenFOAM o SedFOAM segun el template!!!!!!!!!!!!!:
+        if solver == 'interFoam':
+            self._run_docker_script_in_thread("run_openfoam_parallel.sh", num_processors)
+        elif solver == 'sedFoam':
+            self._run_docker_script_in_thread("run_sedfoam_parallel.sh", num_processors)
+      
       
 
     def _initialize_file_handler(self, case_name: str, template: str = None,file_names:list = None):

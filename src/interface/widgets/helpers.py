@@ -2,6 +2,67 @@ from PySide6.QtWidgets import (QComboBox, QDialog, QVBoxLayout, QCheckBox,
                                QDialogButtonBox, QDoubleSpinBox,QSpinBox,QPlainTextEdit)
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 
+from PySide6.QtGui import QIntValidator, QDoubleValidator, QValidator
+
+
+class FloatValidator(QValidator):
+    """
+    Un validador para números de punto flotante que acepta notación científica
+    y comas o puntos como separadores decimales.
+    """
+    def validate(self, input_str: str, pos: int):
+        # Si el campo está vacío, es un estado intermedio (válido para borrar).
+        if not input_str:
+            return (QValidator.State.Intermediate, input_str, pos)
+
+        # Reemplazar coma por punto para la validación interna.
+        test_str = input_str.replace(',', '.', 1)
+
+        # Permitir un único signo al principio.
+        if test_str in ['-', '+']:
+            return (QValidator.State.Intermediate, input_str, pos)
+        
+        # Validar el formato general del número.
+        try:
+            float(test_str)
+            return (QValidator.State.Acceptable, input_str, pos)
+        except ValueError:
+            # Si la conversión falla, puede ser un estado intermedio válido.
+            # Por ejemplo, para notación científica: "1e", "1e-", "1.2e+"
+            if 'e' in test_str.lower():
+                parts = test_str.lower().split('e')
+                if len(parts) == 2:
+                    mantissa, exponent = parts
+                    
+                    # La mantisa debe ser un número válido por sí sola (o vacía si se empieza con 'e').
+                    if mantissa in ['', '-', '+']:
+                        return (QValidator.State.Intermediate, input_str, pos)
+                    try:
+                        float(mantissa)
+                    except ValueError:
+                        # permitir un punto al final de la mantisa
+                        if mantissa.endswith('.'):
+                            try:
+                                float(mantissa[:-1])
+                                return (QValidator.State.Intermediate, input_str, pos)
+                            except ValueError:
+                                return (QValidator.State.Invalid, input_str, pos)
+                        return (QValidator.State.Invalid, input_str, pos)
+
+                    # El exponente puede estar vacío o ser solo un signo.
+                    if exponent in ['', '-', '+']:
+                        return (QValidator.State.Intermediate, input_str, pos)
+            
+            # permitir un punto al final del número
+            if test_str.endswith('.'):
+                try:
+                    float(test_str[:-1])
+                    return (QValidator.State.Intermediate, input_str, pos)
+                except ValueError:
+                    pass
+
+            # Si no coincide con ninguna forma válida o intermedia, es inválido.
+            return (QValidator.State.Invalid, input_str, pos)
 
 class OptionalParametersDialog(QDialog):
     """

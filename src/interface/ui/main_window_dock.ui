@@ -56,8 +56,6 @@
     <addaction name="actionLimpiar_Resultados"/>
     <addaction name="actionDetener_Simulacion"/>
     <addaction name="actionVisualizarEnParaview"/>
-    <addaction name="actionCrear_Extrude"/>
-    <addaction name="actionBorrar_Extrudes"/>
    </widget>
    <widget class="QMenu" name="menuAyuda">
     <property name="title">
@@ -72,8 +70,16 @@
     </property>
     <addaction name="actionRestaurar_Docks"/>
    </widget>
+   <widget class="QMenu" name="menuHerramientas">
+    <property name="title">
+     <string>Herramientas</string>
+    </property>
+    <addaction name="actionCrear_Extrude"/>
+    <addaction name="actionBorrar_Extrudes"/>
+   </widget>
    <addaction name="menuArchivo"/>
    <addaction name="menuSimulacion"/>
+   <addaction name="menuHerramientas"/>
    <addaction name="menuVer"/>
    <addaction name="menuAyuda"/>
   </widget>

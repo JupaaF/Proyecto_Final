@@ -165,10 +165,7 @@ class p_rbgh(FoamFile):
                             {
                                 'name': 'empty',
                                 'label': 'empty',
-                                'parameters' : [
-                                    {
-                                    }
-                                ]
+                                'parameters' : []
                             },
                         ]
                     }

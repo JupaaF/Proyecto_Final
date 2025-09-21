@@ -12,7 +12,7 @@ class decomposeParDict(FoamFile):
 
         # Default values
         self.numberOfSubdomains = 2
-        self.method = []
+        self.method = ['simple', {'n': {'x': 2, 'y': 1, 'z': 1}}]
         self.customContent = None
 
     def _get_string(self):
@@ -69,7 +69,7 @@ class decomposeParDict(FoamFile):
         return {
             'numberOfSubdomains': {
                 'label': 'Número de Subdominios',
-                'tooltip': 'Número total de subdominios para la descomposición.',
+                'tooltip': 'Número total de subdominios para la descomposición (Debería coincidir con la cantidad de núcleos de la PC).',
                 'type': 'int',
                 'current': self.numberOfSubdomains,
                 'min': 1,
@@ -89,7 +89,7 @@ class decomposeParDict(FoamFile):
                             {
                                 'name': 'n',
                                 'label': 'Divisiones (n)',
-                                'tooltip': 'Número de divisiones en cada dirección (x y z).',
+                                'tooltip': 'Número de divisiones en cada dirección (x y z). Su multiplicación debe coincidir con el Número de Subdominios.',
                                 'type': 'vector',
                                 'default': {'x': 2, 'y': 1, 'z': 1}
                             },
@@ -110,7 +110,7 @@ class decomposeParDict(FoamFile):
                             {
                                 'name': 'n',
                                 'label': 'Divisiones (n)',
-                                'tooltip': 'Número de divisiones en cada dirección.',
+                                'tooltip': 'Número de divisiones en cada dirección (x y z). Su multiplicación debe coincidir con el Número de Subdominios.',
                                 'type': 'vector',
                                 'default': {'x': 2, 'y': 1, 'z': 1}
                             },
