@@ -57,6 +57,7 @@
     <addaction name="actionDetener_Simulacion"/>
     <addaction name="actionVisualizarEnParaview"/>
     <addaction name="actionCrear_Extrude"/>
+    <addaction name="actionBorrar_Extrudes"/>
    </widget>
    <widget class="QMenu" name="menuAyuda">
     <property name="title">
@@ -240,6 +241,11 @@
   <action name="actionEjecutar_Simulacion_en_Paralelo">
    <property name="text">
     <string>Ejecutar Simulación en Paralelo</string>
+   </property>
+  </action>
+  <action name="actionBorrar_Extrudes">
+   <property name="text">
+    <string>Borrar Extrudes</string>
    </property>
   </action>
  </widget>

@@ -105,6 +105,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionLimpiar_Resultados.triggered.connect(self.clean_simulation_results)
         self.ui.actionVisualizarEnParaview.triggered.connect(self.launch_paraview_action)
         self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
+        self.ui.actionBorrar_Extrudes.triggered.connect(self.delete_extrudes)
         self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
         self.ui.actionGuardar_Parametros.setShortcut(QKeySequence.Save)
         self.ui.actionDetener_Simulacion.triggered.connect(self.stop_simulation)
@@ -322,6 +323,41 @@ class MainWindowController(QMainWindow):
                 except Exception as e:
                     QMessageBox.critical(self, "Error de Copia", f"No se pudo copiar el archivo: {e}")
     
+    def delete_extrudes(self):
+        """
+        Ejecuta blockMesh para regenerar la malla base, eliminando así
+        cualquier extrusión o modificación posterior.
+        """
+        if not self.file_handler:
+            QMessageBox.warning(self, "Acción Requerida", "Por favor, cargue o cree una simulación primero.")
+            return
+
+        # Verificar si el blockMeshDict existe en la carpeta system
+        blockmesh_path = self.file_handler.get_case_path() / 'system' / 'blockMeshDict'
+        if not blockmesh_path.is_file():
+            QMessageBox.warning(self, "Archivo no Encontrado", 
+                                "No se encontró 'blockMeshDict' en la carpeta 'system'.\n"
+                                "No se puede regenerar la malla.")
+            return
+        
+        # Confirmación del usuario
+        reply = QMessageBox.question(self, "Confirmar Acción",
+                                     "¿Está seguro de que desea regenerar la malla base con blockMesh?\n"
+                                     "Esto eliminará cualquier extrusión o modificación realizada.",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            # Eliminar la carpeta VTK si existe
+            vtk_path = self.file_handler.get_case_path() / 'VTK'
+            if vtk_path.is_dir():
+                try:
+                    shutil.rmtree(vtk_path)
+                    self._append_log(f"Directorio VTK eliminado: {vtk_path}")
+                except OSError as e:
+                    QMessageBox.critical(self, "Error de Borrado", f"No se pudo eliminar la carpeta VTK: {e}")
+                    return
+            self._run_docker_script_in_thread("run_blockMeshDict.sh")
+    
     def execute_parallel_simulation(self):
         """Ejecutar una simulación en paralelo."""
         if not self.file_handler:
@@ -481,7 +517,7 @@ class MainWindowController(QMainWindow):
             self.docker_handler.was_stopped_by_user = False # Reset flag
         elif success:
             QMessageBox.information(self, "Ejecución de Docker", f"El script '{script_name}' se ejecutó correctamente.")
-            if script_name in ["run_transform_UNV.sh", "run_transform_blockMeshDict.sh", "run_extrudeMesh.sh"]:
+            if script_name in ["run_transform_UNV.sh", "run_transform_blockMeshDict.sh", "run_extrudeMesh.sh", "run_blockMeshDict.sh"]:
                 patch_names = self._get_patch_names()
                 if patch_names:
                     self.file_handler.initialize_parameters_from_schema(patch_names)
