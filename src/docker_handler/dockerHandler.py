@@ -2,6 +2,8 @@ from pathlib import Path
 import subprocess
 import logging
 import uuid
+import tempfile
+import shutil
 from .exceptions import DockerNotInstalledError, ContainerExecutionError
 
 # Configure logging
@@ -112,61 +114,66 @@ class DockerHandler():
         self.process = None
         self.was_stopped_by_user = False
 
-        # Se genera un nombre único para el contenedor.
         self.container_name = f"hidrosim-{self.case_path.name}-{uuid.uuid4().hex[:8]}"
-        
         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
         script_in_container = f"/{script_name}"
-        ruta_docker_volumen = self.case_path.as_posix()
 
-        docker_command = [
-            "docker", "run", "--name", self.container_name,
-            "-v", f"{ruta_docker_volumen}:/case",
-            "-v", f"{local_script_path.as_posix()}:{script_in_container}",
-            "--entrypoint", "bash",
-            self.IMAGEN_SEDFOAM,
-            script_in_container,
-            str(num_processors)
+        scripts_without_0_dir = [
+            'run_blockMeshDict.sh', 'run_extrudeMesh.sh',
+            'run_transform_blockMeshDict.sh', 'run_transform_UNV.sh'
         ]
 
+        temp_dir = None
         try:
+            if script_name in scripts_without_0_dir:
+                temp_dir = tempfile.mkdtemp()
+                shutil.copytree(self.case_path / "system", Path(temp_dir) / "system")
+                if (self.case_path / "constant").exists():
+                    shutil.copytree(self.case_path / "constant", Path(temp_dir) / "constant")
+                ruta_docker_volumen = temp_dir
+            else:
+                ruta_docker_volumen = self.case_path.as_posix()
+
+            docker_command = [
+                "docker", "run", "--name", self.container_name,
+                "-v", f"{ruta_docker_volumen}:/case",
+                "-v", f"{local_script_path.as_posix()}:{script_in_container}",
+                "--entrypoint", "bash", self.IMAGEN_SEDFOAM,
+                script_in_container, str(num_processors)
+            ]
+            
             process = subprocess.Popen(
-                docker_command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
+                docker_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1, universal_newlines=True
             )
-        except FileNotFoundError:
-            error_message = "Error: Comando 'docker' no encontrado. Asegúrese de que Docker esté instalado y en el PATH."
-            logger.error(error_message)
-            yield error_message
-            raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
 
+            if process.stdout:
+                for line in iter(process.stdout.readline, ''):
+                    yield line.strip()
+            
+            process.stdout.close()
+            return_code = process.wait()
 
-        if process.stdout:
-            for line in iter(process.stdout.readline, ''):
-                yield line.strip()
+            if return_code != 0:
+                raise ContainerExecutionError(f"La ejecución de {script_name} falló con código de retorno {return_code}.")
 
-        process.stdout.close()
-        return_code = process.wait()
+            if temp_dir:
+                shutil.copytree(temp_dir, self.case_path, dirs_exist_ok=True)
 
-        # Limpiar el contenedor después de que se detenga
-        logger.info(f"Limpiando el contenedor {self.container_name}...")
-        subprocess.run(["docker", "rm", self.container_name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        
-        # Si la bandera fue activada por `stop_simulation`, se informa al usuario
-        # y se termina la ejecución de forma controlada.
-        if self.was_stopped_by_user:
-            yield "La simulación fue detenida por el usuario."
-            return
+        except Exception as e:
+            logger.error(f"Error durante la ejecución de Docker: {e}")
+            yield str(e)
+            raise
 
-        if return_code != 0:
-            error_message = f"Error: La ejecución de {script_name} falló con código de retorno {return_code}."
-            logger.error(error_message)
-            yield error_message
-            raise ContainerExecutionError(error_message)
+        finally:
+            if temp_dir:
+                shutil.rmtree(temp_dir)
+            
+            logger.info(f"Limpiando el contenedor {self.container_name}...")
+            subprocess.run(["docker", "rm", self.container_name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            if self.was_stopped_by_user:
+                yield "La simulación fue detenida por el usuario."
 
 
 
