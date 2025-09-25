@@ -106,6 +106,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionVisualizarEnParaview.triggered.connect(self.launch_paraview_action)
         self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
         self.ui.actionBorrar_Extrudes.triggered.connect(self.delete_extrudes)
+        self.ui.actionSnappyHexMesh.triggered.connect(self.open_new_SnappyHexMesh_dialog)
         self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
         self.ui.actionGuardar_Parametros.setShortcut(QKeySequence.Save)
         self.ui.actionDetener_Simulacion.triggered.connect(self.stop_simulation)
@@ -358,6 +359,42 @@ class MainWindowController(QMainWindow):
                     return
             self._run_docker_script_in_thread("run_blockMeshDict.sh")
     
+    def open_new_SnappyHexMesh_dialog(self):
+        """
+        Abre un diálogo para cargar un archivo snappyHexMesh, verificando
+        primero si hay una simulación y una malla cargadas.
+        """
+        if not self.file_handler:
+            QMessageBox.warning(self, "Acción Requerida", "Por favor, cargue o cree una simulación primero.")
+            return
+
+        # Verificar si la malla existe (directorio VTK)
+        vtk_path = self.file_handler.get_case_path() / "VTK"
+        if not vtk_path.is_dir():
+            QMessageBox.warning(self, "Malla no Encontrada", "No se ha generado una malla para el caso actual. Por favor, genere la malla primero.")
+            return
+
+        # Abrir diálogo para seleccionar el archivo extrudeMeshDict
+        file_dialog = QFileDialog(self)
+        #TODO: ver si queremos implementar este filtro de otra manera......
+        file_dialog.setNameFilter("OpenFOAM Dictionary (snappyHexMeshDict*)") #<--- le saco el filtro
+        file_dialog.setFileMode(QFileDialog.ExistingFile)
+        
+        if file_dialog.exec():
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                source_path = Path(selected_files[0])
+                destination_path = self.file_handler.get_case_path() / 'system' / 'snappyHexMeshDict'
+
+                try:
+                    shutil.copy(source_path, destination_path)
+                    QMessageBox.information(self, "Éxito", f"El archivo '{source_path.name}' se ha copiado a la carpeta 'system' como 'snappyHexMeshDict'.")
+                    # Ejecutar extrudeMesh en Docker
+                    self._run_docker_script_in_thread("run_snappyHexMeshDict.sh")
+
+                except Exception as e:
+                    QMessageBox.critical(self, "Error de Copia", f"No se pudo copiar el archivo: {e}")
+
     def execute_parallel_simulation(self):
         """Ejecutar una simulación en paralelo."""
         if not self.file_handler:
@@ -544,6 +581,8 @@ class MainWindowController(QMainWindow):
         self.ui.actionEjecutar_Simulacion.setEnabled(enabled)
         self.ui.actionGuardar_Parametros.setEnabled(enabled)
         self.ui.actionCrear_Extrude.setEnabled(enabled)
+        self.ui.actionBorrar_Extrudes.setEnabled(enabled)
+        self.ui.actionSnappyHexMesh.setEnabled(enabled)
         
         # The "Stop" action is the opposite: enabled only when a task is running
         self.ui.actionDetener_Simulacion.setEnabled(not enabled)

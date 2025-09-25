@@ -120,7 +120,8 @@ class DockerHandler():
 
         scripts_without_0_dir = [
             'run_blockMeshDict.sh', 'run_extrudeMesh.sh',
-            'run_transform_blockMeshDict.sh', 'run_transform_UNV.sh'
+            'run_transform_blockMeshDict.sh', 'run_transform_UNV.sh',
+            'run_snappyHexMeshDict.sh'
         ]
 
         temp_dir = None

@@ -8,11 +8,12 @@ NUM_PROCS=${1:-1}
 cd /case
 
 # Check if the setFieldsDict file exists
-if [ -f "system/setFieldsDict" ]; then
-    echo "setFieldsDict found. Running setFields..."
-    setFields
+if [ -f "system/funkySetFieldsDict" ]; then
+    echo "funkySetFieldsDict found. Running funkySetFields..."
+    # Initialize the alpha field
+    funkySetFields -time 0
 else
-    echo "setFieldsDict not found. Skipping setFields."
+    echo "funkySetFieldsDict not found. Skipping funkySetFields."
 fi
 
 # Check if we are actually running in parallel
@@ -21,17 +22,18 @@ if [ "$NUM_PROCS" -gt 1 ]; then
 
     # Decompose the domain
     echo "Decomposing domain for parallel run..."
-    decomposePar
+    # decomposePar
+    mpirun -np "$NUM_PROCS" redistributePar -decompose -parallel
     if [ $? -ne 0 ]; then
         echo "Error: decomposePar failed."
         exit 1
     fi
 
     # Run the solver in parallel
-    echo "Running interFoam in parallel..."
+    echo "Running sedFoam in parallel..."
     # Se usa -fileHandler collated para optimizar la E/S, como se recomienda para
     # flujos de trabajo modernos y para reducir el número de archivos de salida.
-    mpirun -np "$NUM_PROCS" sedFoam_rbgh -parallel -fileHandler collated
+    mpirun -np "$NUM_PROCS" sedFoam_rbgh -parallel 
 
     if [ $? -ne 0 ]; then
         echo "Error: mpirun failed."
@@ -40,7 +42,8 @@ if [ "$NUM_PROCS" -gt 1 ]; then
 
     # Reconstruct the case
     echo "Reconstructing domain..."
-    reconstructPar 
+    # reconstructPar 
+    mpirun -np "$NUM_PROCS" redistributePar -reconstruct -parallel
     if [ $? -ne 0 ]; then
         echo "Error: reconstructPar failed."
         exit 1

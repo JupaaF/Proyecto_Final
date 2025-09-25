@@ -21,9 +21,10 @@ if [ "$NUM_PROCS" -gt 1 ]; then
 
     # Decompose the domain
     echo "Decomposing domain for parallel run..."
-    decomposePar
+    # decomposePar
+    mpirun -np "$NUM_PROCS" redistributePar -decompose -parallel
     if [ $? -ne 0 ]; then
-        echo "Error: decomposePar failed."
+        echo "Error: redistributePar -decompose failed."
         exit 1
     fi
 
@@ -40,9 +41,10 @@ if [ "$NUM_PROCS" -gt 1 ]; then
 
     # Reconstruct the case
     echo "Reconstructing domain..."
-    reconstructPar 
+    # reconstructPar 
+    mpirun -np "$NUM_PROCS" redistributePar -reconstruct -parallel
     if [ $? -ne 0 ]; then
-        echo "Error: reconstructPar failed."
+        echo "Error: redistributePar -reconstruct failed."
         exit 1
     fi
     

@@ -169,7 +169,7 @@ class FileHandler:
         template_config = self._get_template_config()
         self.file_names = template_config.get("files", [])
         self._initialize_from_names()
-        self.load_all_parameters_from_json(Path(__file__).parent / 'templates_parameters' / (self.template + '.json')) ##COMENTA ESTA LINEA ANTES DE EMPEZAR A CONFIGURAR LOS VALORES POR DEFECTO
+        # self.load_all_parameters_from_json(Path(__file__).parent / 'templates_parameters' / (self.template + '.json')) ##COMENTA ESTA LINEA ANTES DE EMPEZAR A CONFIGURAR LOS VALORES POR DEFECTO
 
     def _initialize_from_names(self) -> None:
         """

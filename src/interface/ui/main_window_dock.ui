@@ -76,6 +76,7 @@
     </property>
     <addaction name="actionCrear_Extrude"/>
     <addaction name="actionBorrar_Extrudes"/>
+    <addaction name="actionSnappyHexMesh"/>
    </widget>
    <addaction name="menuArchivo"/>
    <addaction name="menuSimulacion"/>
@@ -252,6 +253,11 @@
   <action name="actionBorrar_Extrudes">
    <property name="text">
     <string>Borrar Extrudes</string>
+   </property>
+  </action>
+  <action name="actionSnappyHexMesh">
+   <property name="text">
+    <string>SnappyHexMesh</string>
    </property>
   </action>
  </widget>

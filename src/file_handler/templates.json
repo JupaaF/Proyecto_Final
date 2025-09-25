@@ -64,12 +64,13 @@
             "controlDict",
             "fvSchemes",
             "fvSolution",
-            "decomposeParDict"
+            "decomposeParDict", 
+            "funkySetFieldsDict"
         ]
     },
     {
-        "id": "3DScourSqr",
-        "name": "3DScourSqr - SedFOAM",
+        "id": "2DPipelineScour",
+        "name": "2DPipelineScour - SedFOAM",
         "files": [
             "Theta",
             "U.a",
@@ -77,6 +78,7 @@
             "alpha.a",
             "alphaPlastic",
             "delta",
+            "epsilon.b",
             "k.b",
             "nut.b",
             "omega.b",
@@ -96,7 +98,6 @@
             "controlDict",
             "fvSchemes",
             "fvSolution",
-            "funkySetFieldsDict",
             "decomposeParDict"
         ]
     }
