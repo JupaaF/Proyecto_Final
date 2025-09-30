@@ -105,7 +105,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionLimpiar_Resultados.triggered.connect(self.clean_simulation_results)
         self.ui.actionVisualizarEnParaview.triggered.connect(self.launch_paraview_action)
         self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
-        self.ui.actionBorrar_Extrudes.triggered.connect(self.delete_extrudes)
+        self.ui.actionReiniciar_Malla.triggered.connect(self.execute_blockMesh)
         self.ui.actionSnappyHexMesh.triggered.connect(self.open_new_SnappyHexMesh_dialog)
         self.ui.actionSnappyHexMesh_en_Paralelo.triggered.connect(self.open_new_SnappyHexMesh_parallel_dialog)
         self.ui.actionActualizar_Malla.triggered.connect(self.reload_geometry)
@@ -326,7 +326,7 @@ class MainWindowController(QMainWindow):
                 except Exception as e:
                     QMessageBox.critical(self, "Error de Copia", f"No se pudo copiar el archivo: {e}")
     
-    def delete_extrudes(self):
+    def execute_blockMesh(self):
         """
         Ejecuta blockMesh para regenerar la malla base, eliminando así
         cualquier extrusión o modificación posterior.
@@ -638,7 +638,7 @@ class MainWindowController(QMainWindow):
         self.ui.actionEjecutar_Simulacion.setEnabled(enabled)
         self.ui.actionGuardar_Parametros.setEnabled(enabled)
         self.ui.actionCrear_Extrude.setEnabled(enabled)
-        self.ui.actionBorrar_Extrudes.setEnabled(enabled)
+        self.ui.actionReiniciar_Malla.setEnabled(enabled)
         self.ui.actionSnappyHexMesh.setEnabled(enabled)
         self.ui.actionSnappyHexMesh_en_Paralelo.setEnabled(enabled)
         self.ui.actionActualizar_Malla.setEnabled(enabled)

@@ -75,10 +75,10 @@
      <string>Herramientas</string>
     </property>
     <addaction name="actionCrear_Extrude"/>
-    <addaction name="actionBorrar_Extrudes"/>
     <addaction name="actionSnappyHexMesh"/>
     <addaction name="actionSnappyHexMesh_en_Paralelo"/>
     <addaction name="actionActualizar_Malla"/>
+    <addaction name="actionReiniciar_Malla"/>
    </widget>
    <addaction name="menuArchivo"/>
    <addaction name="menuSimulacion"/>
@@ -252,9 +252,9 @@
     <string>Ejecutar Simulación en Paralelo</string>
    </property>
   </action>
-  <action name="actionBorrar_Extrudes">
+  <action name="actionReiniciar_Malla">
    <property name="text">
-    <string>Borrar Extrudes</string>
+    <string>Reiniciar Malla</string>
    </property>
   </action>
   <action name="actionSnappyHexMesh">
