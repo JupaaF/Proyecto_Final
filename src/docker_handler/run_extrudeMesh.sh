@@ -7,5 +7,5 @@ cd /case
 # Ejecutar extrudeMesh
 extrudeMesh
 
-# Convertir la nueva malla a formato VTK para visualización
-foamToVTK -region region0
+# # Convertir la nueva malla a formato VTK para visualización
+# foamToVTK -region region0

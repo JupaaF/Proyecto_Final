@@ -184,6 +184,11 @@ class omega(FoamFile):
                                 'parameters' : []
                             },
                             {
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
+                                'parameters' : []
+                            },
+                            {
                                 'name': 'groovyBC',
                                 'label': 'groovyBC',
                                 'parameters' : []

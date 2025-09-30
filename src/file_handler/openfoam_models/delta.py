@@ -110,6 +110,16 @@ class delta(FoamFile):
                                 'label': 'cyclic',
                                 'parameters' : []
                             },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
+                                'parameters' : []
+                            }
                             # {
                             #     'name': 'inletOutlet',
                             #     'label': 'inletOutlet',
@@ -143,16 +153,7 @@ class delta(FoamFile):
                             #         },
                             #     ]
                             # },
-                            # {
-                            #     'name': 'empty',
-                            #     'label': 'empty',
-                            #     'parameters' : []
-                            # },
-                            # {
-                            #     'name': 'simmetryPlane',
-                            #     'label': 'simmetryPlane',
-                            #     'parameters' : []
-                            # }
+                            # 
                         ]
                     }
                 }

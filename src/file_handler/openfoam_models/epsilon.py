@@ -126,6 +126,26 @@ class epsilon(FoamFile):
                                 'label': 'inletOutlet',
                                 'parameters' : [
                                     {
+                                        'name': 'zeroGradient',
+                                        'label': 'zeroGradient',
+                                        'parameters': []
+                                    },
+                                    {
+                                        'name': 'cyclic',
+                                        'label': 'cyclic',
+                                        'parameters' : []
+                                    },
+                                    {
+                                        'name': 'empty',
+                                        'label': 'empty',
+                                        'parameters' : []
+                                    },
+                                    {
+                                        'name': 'symmetryPlane',
+                                        'label': 'symmetryPlane',
+                                        'parameters' : []
+                                    },
+                                    {
                                         'name': 'inletValue',
                                         'type': 'float',
                                         'label': 'Valor de Entrada',

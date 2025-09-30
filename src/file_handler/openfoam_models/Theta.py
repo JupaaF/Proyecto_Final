@@ -114,6 +114,29 @@ class Theta(FoamFile):
                                 'name': 'groovyBC',
                                 'label': 'groovyBC',
                                 'parameters' : []
+                            },
+                            {
+                                'name': 'fixedValue',
+                                'label': 'fixedValue',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    },
+                                ]
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'simmetryPlane',
+                                'label': 'simmetryPlane',
+                                'parameters' : []
                             }
                             # {
                             #     'name': 'inletOutlet',
@@ -135,29 +158,7 @@ class Theta(FoamFile):
                             #         }
                             #     ]
                             # },
-                            # {
-                            #     'name': 'fixedValue',
-                            #     'label': 'fixedValue',
-                            #     'parameters' : [
-                            #         {
-                            #             'name': 'value',
-                            #             'type': 'float',
-                            #             'label': 'value',
-                            #             'tooltip': 'value',
-                            #             'default': 0
-                            #         },
-                            #     ]
-                            # },
-                            # {
-                            #     'name': 'empty',
-                            #     'label': 'empty',
-                            #     'parameters' : []
-                            # },
-                            # {
-                            #     'name': 'simmetryPlane',
-                            #     'label': 'simmetryPlane',
-                            #     'parameters' : []
-                            # }
+                            
                         ]
                     }
                 }

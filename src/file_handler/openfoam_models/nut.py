@@ -137,8 +137,8 @@ class nut(FoamFile):
                                 'parameters' : []
                             },
                             {
-                                'name': 'simmetryPlane',
-                                'label': 'simmetryPlane',
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
                                 'parameters' : []
                             }
                         ]

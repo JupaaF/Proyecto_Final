@@ -77,6 +77,8 @@
     <addaction name="actionCrear_Extrude"/>
     <addaction name="actionBorrar_Extrudes"/>
     <addaction name="actionSnappyHexMesh"/>
+    <addaction name="actionSnappyHexMesh_en_Paralelo"/>
+    <addaction name="actionActualizar_Malla"/>
    </widget>
    <addaction name="menuArchivo"/>
    <addaction name="menuSimulacion"/>
@@ -258,6 +260,16 @@
   <action name="actionSnappyHexMesh">
    <property name="text">
     <string>SnappyHexMesh</string>
+   </property>
+  </action>
+  <action name="actionSnappyHexMesh_en_Paralelo">
+   <property name="text">
+    <string>SnappyHexMesh en Paralelo</string>
+   </property>
+  </action>
+  <action name="actionActualizar_Malla">
+   <property name="text">
+    <string>Actualizar Malla</string>
    </property>
   </action>
  </widget>

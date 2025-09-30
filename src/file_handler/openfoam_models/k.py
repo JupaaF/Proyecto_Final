@@ -160,6 +160,11 @@ class k(FoamFile):
                                 'parameters' : []
                             },
                             {
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
+                                'parameters' : []
+                            },
+                            {
                                 'name': 'cyclic',
                                 'label': 'cyclic',
                                 'parameters' : []

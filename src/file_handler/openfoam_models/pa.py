@@ -162,6 +162,11 @@ class pa(FoamFile):
                                 'label': 'empty',
                                 'parameters' : []
                             },
+                            {
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
+                                'parameters' : []
+                            }
                         ]
                     }
                 }

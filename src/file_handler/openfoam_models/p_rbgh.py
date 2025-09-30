@@ -150,6 +150,11 @@ class p_rbgh(FoamFile):
                                 ]
                             },
                             {
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
+                                'parameters' : []
+                            },
+                            {
                                 'name': 'totalPressure',
                                 'label': 'totalPressure',
                                 'parameters' : [

@@ -180,6 +180,11 @@ class U(FoamFile):
                                 ]
                             },
                             {
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
+                                'parameters' : []
+                            },
+                            {
                                 'name': 'groovyBC',
                                 'label': 'groovyBC',
                                 'parameters' : []

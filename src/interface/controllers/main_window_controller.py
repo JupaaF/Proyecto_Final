@@ -107,6 +107,8 @@ class MainWindowController(QMainWindow):
         self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
         self.ui.actionBorrar_Extrudes.triggered.connect(self.delete_extrudes)
         self.ui.actionSnappyHexMesh.triggered.connect(self.open_new_SnappyHexMesh_dialog)
+        self.ui.actionSnappyHexMesh_en_Paralelo.triggered.connect(self.open_new_SnappyHexMesh_parallel_dialog)
+        self.ui.actionActualizar_Malla.triggered.connect(self.reload_geometry)
         self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
         self.ui.actionGuardar_Parametros.setShortcut(QKeySequence.Save)
         self.ui.actionDetener_Simulacion.triggered.connect(self.stop_simulation)
@@ -389,12 +391,67 @@ class MainWindowController(QMainWindow):
                 try:
                     shutil.copy(source_path, destination_path)
                     QMessageBox.information(self, "Éxito", f"El archivo '{source_path.name}' se ha copiado a la carpeta 'system' como 'snappyHexMeshDict'.")
-                    # Ejecutar extrudeMesh en Docker
+                    # Ejecutar snappyHexMesh en Docker
                     self._run_docker_script_in_thread("run_snappyHexMeshDict.sh")
 
                 except Exception as e:
                     QMessageBox.critical(self, "Error de Copia", f"No se pudo copiar el archivo: {e}")
+    
+    
+    def open_new_SnappyHexMesh_parallel_dialog(self):
+        """
+        Abre un diálogo para cargar un archivo snappyHexMesh, verificando
+        primero si hay una simulación y una malla cargadas.
+        """
+        if not self.file_handler:
+            QMessageBox.warning(self, "Acción Requerida", "Por favor, cargue o cree una simulación primero.")
+            return
 
+        # Verificar si la malla existe (directorio VTK)
+        vtk_path = self.file_handler.get_case_path() / "VTK"
+        if not vtk_path.is_dir():
+            QMessageBox.warning(self, "Malla no Encontrada", "No se ha generado una malla para el caso actual. Por favor, genere la malla primero.")
+            return
+
+        # Abrir diálogo para seleccionar el archivo extrudeMeshDict
+        file_dialog = QFileDialog(self)
+        #TODO: ver si queremos implementar este filtro de otra manera......
+        file_dialog.setNameFilter("OpenFOAM Dictionary (snappyHexMeshDict*)") #<--- le saco el filtro
+        file_dialog.setFileMode(QFileDialog.ExistingFile)
+        
+        if file_dialog.exec():
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                source_path = Path(selected_files[0])
+                destination_path = self.file_handler.get_case_path() / 'system' / 'snappyHexMeshDict'
+
+                try:
+                    shutil.copy(source_path, destination_path)
+                    QMessageBox.information(self, "Éxito", f"El archivo '{source_path.name}' se ha copiado a la carpeta 'system' como 'snappyHexMeshDict'.")
+                    # Ejecutar snappyHexMesh en Docker en paralelo
+                    num_processors = self.file_handler.get_number_of_processors()
+                    self._run_docker_script_in_thread("run_snappyHexMeshDict_parallel.sh",num_processors)
+
+                except Exception as e:
+                    QMessageBox.critical(self, "Error de Copia", f"No se pudo copiar el archivo: {e}")
+
+    def reload_geometry(self):
+        """
+        Recargar la malla ejecutando un foamToVTK 
+        """
+        if not self.file_handler:
+            QMessageBox.warning(self, "Acción Requerida", "Por favor, cargue o cree una simulación primero.")
+            return
+
+        # Verificar si la malla existe (directorio VTK)
+        vtk_path = self.file_handler.get_case_path() / "VTK"
+        if not vtk_path.is_dir():
+            QMessageBox.warning(self, "Malla no Encontrada", "No se ha generado una malla para el caso actual. Por favor, genere la malla primero.")
+            return
+        
+        #Ejecutar foamToVTK
+        self._run_docker_script_in_thread("run_foamToVTK.sh")
+ 
     def execute_parallel_simulation(self):
         """Ejecutar una simulación en paralelo."""
         if not self.file_handler:
@@ -560,7 +617,7 @@ class MainWindowController(QMainWindow):
             self.docker_handler.was_stopped_by_user = False # Reset flag
         elif success:
             QMessageBox.information(self, "Ejecución de Docker", f"El script '{script_name}' se ejecutó correctamente.")
-            if script_name in ["run_transform_UNV.sh", "run_transform_blockMeshDict.sh", "run_extrudeMesh.sh", "run_blockMeshDict.sh"]:
+            if script_name in ["run_transform_UNV.sh", "run_transform_blockMeshDict.sh", "run_extrudeMesh.sh", "run_blockMeshDict.sh", "run_foamToVTK.sh"]:
                 patch_names = self._get_patch_names()
                 if patch_names:
                     self.file_handler.initialize_parameters_from_schema(patch_names)
@@ -583,6 +640,8 @@ class MainWindowController(QMainWindow):
         self.ui.actionCrear_Extrude.setEnabled(enabled)
         self.ui.actionBorrar_Extrudes.setEnabled(enabled)
         self.ui.actionSnappyHexMesh.setEnabled(enabled)
+        self.ui.actionSnappyHexMesh_en_Paralelo.setEnabled(enabled)
+        self.ui.actionActualizar_Malla.setEnabled(enabled)
         
         # The "Stop" action is the opposite: enabled only when a task is running
         self.ui.actionDetener_Simulacion.setEnabled(not enabled)
@@ -748,7 +807,7 @@ class MainWindowController(QMainWindow):
                 # Usar os.startfile para una compatibilidad total
                 os.startfile(case_path_local)
             elif system == "Darwin": # macOS
-                command = ['open', case_path_local]
+                command = ['open', case_path_local] #TODO: SACAAAAAAAR ESTO?
                 subprocess.Popen(command)
             elif system == "Linux":
                 command = ['paraview', case_path_local]

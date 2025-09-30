@@ -129,30 +129,30 @@ class alphaPlastic(FoamFile):
                             #             'default': 0
                             #         }
                             #     ]
-                            # },
-                            # {
-                            #     'name': 'fixedValue',
-                            #     'label': 'fixedValue',
-                            #     'parameters' : [
-                            #         {
-                            #             'name': 'value',
-                            #             'type': 'float',
-                            #             'label': 'value',
-                            #             'tooltip': 'value',
-                            #             'default': 0
-                            #         },
-                            #     ]
-                            # },
-                            # {
-                            #     'name': 'empty',
-                            #     'label': 'empty',
-                            #     'parameters' : []
-                            # },
-                            # {
-                            #     'name': 'simmetryPlane',
-                            #     'label': 'simmetryPlane',
-                            #     'parameters' : []
                             # }
+                            {
+                                'name': 'fixedValue',
+                                'label': 'fixedValue',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    },
+                                ]
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
+                                'parameters' : []
+                            }
                         ]
                     }
                 }
