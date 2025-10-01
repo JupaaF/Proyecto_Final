@@ -7,10 +7,10 @@ import subprocess
 from PySide6.QtWidgets import QMessageBox
 import re
 
-from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout, QFileDialog, QPlainTextEdit)
+from PySide6.QtWidgets import (QMainWindow, QDialog, QMessageBox, QVBoxLayout, QFileDialog, QPlainTextEdit, QToolTip)
 from PySide6.QtCore import QUrl, QTimer,  QObject, QThread, Signal, QRunnable, Slot
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtGui import QDesktopServices, QKeySequence
+from PySide6.QtGui import QDesktopServices, QKeySequence, QCursor, QAction
 import json 
 
 from config import RUTA_LOCAL, create_dir
@@ -95,23 +95,45 @@ class MainWindowController(QMainWindow):
         self.ui.menuVer.addAction(self.ui.parameterEditorDock.toggleViewAction())
         self.ui.menuVer.addAction(self.ui.logDock.toggleViewAction())
 
+    @Slot()
+    def show_action_tooltip(self):
+        """Muestra el tooltip para una acción de menú cuando el cursor pasa sobre ella."""
+        action = self.sender()
+        if isinstance(action, QAction):
+            QToolTip.showText(QCursor.pos(), action.toolTip(), self.ui)
+
     def _connect_signals(self):
-        """Conecta las señales de los widgets a los slots correspondientes."""
-        self.ui.actionDocumentacion.triggered.connect(self.open_documentation)
-        self.ui.actionNueva_Simulacion.triggered.connect(self.open_new_simulation_wizard)
-        self.ui.actionCargar_Simulacion.triggered.connect(self.open_load_simulation_dialog)
-        self.ui.actionEjecutar_Simulacion.triggered.connect(self.execute_simulation)
-        self.ui.actionEjecutar_Simulacion_en_Paralelo.triggered.connect(self.execute_parallel_simulation)
-        self.ui.actionLimpiar_Resultados.triggered.connect(self.clean_simulation_results)
-        self.ui.actionVisualizarEnParaview.triggered.connect(self.launch_paraview_action)
-        self.ui.actionCrear_Extrude.triggered.connect(self.open_new_extrude_dialog)
-        self.ui.actionReiniciar_Malla.triggered.connect(self.execute_blockMesh)
-        self.ui.actionSnappyHexMesh.triggered.connect(self.open_new_SnappyHexMesh_dialog)
-        self.ui.actionSnappyHexMesh_en_Paralelo.triggered.connect(self.open_new_SnappyHexMesh_parallel_dialog)
-        self.ui.actionActualizar_Malla.triggered.connect(self.reload_geometry)
-        self.ui.actionGuardar_Parametros.triggered.connect(self.save_all_parameters_action)
+        """Conecta las señales de los widgets a los slots correspondientes y configura los tooltips."""
+        # --- Tooltips Menus Principales ---
+        self.ui.menuSimulacion.menuAction().setToolTip("Acciones para ejecutar y gestionar la simulación")
+        self.ui.menuHerramientas.menuAction().setToolTip("Herramientas para la manipulación de la malla")
+        self.ui.menuSimulacion.menuAction().hovered.connect(self.show_action_tooltip)
+        self.ui.menuHerramientas.menuAction().hovered.connect(self.show_action_tooltip)
+
+        # --- Acciones y Tooltips ---
+        actions = {
+            self.ui.actionEjecutar_Simulacion: (self.execute_simulation, "Ejecuta la simulación con el solver actual."),
+            self.ui.actionEjecutar_Simulacion_en_Paralelo: (self.execute_parallel_simulation, "Ejecuta la simulación en paralelo utilizando el número de procesadores definido."),
+            self.ui.actionLimpiar_Resultados: (self.clean_simulation_results, "Elimina los resultados de la simulación, conservando la configuración inicial."),
+            self.ui.actionDetener_Simulacion: (self.stop_simulation, "Intenta detener la simulación en curso."),
+            self.ui.actionVisualizarEnParaview: (self.launch_paraview_action, "Lanzar ParaView para visualizar el caso."),
+            self.ui.actionCrear_Extrude: (self.open_new_extrude_dialog, "Crea una malla 3D a partir de una 2D mediante extrusión."),
+            self.ui.actionSnappyHexMesh: (self.open_new_SnappyHexMesh_dialog, "Genera una malla alrededor de una geometría compleja."),
+            self.ui.actionSnappyHexMesh_en_Paralelo: (self.open_new_SnappyHexMesh_parallel_dialog, "Genera una malla con SnappyHexMesh en paralelo."),
+            self.ui.actionActualizar_Malla: (self.reload_geometry, "Actualiza la visualización de la malla actual."),
+            self.ui.actionReiniciar_Malla: (self.execute_blockMesh, "Regenera la malla base a partir de blockMeshDict."),
+            self.ui.actionDocumentacion: (self.open_documentation, "Abre la documentación del proyecto."),
+            self.ui.actionNueva_Simulacion: (self.open_new_simulation_wizard, "Abre el asistente para crear una nueva simulación."),
+            self.ui.actionCargar_Simulacion: (self.open_load_simulation_dialog, "Abre un diálogo para cargar una simulación existente."),
+            self.ui.actionGuardar_Parametros: (self.save_all_parameters_action, "Guarda los parámetros de la simulación actual.")
+        }
+
+        for action, (slot, tooltip_text) in actions.items():
+            action.triggered.connect(slot)
+            action.setToolTip(tooltip_text)
+            action.hovered.connect(self.show_action_tooltip)
+            
         self.ui.actionGuardar_Parametros.setShortcut(QKeySequence.Save)
-        self.ui.actionDetener_Simulacion.triggered.connect(self.stop_simulation)
 
     def clean_simulation_results(self):
         """
@@ -211,6 +233,7 @@ class MainWindowController(QMainWindow):
         self._initialize_file_handler(case_name, template=template, file_names=file_names)
         self._setup_managers()
         self._setup_case_environment(Path(data["mesh_file"]))
+        self.file_handler.save_all_parameters_to_json()
 
     def open_load_simulation_dialog(self):
         """Abre un diálogo para cargar una simulación existente."""
