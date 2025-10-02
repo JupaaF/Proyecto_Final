@@ -137,6 +137,19 @@ class Theta(FoamFile):
                                 'name': 'symmetryPlane',
                                 'label': 'symmetryPlane',
                                 'parameters' : []
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'customPatch',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
                             }
                             # {
                             #     'name': 'inletOutlet',

@@ -167,6 +167,19 @@ class epsilon(FoamFile):
                                 'label': 'inletValue',
                                 'tooltip': 'Valor de epsilon en la entrada.',
                                 'default': 0
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'customPatch',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
                             }
                         ]
                     }
