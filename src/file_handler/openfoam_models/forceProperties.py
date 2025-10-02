@@ -12,8 +12,9 @@ class forceProperties(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
-        self.customContent = None
         # Valores por defecto
+        self.customContent = None
+        self.template_or_not = '2DPipelineScour'
         
 
     def _get_string(self) -> str:
@@ -23,7 +24,8 @@ class forceProperties(FoamFile):
         template = self.jinja_env.get_template("forceProperties_template.jinja2")
 
         context = {
-            'customContent': self.customContent
+            'customContent': self.customContent,
+            'template_or_not': self.template_or_not
         }
 
         content = template.render(context)
@@ -70,7 +72,14 @@ class forceProperties(FoamFile):
         """
         Devuelve un diccionario con los parámetros editables y sus valores actuales.
         """
-        return { # Por ahora no hay param editables
+        return { 
+            'template_or_not': {
+                'label': 'Template',
+                'tooltip': 'Template',
+                'type': 'choice',
+                'options': ['2DChannel','2DPipelineScour','Personalizado'], #TODO: ver esto cuando Jupa haga lo de personalizable
+                'current': self.template_or_not
+            },
             'customContent': {
                 'label': 'Contenido de experto',
                 'tooltip': 'Cosas que van directamente al archivo',

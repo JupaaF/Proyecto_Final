@@ -126,40 +126,47 @@ class epsilon(FoamFile):
                                 'label': 'inletOutlet',
                                 'parameters' : [
                                     {
-                                        'name': 'zeroGradient',
-                                        'label': 'zeroGradient',
-                                        'parameters': []
-                                    },
-                                    {
-                                        'name': 'cyclic',
-                                        'label': 'cyclic',
-                                        'parameters' : []
-                                    },
-                                    {
-                                        'name': 'empty',
-                                        'label': 'empty',
-                                        'parameters' : []
-                                    },
-                                    {
-                                        'name': 'symmetryPlane',
-                                        'label': 'symmetryPlane',
-                                        'parameters' : []
-                                    },
-                                    {
                                         'name': 'inletValue',
                                         'type': 'float',
                                         'label': 'Valor de Entrada',
-                                        'tooltip': 'Valor de epsilon en la entrada.',
+                                        'tooltip': 'El valor de alpha.water en la entrada.',
                                         'default': 0
                                     },
                                     {
                                         'name': 'value',
                                         'type': 'float',
-                                        'label': 'Valor (uniforme)',
-                                        'tooltip': 'Valor uniforme para la condición de borde.',
+                                        'label': 'Valor Uniforme',
+                                        'tooltip': 'El valor uniforme de alpha.water para esta condición.',
                                         'default': 0
                                     }
                                 ]
+                            },
+                            {
+                                'name': 'zeroGradient',
+                                'label': 'zeroGradient',
+                                'parameters': []
+                            },
+                            {
+                                'name': 'cyclic',
+                                'label': 'cyclic',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'empty',
+                                'label': 'empty',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'symmetryPlane',
+                                'label': 'symmetryPlane',
+                                'parameters' : []
+                            },
+                            {
+                                'name': 'inletValue',
+                                'type': 'float',
+                                'label': 'inletValue',
+                                'tooltip': 'Valor de epsilon en la entrada.',
+                                'default': 0
                             }
                         ]
                     }

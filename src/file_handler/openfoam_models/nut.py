@@ -102,7 +102,7 @@ class nut(FoamFile):
                         'options': [
                             {
                                 'name': 'nutkWallFunction',
-                                'label': 'Función de Pared (nutkWallFunction)',
+                                'label': 'nutkWallFunction',
                                 'parameters' : [
                                     {
                                         'name': 'value',

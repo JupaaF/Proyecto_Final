@@ -105,23 +105,23 @@ class MainWindowController(QMainWindow):
     def _connect_signals(self):
         """Conecta las señales de los widgets a los slots correspondientes y configura los tooltips."""
         # --- Tooltips Menus Principales ---
-        self.ui.menuSimulacion.menuAction().setToolTip("Acciones para ejecutar y gestionar la simulación")
-        self.ui.menuHerramientas.menuAction().setToolTip("Herramientas para la manipulación de la malla")
-        self.ui.menuSimulacion.menuAction().hovered.connect(self.show_action_tooltip)
-        self.ui.menuHerramientas.menuAction().hovered.connect(self.show_action_tooltip)
+        # self.ui.menuSimulacion.menuAction().setToolTip("Acciones para ejecutar y gestionar la simulación")
+        # self.ui.menuHerramientas.menuAction().setToolTip("Herramientas para la manipulación de la malla")
+        # self.ui.menuSimulacion.menuAction().hovered.connect(self.show_action_tooltip)
+        # self.ui.menuHerramientas.menuAction().hovered.connect(self.show_action_tooltip)
 
         # --- Acciones y Tooltips ---
         actions = {
-            self.ui.actionEjecutar_Simulacion: (self.execute_simulation, "Ejecuta la simulación con el solver actual."),
-            self.ui.actionEjecutar_Simulacion_en_Paralelo: (self.execute_parallel_simulation, "Ejecuta la simulación en paralelo utilizando el número de procesadores definido."),
-            self.ui.actionLimpiar_Resultados: (self.clean_simulation_results, "Elimina los resultados de la simulación, conservando la configuración inicial."),
-            self.ui.actionDetener_Simulacion: (self.stop_simulation, "Intenta detener la simulación en curso."),
-            self.ui.actionVisualizarEnParaview: (self.launch_paraview_action, "Lanzar ParaView para visualizar el caso."),
-            self.ui.actionCrear_Extrude: (self.open_new_extrude_dialog, "Crea una malla 3D a partir de una 2D mediante extrusión."),
-            self.ui.actionSnappyHexMesh: (self.open_new_SnappyHexMesh_dialog, "Genera una malla alrededor de una geometría compleja."),
-            self.ui.actionSnappyHexMesh_en_Paralelo: (self.open_new_SnappyHexMesh_parallel_dialog, "Genera una malla con SnappyHexMesh en paralelo."),
-            self.ui.actionActualizar_Malla: (self.reload_geometry, "Actualiza la visualización de la malla actual."),
-            self.ui.actionReiniciar_Malla: (self.execute_blockMesh, "Regenera la malla base a partir de blockMeshDict."),
+            self.ui.actionEjecutar_Simulacion: (self.execute_simulation, "Ejecuta la simulación con la configuración actual."),
+            self.ui.actionEjecutar_Simulacion_en_Paralelo: (self.execute_parallel_simulation, "Ejecuta la simulación en paralelo con el número de procesadores definido en system/decomposeParDict"),
+            self.ui.actionLimpiar_Resultados: (self.clean_simulation_results, "Elimina las carpetas con resultados de la simulación, conservando la configuración inicial."),
+            self.ui.actionDetener_Simulacion: (self.stop_simulation, "Detiene la simulación o proceso en curso."),
+            self.ui.actionVisualizarEnParaview: (self.launch_paraview_action, "Crear archivo ParaView para visualizar el caso."),
+            self.ui.actionCrear_Extrude: (self.open_new_extrude_dialog, "Cargar archivo extrudeMeshDict y ejecutar el extrudeMesh"),
+            self.ui.actionSnappyHexMesh: (self.open_new_SnappyHexMesh_dialog, "Genera una malla alrededor de una geometría compleja con snappyHexMesh."),
+            self.ui.actionSnappyHexMesh_en_Paralelo: (self.open_new_SnappyHexMesh_parallel_dialog, "Genera una malla con snappyHexMesh en paralelo con el número de procesadores definido en system/decomposeParDict."),
+            self.ui.actionActualizar_Malla: (self.reload_geometry, "Actualiza la visualización de la geometría actual."),
+            self.ui.actionReiniciar_Malla: (self.execute_blockMesh, "Regenera la geometría base a partir de blockMeshDict."),
             self.ui.actionDocumentacion: (self.open_documentation, "Abre la documentación del proyecto."),
             self.ui.actionNueva_Simulacion: (self.open_new_simulation_wizard, "Abre el asistente para crear una nueva simulación."),
             self.ui.actionCargar_Simulacion: (self.open_load_simulation_dialog, "Abre un diálogo para cargar una simulación existente."),

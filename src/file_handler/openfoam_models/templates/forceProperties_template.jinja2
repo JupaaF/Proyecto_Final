@@ -1,3 +1,4 @@
+{% if template_or_not == '2DChannel' %}
     // * * * * * * * * * * * * * following are for presure * * * * * * * * * * * * * * * //
     gradPMEAN        gradPMEAN        [ 1 -2 -2 0 0 0 0 ] (0 0 0 ); // mean pressure
 
@@ -13,6 +14,34 @@
 
     ClipUa          ClipUa [ 0 0 0 0 0 0 0 ] 1;
     // * * * * * * * * * * * * end of definition of pressure * * * * * * * * * * * * * //
+{% endif %}
+{% if template_or_not == '2DPipelineScour' %}
+// * * * * * * * * * * * * * following are for presure * * * * * * * * * * * * * * * //
+//tilt             tilt             [ 0  0  0 0 0 0 0 ] 0;
+//gradPAMP1        gradPAMP1        [ 1 -2 -2 0 0 0 0 ] (0 0 0 );       // pressure osci amp
+//gradPAMP2        gradPAMP2        [ 1 -2 -2 0 0 0 0 ] ( 0 0 0 );      // pressure osci amp
+//gradPOSC         gradPOSC         [ 1 -2 -2 0 0 0 0 ] (0 0 0 ); // pressure osci real value
+gradPMEAN        gradPMEAN        [ 1 -2 -2 0 0 0 0 ] (0 0 0 ); // mean pressure
+oscpT            oscpT            [ 0  0  0 0 0 0 0 ] 0.0;            // osci period
+initTheta1       initTheta1       [ 0  0  0 0 0 0 0 ] 0;              // initial phase of 1st order wave
+initTheta2       initTheta2       [ 0  0  0 0 0 0 0 ] 0;              // initial phase of 2nd order wave
+InitFreeze       InitFreeze       [ 0  0  0 0 0 0 0 ] 0;              // Ua set to zero at each time step
+
+
+Cvm             Cvm [ 0 0 0 0 0 ] 0;                // Virtual/Added Mass coefficient
+Cl              Cl [ 0 0 0 0 0 ] 0;                 // Lift force coefficient
+Ct              Ct [ 0 0 0 0 0 ] 0;                 // Eddy diffusivity coefficient for phase a
+
+
+spongeLayer      off;
+xSmin            xSmin            [0 1 0 0 0 0 0 ] 0.5;               // position at which the sponge layer start
+xSmax            xSmax            [0 1 0 0 0 0 0 ] 1.2;               // position at which the sponge layer stop
+
+ClipUa          ClipUa [ 0 0 0 0 0 ] 1;
+
+debugInfo	true; 
+// * * * * * * * * * * * * end of definition of pressure * * * * * * * * * * * * * //
+{% endif %}
 {%if customContent is not none%}
 {{customContent}}
 {%endif%}

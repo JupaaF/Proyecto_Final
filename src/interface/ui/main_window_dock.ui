@@ -211,7 +211,7 @@
   </action>
   <action name="actionDetener_Simulacion">
    <property name="text">
-    <string>Detener Simulación</string>
+    <string>Detener proceso en curso</string>
    </property>
   </action>
   <action name="actionDocumentacion">

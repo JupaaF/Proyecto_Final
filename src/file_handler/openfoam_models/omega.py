@@ -121,12 +121,21 @@ class omega(FoamFile):
                                 'name': 'omegaWallFunction',
                                 'label': 'omegaWallFunction',
                                 'parameters' : [
+                                    
                                     {
                                         'name': 'value', 
                                         'type': 'float',
                                         'label': 'value',
                                         'tooltip': 'value',
-                                        'default': 0
+                                        'default': 594.884
+                                    },
+                                    {
+                                        'name': 'kn', 
+                                        'type': 'float',
+                                        'label': 'kn',
+                                        'tooltip': 'kn',
+                                        'default': 0.0002,
+                                        'optional': True
                                     },
                                     {
                                         'name': 'blending', 
