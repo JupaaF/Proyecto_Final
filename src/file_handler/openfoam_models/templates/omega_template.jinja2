@@ -10,6 +10,9 @@ boundaryField
     {% for patch in boundaryField %}
     {{ patch.patchName }}
     {
+        {%if patch.type == "customPatch"%}
+        {{patch.customPatchContent}}
+        {%else%}
         type            {{ patch.type }};
         {% if patch.type == "groovyBC" %}
         refvalue           uniform 0.033;
@@ -45,6 +48,7 @@ boundaryField
         {% endif %}
         {% endif %}
         {% endfor %}
+        {%endif%}
     }
     {% endfor %}
 

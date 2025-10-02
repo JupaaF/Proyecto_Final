@@ -197,6 +197,19 @@ class omega(FoamFile):
                                 'name': 'empty',
                                 'label': 'empty',
                                 'parameters' : []
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'customPatch',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
                             }
                         ]
                     }
