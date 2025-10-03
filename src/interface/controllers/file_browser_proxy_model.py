@@ -12,6 +12,7 @@ class FileBrowserProxyModel(QSortFilterProxyModel):
         left_is_dir = model.isDir(source_left)
         right_is_dir = model.isDir(source_right)
 
+        # Rule 1: Directories always come before files
         if left_is_dir and not right_is_dir:
             return True
         if not left_is_dir and right_is_dir:
@@ -20,15 +21,21 @@ class FileBrowserProxyModel(QSortFilterProxyModel):
         left_name = model.fileName(source_left)
         right_name = model.fileName(source_right)
 
-        priority_order = ["0", "constant", "system"]
+        # Rule 2: If both are directories, apply priority sorting
+        if left_is_dir and right_is_dir:
+            priority_order = ["0", "constant", "system"]
 
-        if left_name in priority_order and right_name in priority_order:
-            return priority_order.index(left_name) < priority_order.index(right_name)
+            left_is_priority = left_name in priority_order
+            right_is_priority = right_name in priority_order
 
-        if left_name in priority_order:
-            return True
+            if left_is_priority and right_is_priority:
+                return priority_order.index(left_name) < priority_order.index(right_name)
 
-        if right_name in priority_order:
-            return False
+            if left_is_priority:
+                return True
 
+            if right_is_priority:
+                return False
+
+        # Rule 3: For everything else (files, or non-priority dirs), sort alphabetically
         return super().lessThan(source_left, source_right)
