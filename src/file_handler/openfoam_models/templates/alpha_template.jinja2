@@ -1,10 +1,10 @@
 {# Plantilla Jinja2 para el archivo 'alpha.water' de OpenFOAM #}
 dimensions      [{{uDim[0]}} {{uDim[1]}} {{uDim[2]}} {{uDim[3]}} {{uDim[4]}} {{uDim[5]}} {{uDim[6]}}];
 
-{%if internalField == "customPatch"%}
+{%if internalField.option_selected == "customPatch"%}
 internalField    {{internalField.customPatchContent}} 
 {%else%} 
-internalField     uniform  {{internalField}};  
+internalField     uniform  {{internalField.value}};  
 {%endif%}
 
 boundaryField

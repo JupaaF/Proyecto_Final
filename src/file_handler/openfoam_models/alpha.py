@@ -20,7 +20,7 @@ class alpha(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Inicializa los parámetros con valores por defecto
-        self.internalField = 0
+        self.internalField = []
         self.boundaryField = []
         self.unitDimensions = [0, 0, 0, 0, 0, 0, 0]
         self.customContent = None
@@ -29,10 +29,14 @@ class alpha(FoamFile):
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
+
+        internalField = self.internalField[1].copy()
+        internalField['option_selected'] = self.internalField[0]
+
         template = self.jinja_env.get_template("alpha_template.jinja2")
         context = {
             'uDim':self.unitDimensions,
-            'internalField': self.internalField,
+            'internalField': internalField,
             'boundaryField': self.boundaryField,
             'customContent': self.customContent
         }
@@ -88,8 +92,7 @@ class alpha(FoamFile):
                 'tooltip': 'Define el valor inicial de alpha en todo el dominio (0 a 1).',
                 'type': 'choice_with_options',
                 'current': self.internalField,
-                'default': 'uniform',
-                        'options': [
+                'options': [
                             {
                                 'name': 'uniform',
                                 'label': 'uniform',
