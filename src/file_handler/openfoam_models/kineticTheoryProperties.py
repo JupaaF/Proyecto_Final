@@ -1,3 +1,4 @@
+
 from pathlib import Path
 from .foam_file import FoamFile
 from jinja2 import Environment, FileSystemLoader
@@ -12,8 +13,18 @@ class kineticTheoryProperties(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
-        self.customContent = None
         # Valores por defecto
+        self.customContent = None
+        self.kineticTheory = 'off'
+        self.granularPressureModel = 'Lun'
+        self.radialModel = 'CarnahanStarling'
+        self.viscosityModel = 'Syamlal'
+        self.conductivityModel = 'Syamlal'
+        self.e = 0.9
+        self.alphaMax = 0.6
+        self.MaxTheta = 0.001
+        self.phi = 32
+
         
 
     def _get_string(self) -> str:
@@ -23,7 +34,16 @@ class kineticTheoryProperties(FoamFile):
         template = self.jinja_env.get_template("kineticTheoryProperties_template.jinja2")
 
         context = {
-            'customContent': self.customContent
+            'customContent': self.customContent,
+            'kineticTheory': self.kineticTheory,
+            'granularPressureModel': self.granularPressureModel,
+            'radialModel': self.radialModel,
+            'viscosityModel': self.viscosityModel,
+            'conductivityModel': self.conductivityModel,
+            'e': self.e,
+            'alphaMax': self.alphaMax,
+            'MaxTheta': self.MaxTheta,
+            'phi': self.phi
         }
 
         content = template.render(context)
@@ -70,18 +90,72 @@ class kineticTheoryProperties(FoamFile):
         """
         Devuelve un diccionario con los parámetros editables y sus valores actuales.
         """
-        return { # Por ahora no hay param editables
+        return { 
+            'kineticTheory': {
+                'label': 'kineticTheory',
+                'tooltip': 'Utilizar la teoría cinética o no.',
+                'type': 'choice',
+                'options': ['on','off'], 
+                'current': self.kineticTheory,
+            },
+            'granularPressureModel': {
+                'label': 'granularPressureModel',
+                'tooltip': 'Modelo de presión granular.',
+                'type': 'choice',
+                'options': ['Lun','SyamlalRogersOBrien','Torquato'], 
+                'current': self.granularPressureModel
+            },
+            'radialModel': {
+                'label': 'radialModel',
+                'tooltip': 'Modelo de distribución radial de la partícula.',
+                'type': 'choice',
+                'options': ['CamahanStarIing','ChialvoSundaresan','Gidaspow','LunSavage','SinclairJackson','Torquato'], 
+                'current': self.radialModel
+            },
+            'viscosityModel': {
+                'label': 'viscosityModel',
+                'tooltip': 'Modelo para la viscosidad de corte y la viscosidad volumétrica.',
+                'type': 'choice',
+                'options': ['GarzoDufty','GarzoDuftyMod','Gidaspow','HrenyaSincIair','Syamlal','none'], 
+                'current': self.viscosityModel
+            },
+            'conductivityModel': {
+                'label': 'conductivityModel',
+                'tooltip': 'Modelo para la conductividad de la temperatura granular.',
+                'type': 'choice',
+                'options': ['GarzoDufty','GarzoDuftyMod','Gidaspow','HrenyaSincIair','Syamlal'], 
+                'current': self.conductivityModel
+            },
+            'e': {
+                'label': 'e',
+                'tooltip': 'Coeficiente de restitución.',
+                'type': 'float',
+                'current': self.e
+            },
+            'alphaMax': {
+                'label': 'alphaMax',
+                'tooltip': 'Fracción máxima de volumen sólido.',
+                'type': 'float',
+                'current': self.alphaMax
+            },
+            'MaxTheta': {
+                'label': 'MaxTheta',
+                'tooltip': 'Temperatura granular máxima.',
+                'type': 'float', 
+                'current': self.MaxTheta
+            },
+            'phi': {
+                'label': 'phi',
+                'tooltip': 'Ángulo de fricción.',
+                'type': 'float', 
+                'current': self.phi
+            },
             'customContent': {
                 'label': 'Contenido de experto',
-                'tooltip': 'Cosas que van directamente al archivo',
+                'tooltip': 'Cosas que van directamente al archivo.',
                 'type': 'string',
                 'default': "",
                 'current': self.customContent,
                 'optional': True
             }
         }
-       
-
-
-
-    

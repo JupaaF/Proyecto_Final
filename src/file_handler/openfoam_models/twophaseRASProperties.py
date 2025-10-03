@@ -12,10 +12,13 @@ class twophaseRASProperties(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
-        self.customContent = None
-        
         # Valores por defecto
-        
+        self.customContent = None
+        self.SUS = 1
+        self.KE1 = 0
+        self.KE3 = 0
+        self.B = 0.25
+        self.Tpsmall = 1e-6
 
     def _get_string(self) -> str:
         """
@@ -24,6 +27,11 @@ class twophaseRASProperties(FoamFile):
         template = self.jinja_env.get_template("twophaseRASProperties_template.jinja2")
 
         context = {
+            'SUS': self.SUS,
+            'KE1': self.KE1,
+            'KE3': self.KE3,
+            'B': self.B,
+            'Tpsmall': self.Tpsmall,
             'customContent': self.customContent
         }
 
@@ -72,7 +80,37 @@ class twophaseRASProperties(FoamFile):
         """
         Devuelve un diccionario con los parámetros editables y sus valores actuales.
         """
-        return { # Por ahora no hay param editables
+        return { 
+            'SUS': {
+                'label': 'SUS',
+                'tooltip': '',
+                'type': 'float',
+                'current': self.SUS
+            },  
+            'KE1': {
+                'label': 'KE1',
+                'tooltip': 'coef. for density stratif (Uf-Us)',
+                'type': 'float',
+                'current': self.KE1
+            },  
+            'KE3': {
+                'label': 'KE3',
+                'tooltip': 'coef. for turbulence generation',
+                'type': 'float',
+                'current': self.KE3
+            },  
+            'B': {
+                'label': 'B',
+                'tooltip': 'empirical parameter for turb drag',
+                'type': 'float',
+                'current': self.B
+            },  
+            'Tpsmall': {
+                'label': 'Tpsmall',
+                'tooltip': 'min. Tp value for turb. drag	',
+                'type': 'float',
+                'current': self.Tpsmall
+            }, 
             'customContent': {
                 'label': 'Contenido de experto',
                 'tooltip': 'Cosas que van directamente al archivo',

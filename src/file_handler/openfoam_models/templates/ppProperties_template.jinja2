@@ -1,19 +1,16 @@
-    ppModel          JohnsonJackson;
+ppModel          {{ppModel}};
 
-    alphaMax         alphaMax [ 0 0 0 0 0 0 0 ] 0.58;
+alphaMax         alphaMax [ 0 0 0 0 0 0 0 ] {{alphaMax}};
 
-    alphaMinFriction alphaMinFriction [ 0 0 0 0 0 0 0 ] 0.53;
+alphaMinFriction alphaMinFriction [ 0 0 0 0 0 0 0 ] {{alphaMinFriction}};
 
-    Fr               Fr [ 1 -1 -2 0 0 0 0 ] 5e-2;
+Fr               Fr [ 1 -1 -2 0 0 0 0 ] {{Fr}};
 
-    eta0             eta0 [ 0 0 0 0 0 0 0 ] 3;
+eta0             eta0 [ 0 0 0 0 0 0 0 ] {{eta0}};
 
-    eta1             eta1 [ 0 0 0 0 0 0 0 ] 5;
+eta1             eta1 [ 0 0 0 0 0 0 0 ] {{eta1}};
 
-    packingLimiter  no;
-
-
-    // ************************************************************************* //
+packingLimiter  {{packingLimiter}};
 
 {%if customContent is not none%}
 {{customContent}}

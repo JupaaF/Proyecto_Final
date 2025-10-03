@@ -1,43 +1,21 @@
 
-    kineticTheory   off;
+kineticTheory   {{kineticTheory}};
 
-    equilibrium     off;
+e               e [ 0 0 0 0 0 0 0 ] {{e}};
 
-    limitProduction off;
+alphaMax        alphaMax [ 0 0 0 0 0 0 0 ] {{alphaMax}};
 
-    e               e [ 0 0 0 0 0 0 0 ] 0.8;
+MaxTheta       MaxTheta [ 0 2 -2 0 0 0 0 ] {{MaxTheta}};
 
-    alphaMax        alphaMax [ 0 0 0 0 0 0 0 ] 0.6;
+phi             phi [ 0 0 0 0 0 0 0 ] {{phi}};
 
-    DiluteCut       DiluteCut [ 0 0 0 0 0 0 0 ] 0.00000;
+viscosityModel  {{viscosityModel}};
 
-    ttzero          ttzero [ 0 0 1 0 0 0 0 ] 0;
+conductivityModel {{conductivityModel}};
 
-    ttone          ttone [ 0 0 1 0 0 0 0 ] 0;
+granularPressureModel {{granularPressureModel}};
 
-    MaxTheta       MaxTheta [ 0 2 -2 0 0 0 0 ] 0.5;
-
-    phi             phi [ 0 0 0 0 0 0 0 ] 32.0;
-
-    psi             psi [ 0 0 0 0 0 0 0 ] 0.0;
-
-    KineticJ1      KineticJ1 [ 0 0 0 0 0 0 0 ] 1; //turn off the viscous dissipation
-
-    KineticJ2       KineticJ2 [ 0 0 0 0 0 0 0] 0;
-
-    KineticJ3       KineticJ3 [ 0 0 0 0 0 0 0] 0;
-
-    viscosityModel  Syamlal;
-
-    conductivityModel Syamlal;
-
-    granularPressureModel Lun;
-
-    frictionalStressModel SrivastavaSundaresan;
-
-    radialModel     CarnahanStarling;
-
-// ************************************************************************* //
+radialModel    {{radialModel}};
 
 {%if customContent is not none%}
 {{customContent}}

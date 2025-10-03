@@ -146,44 +146,85 @@ class transportProperties(FoamFile):
                         
                     },
                     {
-                        'name': '2DChannel',
-                        'label': '2DChannel-SedFOAM',
+                        'name': 'sedFoam',
+                        'label': 'sedFoam',
                         'parameters':[
                             {
                                 'name': 'da',
-                                'label': 'Diámetro Fase A',
+                                'label': 'Diámetro Fase A - Sólido',
                                 'tooltip': 'Diámetro de las partículas.' ,
                                 'type': 'float',
-                                'default': 1e-7
-                            },                             #TODO: ver el tipo y si
+                                'default': 200e-6
+                            },       
+                            {
+                                'name': 'rhoa',
+                                'label': 'rho Fase A - Sólido',
+                                'tooltip': 'Densidad de la fase.' ,
+                                'type': 'float',
+                                'default': 1000
+                            },       
+                            {
+                                'name': 'nua',
+                                'label': 'nu Fase A - Sólido',
+                                'tooltip': 'Viscosidad de la fase.' ,
+                                'type': 'float',
+                                'default': 1e-6
+                            },       
+                            {
+                                'name': 'sFa',
+                                'label': 'sF Fase A - Sólido',
+                                'tooltip': 'Factor de forma.' ,
+                                'type': 'float',
+                                'default': 1
+                            },       
+                            {
+                                'name': 'hExpa',
+                                'label': 'hExp Fase A - Sólido',
+                                'tooltip': 'Hindrance exponente.' ,
+                                'type': 'float',
+                                'default': 2.65
+                            },                             
                             {
                                 'name': 'db',
-                                'label': 'Diámetro Fase B',
+                                'label': 'Diámetro Fase B - Fluído',
                                 'tooltip': 'Diámetro de las partículas.' ,
                                 'type': 'float',
                                 'default': 1e-7
+                            },       
+                            {
+                                'name': 'rhob',
+                                'label': 'rho Fase B - Fluído',
+                                'tooltip': 'Densidad de la fase.' ,
+                                'type': 'float',
+                                'default': 1000
+                            },       
+                            {
+                                'name': 'nub',
+                                'label': 'nu Fase B - Fluído',
+                                'tooltip': 'Viscosidad de la fase.' ,
+                                'type': 'float',
+                                'default': 1e-6
+                            },       
+                            {
+                                'name': 'sFb',
+                                'label': 'sF Fase B - Fluído',
+                                'tooltip': 'Factor de forma.' ,
+                                'type': 'float',
+                                'default': 1
+                            },       
+                            {
+                                'name': 'hExpb',
+                                'label': 'hExp Fase B - Fluído',
+                                'tooltip': 'Hindrance exponente.' ,
+                                'type': 'float',
+                                'default': 2.65
                             }
                             ]
                     },
                     {
-                        'name': '3DScourSqr',
-                        'label': '3DScourSqr-SedFOAM',
-                        'parameters':[
-                            {
-                                'name': 'da',
-                                'label': 'Diámetro Fase A',
-                                'tooltip': 'Diámetro de las partículas.' ,
-                                'type': 'float',
-                                'default': 0.26e-3
-                            },                             #TODO: ver el tipo y si
-                            {
-                                'name': 'db',
-                                'label': 'Diámetro Fase B',
-                                'tooltip': 'Diámetro de las partículas.' ,
-                                'type': 'float',
-                                'default': 10e-6
-                            }
-                        ]
+                        'name': 'Personalizado',
+                        'label': 'Personalizado',
+                        'parameters': []
                     }
                 ]
             },

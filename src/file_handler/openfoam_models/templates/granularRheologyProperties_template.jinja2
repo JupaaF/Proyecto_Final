@@ -1,33 +1,30 @@
+    granularRheology   {{granularRheology}};
 
-    granularRheology   off;
+    granularDilatancy  {{granularDilatancy}};
 
-    granularDilatancy  off;
+    granularCohesion  {{granularCohesion}};
 
-    granularCohesion  off;
+    alphaMaxG       alphaMaxG [ 0 0 0 0 0 0 0 ] {{alphaMaxG}};
 
-    alphaMaxG       alphaMaxG [ 0 0 0 0 0 0 0 ] 0.625;
+    mus             mus  [ 0 0 0 0 0 0 0 ] {{mus}};
 
-    mus             mus  [ 0 0 0 0 0 0 0 ] 0.4;
+    mu2             mu2  [ 0 0 0 0 0 0 0 ] {{mu2}};
 
-    mu2             mu2  [ 0 0 0 0 0 0 0 ] 0.9;
+    I0              I0  [ 0 0 0 0 0 0 0 ] {{I0}};
 
-    I0              I0  [ 0 0 0 0 0 0 0 ] 0.6;
+    Bphi            Bphi [ 0 0 0 0 0 0 0 ] {{Bphi}};
 
-    Bphi            Bphi [ 0 0 0 0 0 0 0 ] 0.66;
+    n               n [ 0 0 0 0 0 0 0 ] {{n}};
 
-    n               n [ 0 0 0 0 0 0 0 ] 2.5;
+    Dsmall          Dsmall [ 0 0 -1 0 0 0 0 ] {{Dsmall}};
 
-    Dsmall          Dsmall [ 0 0 -1 0 0 0 0 ] 1e-4;
-
-    relaxPa         relaxPa [ 0 0 0 0 0 0 0 ] 0.0005;
-
-    zbed         zbed [ 0 1 0 0 0 0 0 ] 0.0;
+    relaxPa         relaxPa [ 0 0 0 0 0 0 0 ] {{relaxPa}};
 
     FrictionModel  {{FrictionModel}};
 
-    PPressureModel MuI;
+    PPressureModel {{PPressureModel}};
 
-    FluidViscosityModel  BoyerEtAl;
+    FluidViscosityModel  {{FluidViscosityModel}};
 
 {%if customContent is not none%}
 {{customContent}}

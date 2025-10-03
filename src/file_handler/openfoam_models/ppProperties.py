@@ -12,9 +12,17 @@ class ppProperties(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
 
-        self.customContent = None
-        
         # Valores por defecto
+        self.customContent = None
+        self.ppModel = 'JohnsonJackson'
+        self.alphaMax = 0.635
+        self.alphaMinFriction = 0.57
+        self.Fr = 0.05
+        self.eta0 = 3
+        self.eta1 = 5
+        self.packingLimiter = 'no'
+        
+        
         
 
     def _get_string(self) -> str:
@@ -24,6 +32,13 @@ class ppProperties(FoamFile):
         template = self.jinja_env.get_template("ppProperties_template.jinja2")
 
         context = {
+            'ppModel': self.ppModel,
+            'alphaMax': self.alphaMax,
+            'alphaMinFriction': self.alphaMinFriction,
+            'Fr': self.Fr,
+            'eta0': self.eta0,
+            'eta1': self.eta1,
+            'packingLimiter': self.packingLimiter,
             'customContent': self.customContent
         }
 
@@ -71,7 +86,51 @@ class ppProperties(FoamFile):
         """
         Devuelve un diccionario con los parámetros editables y sus valores actuales.
         """
-        return { # Por ahora no hay param editables
+        return { 
+            'ppModel': {
+                'label': 'ppModel',
+                'tooltip': 'Modelo de la presión elástica.',
+                'type': 'choice',
+                'options': ['JohnsonJackson','Hsu','MerckelbachKranenburg','Chauchat'],
+                'current': self.ppModel
+            }, 
+            'alphaMax': {
+                'label': 'alphaMax',
+                'tooltip': 'Fracción máxima de volumen sólido.',
+                'type': 'float',
+                'current': self.alphaMax
+            }, 
+            'alphaMinFriction': {
+                'label': 'alphaMinFriction',
+                'tooltip': 'Random loose packing frac.',
+                'type': 'float',
+                'current': self.alphaMinFriction
+            }, 
+            'Fr': {
+                'label': 'Fr',
+                'tooltip': 'Módulo elástico.',
+                'type': 'float',
+                'current': self.Fr
+            }, 
+            'eta0': {
+                'label': 'eta0',
+                'tooltip': 'Exponente empírico.',
+                'type': 'float',
+                'current': self.eta0
+            },  
+            'eta1': {
+                'label': 'eta1',
+                'tooltip': 'Exponente empírico.',
+                'type': 'float',
+                'current': self.eta1
+            }, 
+            'packingLimiter': {
+                'label': 'packingLimiter',
+                'tooltip': '',
+                'type': 'choice',
+                'options': ['yes','no'],
+                'current': self.packingLimiter
+            },
             'customContent': {
                 'label': 'Contenido de experto',
                 'tooltip': 'Cosas que van directamente al archivo',
