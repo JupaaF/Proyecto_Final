@@ -86,8 +86,37 @@ class alpha(FoamFile):
             'internalField': {
                 'label': 'InternalField (alpha)',
                 'tooltip': 'Define el valor inicial de alpha en todo el dominio (0 a 1).',
-                'type': 'float',
+                'type': 'choice_with_options',
                 'current': self.internalField,
+                'default': 'uniform',
+                        'options': [
+                            {
+                                'name': 'uniform',
+                                'label': 'uniform',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    },
+                                ]
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'Contenido Personalizado',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
+                            }
+                        ],
                 'group': 'Campo Interno',
             },
             'boundaryField': {
