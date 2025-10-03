@@ -64,6 +64,26 @@ class ParameterEditorManager:
         self.scroll_area.setWidget(self.main_container)
         self.scroll_area.setMinimumWidth(self.main_container.sizeHint().width() + 40)
 
+    def close(self):
+        """
+        Cierra el editor de parámetros actual, limpiando la UI y el estado.
+        """
+        # Limpiar el widget del scroll area
+        if self.scroll_area.widget():
+            self.scroll_area.widget().deleteLater()
+            self.scroll_area.setWidget(None) # Asegurarse de que no haya widget colgando
+
+        # Resetear el título del dock
+        if self.scroll_area.parentWidget() and self.scroll_area.parentWidget().parentWidget():
+            dock_widget = self.scroll_area.parentWidget().parentWidget()
+            dock_widget.setWindowTitle("Editor de parámetros")
+
+        # Limpiar el estado interno
+        self.current_file_path = None
+        self.main_container = None
+        self.patches_widget_instance = None
+
+
     def save_parameters(self) -> bool:
         """
         Recopila los valores de los widgets de la UI, los valida y los guarda.
