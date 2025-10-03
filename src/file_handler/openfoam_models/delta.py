@@ -18,7 +18,7 @@ class delta(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Inicializa los parámetros con valores por defecto
-        self.internalField = 0.0
+        self.internalField = []
         self.boundaryField = []
         self.unitDimensions = [0, 0, 0, 0, 0, 0, 0]
         self.customContent = None
@@ -27,10 +27,14 @@ class delta(FoamFile):
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
+
+        internalField = self.internalField[1].copy()
+        internalField['option_selected'] = self.internalField[0]
+
         template = self.jinja_env.get_template("delta_template.jinja2")
         context = {
             'uDim':self.unitDimensions,
-            'internalField': self.internalField,
+            'internalField': internalField,
             'boundaryField': self.boundaryField,
             'customContent': self.customContent
         }
@@ -82,10 +86,38 @@ class delta(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (delta)',
+                'label': 'InternalField (delta)',
                 'tooltip': 'Define el valor inicial de delta en todo el dominio (0 a 1).',
-                'type': 'float',
+                'type': 'choice_with_options',
                 'current': self.internalField,
+                'options': [
+                            {
+                                'name': 'uniform',
+                                'label': 'uniform',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    },
+                                ]
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'Contenido Personalizado',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
+                            }
+                        ],
                 'group': 'Campo Interno',
             },
             'boundaryField': {

@@ -21,7 +21,7 @@ class U(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         # Inicializa los parámetros con valores por defecto
-        self.internalField = {'x': 0, 'y': 0, 'z': 0}
+        self.internalField = []
         self.boundaryField = []
         self.unitDimensions = [0, 1, -1, 0, 0, 0, 0]
         self.customContent = None  # Default for velocity
@@ -33,10 +33,13 @@ class U(FoamFile):
         """
         template = self.jinja_env.get_template("U_template.jinja2")
 
+        internalField = self.internalField[1].copy()
+        internalField['option_selected'] = self.internalField[0]
+
         context = {
             'customContent':self.customContent,
             'uDim':self.unitDimensions,
-            'internalField': self.internalField,
+            'internalField': internalField,
             'boundaryField': self.boundaryField
         }
         content = template.render(context)
@@ -92,10 +95,38 @@ class U(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (Velocidad)',
-                'tooltip': 'Define el valor de velocidad inicial en todo el dominio.',
-                'type': 'vector',
+                'label': 'InternalField (U)',
+                'tooltip': 'Define el valor inicial de U en todo el dominio.',
+                'type': 'choice_with_options',
                 'current': self.internalField,
+                'options': [
+                            {
+                                'name': 'uniform',
+                                'label': 'uniform',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'vector',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': {'x':0, 'y':0, 'z':0}
+                                    },
+                                ]
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'Contenido Personalizado',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
+                            }
+                        ],
                 'group': 'Campo Interno',
             },
             'boundaryField': {

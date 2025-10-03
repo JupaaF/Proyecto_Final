@@ -25,7 +25,7 @@ class epsilon(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         # Inicializa los parámetros con valores por defecto
-        self.internalField = 0
+        self.internalField = []
         self.boundaryField = []
         self.unitDimensions = [0, 2,-3, 0, 0, 0, 0]
         self.customContent = None
@@ -35,10 +35,14 @@ class epsilon(FoamFile):
         Genera el contenido del archivo 'U' renderizando la plantilla Jinja2
         con los datos de la instancia.
         """
+
+        internalField = self.internalField[1].copy()
+        internalField['option_selected'] = self.internalField[0]
+
         template = self.jinja_env.get_template("epsilon_template.jinja2")
         context = {
             'uDim':self.unitDimensions,
-            'internalField': self.internalField,
+            'internalField': internalField,
             'boundaryField': self.boundaryField,
             'customContent': self.customContent
         }
@@ -90,10 +94,38 @@ class epsilon(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (epsilon)',
+                'label': 'InternalField (epsilon)',
                 'tooltip': 'Define el valor inicial de la tasa de disipación de turbulencia (epsilon) en todo el dominio.',
-                'type': 'float',
+                'type': 'choice_with_options',
                 'current': self.internalField,
+                'options': [
+                            {
+                                'name': 'uniform',
+                                'label': 'uniform',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    },
+                                ]
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'Contenido Personalizado',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
+                            }
+                        ],
                 'group': 'Campo Interno',
             },
             'boundaryField': {

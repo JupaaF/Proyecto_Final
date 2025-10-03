@@ -2,7 +2,11 @@
 
 dimensions      [{{uDim[0]}} {{uDim[1]}} {{uDim[2]}} {{uDim[3]}} {{uDim[4]}} {{uDim[5]}} {{uDim[6]}}];
 
-internalField   uniform {{internalField}};
+{%if internalField.option_selected == "customPatch"%}
+internalField    {{internalField.customPatchContent}};
+{%else%}
+internalField     uniform  {{internalField.value}};
+{%endif%}
 
 boundaryField
 {

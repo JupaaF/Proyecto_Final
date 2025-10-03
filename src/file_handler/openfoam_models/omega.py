@@ -18,7 +18,7 @@ class omega(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Valores por defecto
-        self.internalField = 10
+        self.internalField = []
         self.boundaryField = []
         self.unitDimensions = [0, 0, -1, 0, 0, 0, 0]
         self.customContent = None
@@ -27,10 +27,14 @@ class omega(FoamFile):
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
+
+        internalField = self.internalField[1].copy()
+        internalField['option_selected'] = self.internalField[0]
+
         template = self.jinja_env.get_template("omega_template.jinja2")
         context = {
             'uDim':self.unitDimensions,
-            'internalField': self.internalField,
+            'internalField': internalField,
             'boundaryField': self.boundaryField,
             'customContent': self.customContent
         }
@@ -82,10 +86,38 @@ class omega(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno',
+                'label': 'InternalField (omega)',
                 'tooltip': 'Valor inicial en el dominio.',
-                'type': 'float',
+                'type': 'choice_with_options',
                 'current': self.internalField,
+                'options': [
+                            {
+                                'name': 'uniform',
+                                'label': 'uniform',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    },
+                                ]
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'Contenido Personalizado',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
+                            }
+                        ],
                 'group': 'General'
             },
             'boundaryField': {

@@ -19,7 +19,7 @@ class p_rgh(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Valores por defecto
-        self.internalField = 0
+        self.internalField = []
         self.boundaryField = []
         self.unitDimensions = [1, -1, -2, 0, 0, 0, 0]
         self.customContent = None
@@ -28,10 +28,14 @@ class p_rgh(FoamFile):
         """
         Genera el contenido del archivo renderizando la plantilla Jinja2.
         """
+
+        internalField = self.internalField[1].copy()
+        internalField['option_selected'] = self.internalField[0]
+
         template = self.jinja_env.get_template("p_rgh_template.jinja2")
         context = {
             'uDim':self.unitDimensions,
-            'internalField': self.internalField,
+            'internalField': internalField,
             'boundaryField': self.boundaryField,
             'customContent': self.customContent
         }
@@ -83,10 +87,38 @@ class p_rgh(FoamFile):
         """
         return {
             'internalField': {
-                'label': 'Campo Interno (p_rgh)',
+                'label': 'InternalField (p_rgh)',
                 'tooltip': 'Valor inicial de la presión modificada en el dominio.',
-                'type': 'float',
+                'type': 'choice_with_options',
                 'current': self.internalField,
+                'options': [
+                            {
+                                'name': 'uniform',
+                                'label': 'uniform',
+                                'parameters' : [
+                                    {
+                                        'name': 'value',
+                                        'type': 'float',
+                                        'label': 'value',
+                                        'tooltip': 'value',
+                                        'default': 0
+                                    },
+                                ]
+                            },
+                            {
+                                'name': 'customPatch',
+                                'label': 'Contenido Personalizado',
+                                'parameters' : [
+                                    {
+                                        'name': 'customPatchContent',
+                                        'type': 'string',
+                                        'label': 'customPatchContent',
+                                        'tooltip': 'customPatchContent',
+                                        'default': "",
+                                    }
+                                ] 
+                            }
+                        ],
                 'group': 'General'
             },
             'boundaryField': {
