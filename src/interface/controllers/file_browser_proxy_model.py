@@ -1,5 +1,5 @@
 from PySide6.QtCore import QSortFilterProxyModel, QModelIndex
-from PySide6.QtGui import QFileSystemModel
+from PySide6.QtWidgets import QFileSystemModel
 
 class FileBrowserProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None):
