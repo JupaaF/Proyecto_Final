@@ -516,6 +516,10 @@ class MainWindowController(QMainWindow):
 
     def _setup_managers(self):
         """Configura los manejadores de la interfaz (navegador de archivos y editor)."""
+
+        if self.parameter_editor_manager:
+            self.parameter_editor_manager.close()
+
         # Always re-create managers to ensure they are linked to the new file_handler
         self.file_browser_manager = FileBrowserManager(self.ui.fileBrowserDock, self.file_handler)
         self.file_browser_manager.file_clicked.connect(self.open_parameters_view)
