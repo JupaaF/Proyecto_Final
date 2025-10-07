@@ -264,7 +264,7 @@ class controlDict(FoamFile):
                 'label': 'Funciones para cosas', #TODO: renombrar xd
                 'tooltip': 'Funciones para cosas',
                 'type': 'choice',
-                'options': ['damBreakOpenFoam','waterChannelOpenFoam','2DChannelSedFoam', '3DScourSqrSedFoam'],  
+                'options': ['damBreakOpenFoam','waterChannelOpenFoam','2DChannelSedFoam','Ninguno'],  
                 'current': self.functions,
             },
             'customContent': {

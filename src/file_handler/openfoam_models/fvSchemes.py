@@ -93,7 +93,7 @@ class fvSchemes(FoamFile):
                 'tooltip': '''Esquema de discretización para gradientes:
                 -  Gauss linear: especifica la discretización estándar de volumen finito con integración gaussiana.''',
                 'type': 'choice',
-                'options': ['Gauss linear'], # TODO ver si agregar lo de cellLimited (doc 4.5.2)
+                'options': ['Gauss linear','2DPipelineScour'], # TODO ver si agregar lo de cellLimited (doc 4.5.2)
                 'current': self.gradSchemes,
                 'group': 'Esquemas de Gradiente'
             },
@@ -108,7 +108,8 @@ class fvSchemes(FoamFile):
                     'damBreak',
                     'waterChannel',
                     '2DChannel',
-                    '3DScourSqr'
+                    '2DPipelineScour',
+                    'Personalizado'
                 ]
             },
             'laplacianSchemes': {
@@ -117,7 +118,7 @@ class fvSchemes(FoamFile):
 En todos los casos, se utiliza el esquema de interpolación lineal para la interpolación de la difusividad. 
 Se utiliza la misma matriz de esquemas snGradSchemes basada en la no ortogonalidad máxima de la malla.''',
                 'type': 'choice',
-                'options': ['Gauss linear', '2DChannel', '3DScourSqr'],
+                'options': ['Gauss linear', '2DChannel', '2DPipelineScour','Personalizado'],
                 'current': self.laplacianSchemes,
                 'group': 'Esquemas de Laplaciano'
             },

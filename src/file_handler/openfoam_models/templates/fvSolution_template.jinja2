@@ -72,17 +72,17 @@ solvers
 {
     "alpha.water.*"
     {
-        nAlphaCorr      1;
-        nAlphaSubCycles 1;
-        cAlpha          1;
+        nAlphaCorr      {{ params.nAlphaCorr }};
+        nAlphaSubCycles {{ params.nAlphaSubCycles }};
+        cAlpha          {{ params.cAlpha }};
 
         MULESCorr       yes;
-        nLimiterIter    3;
+        nLimiterIter    {{ params.nLimiterIter }};
 
         solver          smoothSolver;
         smoother        symGaussSeidel;
-        tolerance       1e-8;
-        relTol          0;
+        tolerance       {{ params.alpha_water_tolerance }};
+        relTol          {{ params.alpha_water_relTol }};
     }
 
     "pcorr.*"
@@ -103,16 +103,16 @@ solvers
     p_rgh
     {
         solver           GAMG;
-        tolerance        5e-9;
-        relTol           0.01;
+        tolerance        {{ params.p_rgh_tolerance }};
+        relTol           {{ params.p_rgh_relTol }};
         smoother         GaussSeidel;
-        maxIter          50;
+        maxIter          {{ params.p_rgh_maxIter }};
     };
 
     p_rghFinal
     {
         $p_rgh;
-        tolerance       5e-9;
+        tolerance       {{ params.p_rgh_tolerance }};
         relTol          0;
     }
 
@@ -120,17 +120,17 @@ solvers
     {
         solver          smoothSolver;
         smoother        symGaussSeidel;
-        nSweeps         1;
-        tolerance       1e-6;
-        relTol          0.1;
+        nSweeps         {{ params.U_k_omega_s_nSweeps }};
+        tolerance       {{ params.U_k_omega_s_tolerance }};
+        relTol          {{ params.U_k_omega_s_relTol }};
     };
 }
 
 PIMPLE
 {
     momentumPredictor no;
-    nCorrectors     2;
-    nNonOrthogonalCorrectors 0;
+    nCorrectors     {{ params.nCorrectors }};
+    nNonOrthogonalCorrectors {{ params.nNonOrthogonalCorrectors }};
 }
 
 relaxationFactors
@@ -150,12 +150,12 @@ solvers
     p_rbgh
     {
         solver          GAMG;
-        tolerance       1e-06;
-        relTol          0.000;
+        tolerance       {{ params.p_rbgh_tolerance }};
+        relTol          {{ params.p_rbgh_relTol }};
         smoother        DIC;
-        nPreSweeps      0;
-        nPostSweeps     2;
-        nFinestSweeps   2;
+        nPreSweeps      {{ params.p_rbgh_nPreSweeps }};
+        nPostSweeps     {{ params.p_rbgh_nPostSweeps }};
+        nFinestSweeps   {{ params.p_rbgh_nFinestSweeps }};
         cacheAgglomeration true;
         nCellsInCoarsestLevel 10;
         agglomerator    faceAreaPair;
@@ -165,7 +165,7 @@ solvers
     p_rbghFinal
     {
         $p_rbgh;
-        tolerance       1e-6;
+        tolerance       {{ params.p_rbgh_tolerance }};
         relTol          0;
     }
 
@@ -173,15 +173,15 @@ solvers
     {
         solver          PBiCG;
         preconditioner  DILU;
-        tolerance       1e-09;
-        relTol          0.00001;
+        tolerance       {{ params.k_epsilon_omega_pa_alpha_tolerance }};
+        relTol          {{ params.k_epsilon_omega_pa_alpha_relTol }};
     }
 
     "(k.bFinal|epsilon.bFinal|omega.bFinal|paFinal|alphaPlasticFinal)"
     {
         solver          PBiCG;
         preconditioner  DILU;
-        tolerance       1e-09;
+        tolerance       {{ params.k_epsilon_omega_pa_alpha_tolerance }};
         relTol          0;
     }
 
@@ -242,28 +242,28 @@ relaxationFactors
 
 PIMPLE
 {
-    nCorrectors     1;
-    nNonOrthogonalCorrectors 0;
+    nCorrectors     {{ params.nCorrectors }};
+    nNonOrthogonalCorrectors {{ params.nNonOrthogonalCorrectors }};
     correctAlpha    0;
-    nAlphaCorr      0;
+    nAlphaCorr      {{ params.nAlphaCorr }};
     
 }
 
 {%endif%}
 
 
-{%if params.solver_selected == '3DScourSqrSedFoam'%}
+{%if params.solver_selected == '2DPipelineScour'%}
 solvers
 {
     p_rbgh
     {
         solver          GAMG;
-        tolerance       1e-06;
-        relTol          0.0001;
+        tolerance       {{ params.p_rbgh_tolerance }};
+        relTol          {{ params.p_rbgh_relTol }};
         smoother        DIC;
-        nPreSweeps      0;
-        nPostSweeps     2;
-        nFinestSweeps   2;
+        nPreSweeps      {{ params.p_rbgh_nPreSweeps }};
+        nPostSweeps     {{ params.p_rbgh_nPostSweeps }};
+        nFinestSweeps   {{ params.p_rbgh_nFinestSweeps }};
         cacheAgglomeration true;
         nCellsInCoarsestLevel 10;
         agglomerator    faceAreaPair;
@@ -273,28 +273,44 @@ solvers
     p_rbghFinal
     {
         $p_rbgh;
-        tolerance       1e-6;
+        tolerance       {{ params.p_rbgh_tolerance }};
         relTol          0;
     }
 
-    "(k.b|epsilon.b|omega.b)"
+    "(k.b|epsilon.b|pa_new_value|alphaPlastic)"
     {
         solver          PBiCG;
         preconditioner  DILU;
-        tolerance       1e-9;
-        relTol          0.000;
-	minIter		1;
+        tolerance       {{ params.k_epsilon_pa_alpha_tolerance }};
+        relTol          {{ params.k_epsilon_pa_alpha_relTol }};
     }
 
-    "(k.b|epsilon.b|omega.b)Final"
+    omega.b
     {
         solver          PBiCG;
         preconditioner  DILU;
-        tolerance       1e-9;
+        tolerance       {{ params.omega_b_tolerance }};
+        relTol          {{ params.omega_b_relTol }};
+
+    }
+
+    "(k.bFinal|epsilon.bFinal|paFinal|alphaPlasticFinal)"
+    {
+       solver          PBiCG;
+        preconditioner  DILU;
+        tolerance       {{ params.k_epsilon_pa_alpha_tolerance }};
         relTol          0;
-	minIter		1;
+
     }
 
+    omega.bFinal
+    {
+        solver          PBiCG;
+        preconditioner  DILU;
+        tolerance       {{ params.omega_b_tolerance }};
+        relTol          0;
+
+    }
 
     "U.a|U.aFinal"
     {
@@ -302,7 +318,6 @@ solvers
         preconditioner  DILU;
         tolerance       1e-6;
         relTol          0;
-	minIter		1;
     }
 
     "U.b|U.bFinal"
@@ -311,53 +326,55 @@ solvers
         preconditioner  DILU;
         tolerance       1e-6;
         relTol          0;
-	minIter		1;
     }
 
-    "(alpha.a|alphaPlastic|pa)"
+    alpha.a
     {
         solver          PBiCG;
         preconditioner  DILU;
         tolerance       1e-9;
         relTol          0;
-	minIter		1;
     }
-    "(alpha.aFinal|alphaPlasticFinal|paFinal)"
+    alpha.aFinal
     {
         solver          PBiCG;
         preconditioner  DILU;
         tolerance       1e-9;
         relTol          0;
-	minIter		1;
     }
     Theta
     {
         solver          PBiCG;
         preconditioner  DILU;
-        tolerance       1e-10;
+        tolerance       1e-9;
         relTol          0;
-	minIter		1;
     }
     ThetaFinal
     {
         solver          PBiCG;
         preconditioner  DILU;
-        tolerance       1e-10;
+        tolerance       1e-9;
         relTol          0;
-	minIter		1;
     }
+}
 
 
-
+relaxationFactors
+{
+    fields
+    {
+        pa              1.;
+    }
 }
 
 PIMPLE
 {
-    nCorrectors     1;
-    nNonOrthogonalCorrectors 1;
-    nAlphaCorr      1;
+    nCorrectors     {{ params.nCorrectors }};
+    nNonOrthogonalCorrectors {{ params.nNonOrthogonalCorrectors }};
+    nAlphaCorr      {{ params.nAlphaCorr }};
     correctAlpha    yes;
-    faceMomentum    false;
+    pRefPoint       (0.9999 0.2049 0.0);
+    pRefValue       {{ params.pRefValue }};
 }
 
 {%endif%}
