@@ -7,7 +7,7 @@ class funkySetFieldsDict(FoamFile):
     Representa el archivo 'funkySetFieldsDict' de OpenFOAM.
     """
     def __init__(self):
-        super().__init__(name="setFieldsDict", folder="system", class_type="dictionary")
+        super().__init__(name="funkySetFieldsDict", folder="system", class_type="dictionary")
         
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))

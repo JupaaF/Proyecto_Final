@@ -13,7 +13,16 @@ class transportProperties(FoamFile):
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         
         # Valores por defecto
-        self.selected_solver = []
+        # self.selected_solver = []
+        self.selected_solver = ['interFoam', {
+            'sigma': 0.07,
+            'water_transportModel': 'Newtonian',
+            'water_nu': 1e-06,
+            'water_rho': 1000,
+            'air_transportModel': 'Newtonian',
+            'air_nu': 1.48e-05,
+            'air_rho': 1
+        }]
         self.customContent = None
 
     def _get_string(self) -> str:

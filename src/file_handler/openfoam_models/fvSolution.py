@@ -418,6 +418,11 @@ class fvSolution(FoamFile):
                                 'default': 0
                             }
                         ]
+                    },
+                    {
+                        'name': 'Personalizado',
+                        'label': 'Personalizado',
+                        'parameters':[]
                     }
                 ]
             },

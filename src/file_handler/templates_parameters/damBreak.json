@@ -15,11 +15,16 @@
     ],
     "parameters": {
         "U": {
-            "internalField": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
+            "internalField": [
+                "uniform",
+                {
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "leftWall",
@@ -109,7 +114,12 @@
             "customContent": null
         },
         "alpha.water": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "leftWall",
@@ -154,7 +164,12 @@
             "customContent": null
         },
         "p_rgh": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "leftWall",

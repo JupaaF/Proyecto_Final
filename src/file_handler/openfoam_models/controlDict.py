@@ -261,8 +261,8 @@ class controlDict(FoamFile):
                 'group': 'Control de Tiempo'
             },
             'functions': {
-                'label': 'Funciones para cosas', #TODO: renombrar xd
-                'tooltip': 'Funciones para cosas',
+                'label': 'Contenido adicional', 
+                'tooltip': 'Usar si se seleccionó un template, sino seleccionar "Ninguno" y utilizar el contenido de experto.',
                 'type': 'choice',
                 'options': ['damBreakOpenFoam','waterChannelOpenFoam','2DChannelSedFoam','Ninguno'],  
                 'current': self.functions,

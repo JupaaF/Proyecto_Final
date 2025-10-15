@@ -1,0 +1,839 @@
+{
+    "template": "2DPipelineScour",
+    "file_names": [
+        "Theta",
+        "U.a",
+        "U.b",
+        "alpha.a",
+        "alphaPlastic",
+        "delta",
+        "epsilon.b",
+        "k.b",
+        "nut.b",
+        "omega.b",
+        "p_rbgh",
+        "pa",
+        "g",
+        "transportProperties",
+        "granularRheologyProperties",
+        "filterProperties",
+        "forceProperties",
+        "turbulenceProperties.a",
+        "turbulenceProperties.b",
+        "twophaseRASProperties",
+        "interfacialProperties",
+        "kineticTheoryProperties",
+        "ppProperties",
+        "controlDict",
+        "fvSchemes",
+        "fvSolution",
+        "decomposeParDict"
+    ],
+    "parameters": {
+        "Theta": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "fixedValue",
+                    "value": 0.033
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "zeroGradient"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                2,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "U.a": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "customPatch",
+                    "customPatchContent": "type codedFixedValue; value uniform (0 0 0); name inlet; codeInclude #{ #include \"fvCFD.H\" #}; codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude \\ -I$(LIB_SRC)/meshTools/lnInclude #}; codeLibs #{ -lfiniteVolume \\ -lmeshTools #}; code #{ const fvPatch& boundaryPatch = patch(); const vectorField& Cf = boundaryPatch.Cf(); vectorField& field = *this; scalar t = this->db().time().value(); forAll(Cf, faceI) { if (Cf[faceI].y() >= -0.025) { if (t "
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "inletOutlet",
+                    "inletValue": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "fixedValue",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "fixedValue",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "unitDimensions": [
+                0,
+                1,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "U.b": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "customPatch",
+                    "customPatchContent": "type codedFixedValue; value uniform (0 0 0); name inlet; codeInclude #{ #include \"fvCFD.H\" #}; codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude \\ -I$(LIB_SRC)/meshTools/lnInclude #}; codeLibs #{ -lfiniteVolume \\ -lmeshTools #}; code #{ const fvPatch& boundaryPatch = patch(); const vectorField& Cf = boundaryPatch.Cf(); vectorField& field = *this; scalar t = this->db().time().value(); forAll(Cf, faceI) { if (Cf[faceI].y() >= -0.025) { if (t "
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "inletOutlet",
+                    "inletValue": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "fixedValue",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "fixedValue",
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "unitDimensions": [
+                0,
+                1,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "alpha.a": {
+            "internalField": [
+                "customPatch",
+                {
+                    "customPatchContent": "#codeStream { codeInclude #{ #include \"fvCFD.H\" #}; codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude \\ -I$(LIB_SRC)/meshTools/lnInclude #}; codeLibs #{ -lfiniteVolume \\ -lmeshTools #}; code #{ const IOdictionary& d = static_cast(dict); const fvMesh& mesh = refCast(d.db()); scalarField alpha_a(mesh.nCells(), 0); forAll(mesh.C(), i) { scalar y = mesh.C()[i].y(); alpha_a[i] = 0.6128*0.5*(1.0+tanh((-0.026-y)*2000))+1e-100; } alpha_a.writeEntry(\"\", os); #};"
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "customPatch",
+                    "customPatchContent": "type codedFixedValue; value uniform 0; name inlet; codeInclude #{ #include \"fvCFD.H\" #}; codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude \\ -I$(LIB_SRC)/meshTools/lnInclude #}; codeLibs #{ -lfiniteVolume \\ -lmeshTools #}; code #{ const fvPatch& boundaryPatch = patch(); const vectorField& Cf = boundaryPatch.Cf(); scalarField& field = *this; forAll(Cf, faceI) { field[faceI] = 0.6128*0.5 *(1.0+tanh((-0.026-Cf[faceI].y())*5000)) +1e-100; } #};"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "zeroGradient"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "alphaPlastic": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.55
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "zeroGradient"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "delta": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "zeroGradient"
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "epsilon.b": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "customPatch",
+                    "customPatchContent": "type fixedValue; value uniform 1; type codedFixedValue; name inlet; codeInclude #{ #include \"fvCFD.H\" #}; codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude \\ -I$(LIB_SRC)/meshTools/lnInclude #}; codeLibs #{ -lfiniteVolume \\ -lmeshTools #}; code #{ const fvPatch& boundaryPatch = patch(); const vectorField& Cf = boundaryPatch.Cf(); scalarField& field = *this; scalar t = this->db().time().value(); forAll(Cf, faceI) { if (t "
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "surface",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "epsilonWallFunction",
+                    "value": 10.0
+                }
+            ],
+            "unitDimensions": [
+                0,
+                2,
+                -3,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "k.b": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 1e-06
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "customPatch",
+                    "customPatchContent": "type codedFixedValue; value uniform 1e-6; name inlet; codeInclude #{ #include \"fvCFD.H\" #}; codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude \\ -I$(LIB_SRC)/meshTools/lnInclude #}; codeLibs #{ -lfiniteVolume \\ -lmeshTools #}; code #{ const fvPatch& boundaryPatch = patch(); const vectorField& Cf = boundaryPatch.Cf(); scalarField& field = *this; scalar t = this->db().time().value(); forAll(Cf, faceI) { if (t "
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "kqRWallFunction",
+                    "value": 0.0025
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "fixedValue",
+                    "value": 1e-09
+                }
+            ],
+            "unitDimensions": [
+                0,
+                2,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "nut.b": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 1e-10
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "calculated",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "nutkWallFunction",
+                    "value": 0.0
+                }
+            ],
+            "unitDimensions": [
+                0,
+                2,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "omega.b": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 10.0
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "customPatch",
+                    "customPatchContent": "type codedFixedValue; value uniform 10; name inlet; codeInclude #{ #include \"fvCFD.H\" #}; codeOptions #{ -I$(LIB_SRC)/finiteVolume/lnInclude \\ -I$(LIB_SRC)/meshTools/lnInclude #}; codeLibs #{ -lfiniteVolume \\ -lmeshTools #}; code #{ const fvPatch& boundaryPatch = patch(); const vectorField& Cf = boundaryPatch.Cf(); scalarField& field = *this; scalar t = this->db().time().value(); forAll(Cf, faceI) { if (Cf[faceI].y() >= -0.024) { if (t "
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "omegaWallFunction",
+                    "value": 10.0,
+                    "kn": 5.36e-06
+                }
+            ],
+            "unitDimensions": [
+                0,
+                0,
+                -1,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "p_rbgh": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "fixedValue",
+                    "value": 0.0
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "zeroGradient"
+                }
+            ],
+            "unitDimensions": [
+                1,
+                -1,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "pa": {
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
+            "boundaryField": [
+                {
+                    "patchName": "inlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "outlet",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "surface",
+                    "type": "symmetryPlane"
+                },
+                {
+                    "patchName": "bottom",
+                    "type": "zeroGradient"
+                },
+                {
+                    "patchName": "lateralfront",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "lateralback",
+                    "type": "empty"
+                },
+                {
+                    "patchName": "cylinder",
+                    "type": "zeroGradient"
+                }
+            ],
+            "unitDimensions": [
+                1,
+                -1,
+                -2,
+                0,
+                0,
+                0,
+                0
+            ],
+            "customContent": null
+        },
+        "g": {
+            "value": {
+                "x": 0.0,
+                "y": -9.81,
+                "z": 0.0
+            },
+            "customContent": null
+        },
+        "transportProperties": {
+            "selected_solver": [
+                "sedFoam",
+                {
+                    "da": 0.363,
+                    "rhoa": 2650.0,
+                    "nua": 1e-06,
+                    "sFa": 1.0,
+                    "hExpa": 2.65,
+                    "db": 1e-05,
+                    "rhob": 1000.0,
+                    "nub": 1e-06,
+                    "sFb": 1.0,
+                    "hExpb": 2.65
+                }
+            ],
+            "customContent": "\nalphaSmall      alphaSmall [ 0 0 0 0 0 0 0 ] 1e-4;  // minimum volume fraction (phase a) for division by alpha \n\nalphaAlpha      alphaAlpha [ 0 0 0 0 0 ] 0;         // surface tension\n\nCvm             Cvm [ 0 0 0 0 0 ] 0;                // Virtual/Added Mass coefficient\n\nCl              Cl [ 0 0 0 0 0 ] 0;                 // Lift force coefficient\n\n\ntransportModel  Newtonian;\n\nnu              nu [ 0 2 -1 0 0 0 0 ] 1e-06;\nnuMax        nuMax [0 2 -1 0 0 0 0] 10;      // viscosity limiter for the Frictional model (required for stability)"
+        },
+        "granularRheologyProperties": {
+            "FrictionModel": "MuI",
+            "granularRheology": "on",
+            "granularDilatancy": "off",
+            "granularCohesion": "off",
+            "alphaMaxG": 0.625,
+            "mus": 0.63,
+            "mu2": 1.13,
+            "I0": 0.6,
+            "Bphi": 0.66,
+            "n": 2.5,
+            "Dsmall": 0.0001,
+            "relaxPa": 5e-05,
+            "PPressureModel": "MuI",
+            "FluidViscosityModel": "BoyerEtAl",
+            "customContent": null
+        },
+        "filterProperties": {
+            "customContent": null
+        },
+        "forceProperties": {
+            "template_or_not": "2DPipelineScour",
+            "customContent": null
+        },
+        "turbulenceProperties.a": {
+            "simulation_type": [
+                "laminar",
+                {}
+            ],
+            "customContent": null
+        },
+        "turbulenceProperties.b": {
+            "simulation_type": [
+                "RAS",
+                {
+                    "model": [
+                        "twophasekOmega",
+                        {}
+                    ]
+                }
+            ],
+            "customContent": null
+        },
+        "twophaseRASProperties": {
+            "SUS": 1.0,
+            "KE1": 0.0,
+            "KE3": 0.0,
+            "B": 1.0,
+            "Tpsmall": 1e-06,
+            "customContent": null
+        },
+        "interfacialProperties": {
+            "customContent": null
+        },
+        "kineticTheoryProperties": {
+            "kineticTheory": "off",
+            "granularPressureModel": "Lun",
+            "radialModel": "CarnahanStarling",
+            "viscosityModel": "Syamlal",
+            "conductivityModel": "Syamlal",
+            "e": 0.7,
+            "alphaMax": 0.4,
+            "MaxTheta": 0.01,
+            "phi": 0.0,
+            "customContent": "limitProduction off;\nextended off;\nmuPart muPart [ 0 0 0 0 0 0 0 ] 0.4;\npsi psi [ 0 0 0 0 0 0 0 ] 0.0;\nkillJ2_ killJ2_ [ 0 0 0 0 0 0 0] 0;\nquadraticCorrectionJ1_ quadraticCorrectionJ1_ [ 0 0 0 0 0 0 0 ] 0;"
+        },
+        "ppProperties": {
+            "ppModel": "JohnsonJackson",
+            "alphaMax": 0.635,
+            "alphaMinFriction": 0.57,
+            "Fr": 0.05,
+            "eta0": 3.0,
+            "eta1": 5.0,
+            "packingLimiter": "no",
+            "customContent": null
+        },
+        "controlDict": {
+            "application": "sedFoam",
+            "startFrom": "latestTime",
+            "startTime": 0.0,
+            "stopAt": "endTime",
+            "endTime": 45.0,
+            "deltaT": 0.0001,
+            "writeControl": "adjustable",
+            "writeInterval": 0.5,
+            "purgeWrite": 0,
+            "writeFormat": "binary",
+            "writePrecision": 6,
+            "writeCompression": "false",
+            "timeFormat": null,
+            "timePrecision": null,
+            "runTimeModifiable": "on",
+            "adjustTimeStep": "true",
+            "maxCo": 0.1,
+            "maxAlphaCo": 0.3,
+            "maxDeltaT": 1.5e-14,
+            "functions": "Ninguno",
+            "customContent": null
+        },
+        "fvSchemes": {
+            "ddtSchemes": "Euler",
+            "gradSchemes": "2DPipelineScour",
+            "divSchemes": "2DPipelineScour",
+            "laplacianSchemes": "2DPipelineScour",
+            "interpolationSchemes": "linear",
+            "snGradSchemes": "corrected",
+            "wallDist": null,
+            "customContent": "\nfluxRequired\n{\n    default         no;\n    p_rbgh               ;\n}"
+        },
+        "fvSolution": {
+            "selected_solver": [
+                "2DPipelineScour",
+                {
+                    "p_rbgh_tolerance": 1e-06,
+                    "p_rbgh_relTol": 0.0001,
+                    "p_rbgh_nPreSweeps": 0,
+                    "p_rbgh_nPostSweeps": 2,
+                    "p_rbgh_nFinestSweeps": 2,
+                    "k_epsilon_pa_alpha_tolerance": 1e-05,
+                    "k_epsilon_pa_alpha_relTol": 0.0,
+                    "omega_b_tolerance": 1e-09,
+                    "omega_b_relTol": 0.0,
+                    "nCorrectors": 2,
+                    "nNonOrthogonalCorrectors": 1,
+                    "nAlphaCorr": 1,
+                    "pRefValue": 0.0
+                }
+            ],
+            "customContent": null
+        },
+        "decomposeParDict": {
+            "numberOfSubdomains": 4,
+            "method": [
+                "scotch",
+                {}
+            ],
+            "customContent": null
+        }
+    }
+}

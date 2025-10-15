@@ -17,6 +17,11 @@ VALID_TEMPLATE_CONTENT = json.dumps([
     {
         "id": "default",
         "name": "Default Template",
+        "files": ["U", "controlDict", "fvSchemes", "fvSolution", "transportProperties", "turbulenceProperties"]
+    },
+    {
+        "id": "new_template_name",
+        "name": "New Template",
         "files": ["U", "controlDict", "fvSchemes", "fvSolution"]
     }
 ])
@@ -32,6 +37,7 @@ def mock_templates_json(monkeypatch):
         original_open = builtins.open
 
         def patched_open(file, mode='r', *args, **kwargs):
+            # Convert Path object to string for comparison
             if 'templates.json' in str(file):
                 return m_open(file, mode, *args, **kwargs)
             return original_open(file, mode, *args, **kwargs)
@@ -148,7 +154,7 @@ def test_modify_parameters_updates_object_in_memory(file_handler: FileHandler):
     original_value = u_file_obj.get_editable_parameters()['internalField']['current']
     
     new_params = {
-        "internalField": {"x": 1, "y": 2, "z": 3}
+        "internalField": ['uniform', {'value': {'x': 1, 'y': 2, 'z': 3}}]
     }
     
     u_file_path = file_handler.get_case_path() / u_file_obj.folder / u_file_obj.name
@@ -165,7 +171,7 @@ def test_write_files_after_modification(file_handler: FileHandler):
     u_file_obj = file_handler.files[u_file_name]
     u_file_path = case_path / u_file_obj.folder / u_file_obj.name
 
-    new_internal_field = {"x": 9, "y": 8, "z": 7}
+    new_internal_field = ['uniform', {'value': {'x': 9, 'y': 8, 'z': 7}}]
     new_params = {"internalField": new_internal_field}
     file_handler.modify_parameters(u_file_path, new_params)
     
@@ -176,7 +182,8 @@ def test_write_files_after_modification(file_handler: FileHandler):
     
     # The exact format depends on the Jinja2 template.
     # Let's check for the presence of the values.
-    assert "9 8 7" in file_content
+    # assert "9 8 7" in file_content
+    assert "internalField   uniform (9 8 7);" in file_content
 
 def test_save_all_parameters_to_json(file_handler: FileHandler):
     """Test that all parameters are saved to a JSON file correctly."""
@@ -185,7 +192,7 @@ def test_save_all_parameters_to_json(file_handler: FileHandler):
 
     # Modify a parameter to ensure non-default values are saved
     u_file_obj = file_handler.files["U"]
-    new_internal_field = {"x": 5, "y": 5, "z": 5}
+    new_internal_field = ['uniform', {'value': {'x': 5, 'y': 5, 'z': 5}}]
     u_file_path = case_path / u_file_obj.folder / u_file_obj.name
     file_handler.modify_parameters(u_file_path, {"internalField": new_internal_field})
 
@@ -207,11 +214,12 @@ def test_load_all_parameters_from_json(file_handler: FileHandler):
     case_path = file_handler.get_case_path()
     json_path = case_path / file_handler.JSON_PARAMS_FILE
     
-    new_u_internal_field = {"x": 1.1, "y": 2.2, "z": 3.3}
+    new_u_internal_field = ['uniform', {'value': {'x': 1.1, 'y': 2.2, 'z': 3.3}}]
     new_controlDict_startTime = 10
     
     test_data = {
         "template": "new_template_name",
+        "file_names": ["U", "controlDict", "fvSchemes", "fvSolution"],
         "parameters": {
             "U": {"internalField": new_u_internal_field},
             "controlDict": {"startTime": new_controlDict_startTime}
@@ -251,7 +259,7 @@ def test_load_from_json_with_invalid_params_raises_error(file_handler: FileHandl
 
     test_data = {
         "template": "default",
-        "parameters": {"U": {"internalField": "not-a-dict"}}
+        "parameters": {"U": {"internalField": "not-a-valid-structure"}}
     }
     json_path.write_text(json.dumps(test_data))
 
@@ -286,8 +294,45 @@ def test_modify_parameters_with_invalid_type_raises_error(file_handler: FileHand
     u_file_obj = file_handler.files["U"]
     u_file_path = case_path / u_file_obj.folder / u_file_obj.name
 
-    # Pass a string where a dictionary is expected
-    new_params = {"internalField": "this-is-not-a-dict"}
+    # Pass a string where a list is expected for 'internalField'
+    new_params = {"internalField": "this-is-not-a-list"}
     
     with pytest.raises(ParameterError, match="Invalid parameters provided for U"):
         file_handler.modify_parameters(u_file_path, new_params)
+
+def test_initialize_parameters_from_schema(file_handler: FileHandler):
+    """Test that initialize_parameters_from_schema correctly sets default values."""
+    patch_names = ["inlet", "outlet", "walls"]
+    file_handler.initialize_parameters_from_schema(patch_names)
+    
+    u_params = file_handler.files['U'].get_editable_parameters()
+    
+    # Check boundaryField initialization
+    boundary_field = u_params['boundaryField']['current']
+    assert len(boundary_field) == 3
+    assert boundary_field[0]['patchName'] == 'inlet'
+    assert boundary_field[0]['type'] == 'noSlip'
+
+    # Check internalField initialization
+    internal_field = u_params['internalField']['current']
+    assert internal_field[0] == 'uniform'
+    assert 'value' in internal_field[1]
+
+def test_get_solver_and_processors(file_handler: FileHandler):
+    """Test that get_solver and get_number_of_processors return correct values from JSON."""
+    case_path = file_handler.get_case_path()
+    json_path = case_path / file_handler.JSON_PARAMS_FILE
+
+    test_data = {
+        "parameters": {
+            "controlDict": {"application": "icoFoam"},
+            "decomposeParDict": {"numberOfSubdomains": 8}
+        }
+    }
+    json_path.write_text(json.dumps(test_data))
+
+    solver = file_handler.get_solver()
+    num_processors = file_handler.get_number_of_processors()
+
+    assert solver == "icoFoam"
+    assert num_processors == 8

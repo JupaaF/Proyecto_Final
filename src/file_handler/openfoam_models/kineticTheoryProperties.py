@@ -109,7 +109,7 @@ class kineticTheoryProperties(FoamFile):
                 'label': 'radialModel',
                 'tooltip': 'Modelo de distribución radial de la partícula.',
                 'type': 'choice',
-                'options': ['CamahanStarIing','ChialvoSundaresan','Gidaspow','LunSavage','SinclairJackson','Torquato'], 
+                'options': ['CarnahanStarling','ChialvoSundaresan','Gidaspow','LunSavage','SinclairJackson','Torquato'], 
                 'current': self.radialModel
             },
             'viscosityModel': {

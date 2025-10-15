@@ -21,7 +21,8 @@ class U(FoamFile):
         template_dir = Path(__file__).parent / 'templates'
         self.jinja_env = Environment(loader=FileSystemLoader(template_dir))
         # Inicializa los parámetros con valores por defecto
-        self.internalField = []
+        # self.internalField = []
+        self.internalField = ['uniform', {'value': {'x': 0, 'y': 0, 'z': 0}}]
         self.boundaryField = []
         self.unitDimensions = [0, 1, -1, 0, 0, 0, 0]
         self.customContent = None  # Default for velocity

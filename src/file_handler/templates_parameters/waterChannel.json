@@ -19,11 +19,16 @@
     ],
     "parameters": {
         "U": {
-            "internalField": {
-                "x": 1.0,
-                "y": 0.0,
-                "z": 0.0
-            },
+            "internalField": [
+                "uniform",
+                {
+                    "value": {
+                        "x": 1.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -70,7 +75,12 @@
             "customContent": null
         },
         "alpha.water": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -105,7 +115,12 @@
             "customContent": null
         },
         "k": {
-            "internalField": 0.0001,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0001
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -143,7 +158,12 @@
             "customContent": null
         },
         "nut": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -178,7 +198,12 @@
             "customContent": null
         },
         "omega": {
-            "internalField": 0.003,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.003
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -215,7 +240,12 @@
             "customContent": null
         },
         "p_rgh": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -250,7 +280,12 @@
             "customContent": null
         },
         "s": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",

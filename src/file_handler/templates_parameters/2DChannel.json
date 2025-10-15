@@ -27,11 +27,16 @@
     ],
     "parameters": {
         "U.a": {
-            "internalField": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
+            "internalField": [
+                "uniform",
+                {
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -80,11 +85,16 @@
             "customContent": null
         },
         "U.b": {
-            "internalField": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
+            "internalField": [
+                "uniform",
+                {
+                    "value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -133,7 +143,12 @@
             "customContent": null
         },
         "alpha.a": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -172,7 +187,12 @@
             "customContent": null
         },
         "k.b": {
-            "internalField": 1e-09,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 1e-09
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -213,7 +233,12 @@
             "customContent": null
         },
         "nut.b": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -256,7 +281,12 @@
             "customContent": null
         },
         "omega.b": {
-            "internalField": 1.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 1.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -298,7 +328,12 @@
             "customContent": null
         },
         "p_rbgh": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -344,7 +379,12 @@
             "customContent": null
         },
         "pa": {
-            "internalField": 0.0,
+            "internalField": [
+                "uniform",
+                {
+                    "value": 0.0
+                }
+            ],
             "boundaryField": [
                 {
                     "patchName": "inlet",
@@ -393,22 +433,44 @@
         },
         "transportProperties": {
             "selected_solver": [
-                "2DChannel",
+                "sedFoam",
                 {
                     "da": 1e-07,
-                    "db": 1e-07
+                    "rhoa": 1.0,
+                    "nua": 0.0,
+                    "sFa": 1.0,
+                    "hExpa": 2.65,
+                    "db": 1e-05,
+                    "rhob": 1.0,
+                    "nub": 1e-07,
+                    "sFb": 1.0,
+                    "hExpb": 2.65
                 }
             ],
-            "customContent": null
+            "customContent": "transportModel Newtonian; nu nu [ 0 2 -1 0 0 0 0 ] 7.2727e-5; nuMax nuMax [0 2 -1 0 0 0 0] 1e-1; // viscosity limiter for the Frictional model (required for stability) alphaSmall alphaSmall [ 0 0 0 0 0 0 0 ] 1e-6; // minimum volume fraction (phase a) for division by alpha "
         },
         "granularRheologyProperties": {
             "FrictionModel": "MuI",
-            "customContent": null
+            "granularRheology": "off",
+            "granularDilatancy": "off",
+            "granularCohesion": "off",
+            "alphaMaxG": 0.625,
+            "mus": 0.4,
+            "mu2": 0.9,
+            "I0": 0.6,
+            "Bphi": 0.66,
+            "n": 2.5,
+            "Dsmall": 0.0001,
+            "relaxPa": 0.0005,
+            "PPressureModel": "MuI",
+            "FluidViscosityModel": "BoyerEtAl",
+            "customContent": "zbed zbed [ 0 1 0 0 0 0 0 ] 0.0;"
         },
         "filterProperties": {
             "customContent": null
         },
         "forceProperties": {
+            "template_or_not": "2DChannel",
             "customContent": null
         },
         "turbulenceProperties.a": {
@@ -423,23 +485,44 @@
                 "RAS",
                 {
                     "model": [
-                        "twophasekOmega",
+                        "kOmegaSST",
                         {}
                     ]
                 }
             ],
-            "customContent": null
+            "customContent": "\nRAS\n{\n   RASModel        twophasekOmega;\n\n    turbulence      on;\n    printCoeffs     on;\n    twophasekOmegaCoeffs\n    {\n\n\n        alphaOmega       0.52;\n        betaOmega        0.072; // original k-omega: 0.072 // k-omega (2006): 0.0708\n        C3om             0.35;\n        C4om             1.0;\n        alphaKomega      0.5; // original k-omega: 0.5 // k-omega (2006): 0.6\n        alphaOmegaOmega  0.5;\n        Clim             0.0; // original k-omega: 0.0 // k-omega (2006): 0.875\n        sigmad           0.0; // original k-omega: 0.0 // k-omega (2006): 0.125\n        Cmu              0.09;\n        KE2              0.0; //turb modulation\n        KE4              1.0; //density stratification g  \n        nutMax           5e-3;\n        popeCorrection   false;\n    }\n    twophaseMixingLengthCoeffs\n    {\n        expoLM       1.0;\n        alphaMaxLM   0.55;\n        kappaLM      0.225;\n        Cmu              0.09;\n        nutMax           5e-3;\n    }\n    twophasekEpsilonCoeffs\n    {\n        C1        1.44;\n        C2        1.92;\n        C3ep      1.2;\n        C4ep      1;\n        alphak    1.0;\n        alphaEps  1.3;\n        Cmu              0.09;\n        KE2              0.0; //turb modulation\n        KE4              1.0; //density stratification g\n        nutMax           5e-3;\n    }\n\n}"
         },
         "twophaseRASProperties": {
+            "SUS": 1.0,
+            "KE1": 0.0,
+            "KE3": 0.0,
+            "B": 0.25,
+            "Tpsmall": 1e-06,
             "customContent": null
         },
         "interfacialProperties": {
             "customContent": null
         },
         "kineticTheoryProperties": {
-            "customContent": null
+            "kineticTheory": "off",
+            "granularPressureModel": "Lun",
+            "radialModel": "CarnahanStarling",
+            "viscosityModel": "Syamlal",
+            "conductivityModel": "Syamlal",
+            "e": 0.8,
+            "alphaMax": 0.6,
+            "MaxTheta": 0.5,
+            "phi": 32.0,
+            "customContent": "limitProduction off; equilibrium off; DiluteCut DiluteCut [ 0 0 0 0 0 0 0 ] 0.00000; ttzero ttzero [ 0 0 1 0 0 0 0 ] 0; ttone ttone [ 0 0 1 0 0 0 0 ] 0; psi psi [ 0 0 0 0 0 0 0 ] 0.0; KineticJ1 KineticJ1 [ 0 0 0 0 0 0 0 ] 1; //turn off the viscous dissipation KineticJ2 KineticJ2 [ 0 0 0 0 0 0 0] 0; KineticJ3 KineticJ3 [ 0 0 0 0 0 0 0] 0; frictionalStressModel SrivastavaSundaresan; "
         },
         "ppProperties": {
+            "ppModel": "JohnsonJackson",
+            "alphaMax": 0.58,
+            "alphaMinFriction": 0.53,
+            "Fr": 0.05,
+            "eta0": 3.0,
+            "eta1": 5.0,
+            "packingLimiter": "no",
             "customContent": null
         },
         "controlDict": {
@@ -447,10 +530,10 @@
             "startFrom": "startTime",
             "startTime": 0.0,
             "stopAt": "endTime",
-            "endTime": 5.0,
-            "deltaT": 0.01,
+            "endTime": 100.0,
+            "deltaT": 2e-05,
             "writeControl": "adjustable",
-            "writeInterval": 1.0,
+            "writeInterval": 10.0,
             "purgeWrite": 0,
             "writeFormat": "binary",
             "writePrecision": 6,
@@ -469,16 +552,27 @@
             "ddtSchemes": "Euler",
             "gradSchemes": "Gauss linear",
             "divSchemes": "2DChannel",
-            "laplacianSchemes": "Gauss linear",
+            "laplacianSchemes": "2DChannel",
             "interpolationSchemes": "linear",
             "snGradSchemes": "corrected",
             "wallDist": null,
-            "customContent": "\nfluxRequired\n{\n    default         no;\n    p_rbgh               ;\n}\n"
+            "customContent": "fluxRequired { default no; p_rbgh ; } "
         },
         "fvSolution": {
             "selected_solver": [
                 "2DChannelSedFoam",
-                {}
+                {
+                    "p_rbgh_tolerance": 1e-06,
+                    "p_rbgh_relTol": 0.0,
+                    "p_rbgh_nPreSweeps": 0,
+                    "p_rbgh_nPostSweeps": 2,
+                    "p_rbgh_nFinestSweeps": 2,
+                    "k_epsilon_omega_pa_alpha_tolerance": 1e-09,
+                    "k_epsilon_omega_pa_alpha_relTol": 1e-05,
+                    "nCorrectors": 1,
+                    "nNonOrthogonalCorrectors": 0,
+                    "nAlphaCorr": 0
+                }
             ],
             "customContent": null
         },
