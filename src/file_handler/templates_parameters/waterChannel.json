@@ -392,10 +392,25 @@
             ],
             "customContent": null
         },
-        "fvSolution": {
+       "fvSolution": {
             "selected_solver": [
                 "waterChannelOpenFoam",
-                {}
+                {
+                    "nAlphaCorr": 1,
+                    "nAlphaSubCycles": 1,
+                    "cAlpha": 1.0,
+                    "nLimiterIter": 3,
+                    "alpha_water_tolerance": 1e-08,
+                    "alpha_water_relTol": 0.0,
+                    "p_rgh_tolerance": 5e-09,
+                    "p_rgh_relTol": 0.01,
+                    "p_rgh_maxIter": 50,
+                    "U_k_omega_s_tolerance": 1e-06,
+                    "U_k_omega_s_relTol": 0.1,
+                    "U_k_omega_s_nSweeps": 1,
+                    "nCorrectors": 2,
+                    "nNonOrthogonalCorrectors": 0
+                }
             ],
             "customContent": null
         },
