@@ -135,13 +135,13 @@
                 },
                 {
                     "patchName": "atmosphere",
-                    "type": "zeroGradient"
-                },
-                {
-                    "patchName": "defaultFaces",
                     "type": "inletOutlet",
                     "inletValue": 0.0,
                     "value": 0.0
+                },
+                {
+                    "patchName": "defaultFaces",
+                    "type": "empty"
                 }
             ],
             "unitDimensions": [

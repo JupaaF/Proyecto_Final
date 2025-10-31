@@ -32,7 +32,7 @@ if [ "$NUM_PROCS" -gt 1 ]; then
     echo "Running interFoam in parallel..."
     # Se usa -fileHandler collated para optimizar la E/S, como se recomienda para
     # flujos de trabajo modernos y para reducir el número de archivos de salida.
-    mpirun -np "$NUM_PROCS" interFoam -parallel -fileHandler collated
+    mpirun -np "$NUM_PROCS" interFoam -parallel
     # mpirun -np "$NUM_PROCS" interFoam -parallel
     if [ $? -ne 0 ]; then
         echo "Error: mpirun failed."

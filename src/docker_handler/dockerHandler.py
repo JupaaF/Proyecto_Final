@@ -381,7 +381,8 @@ class DockerHandler():
         self.process = None
         self.was_stopped_by_user = False
 
-        self.container_name = f"hidrosim-{self.case_path.name}-{uuid.uuid4().hex[:8]}"
+        # self.container_name = f"hidrosim-{self.case_path.name}-{uuid.uuid4().hex[:8]}"
+        self.container_name = f"hidrosim-{self.case_path.name.replace(' ', '-')}-{uuid.uuid4().hex[:8]}"
         local_script_path = Path.cwd() / "src" / "docker_handler" / script_name
         script_in_container = f"/{script_name}"
 
