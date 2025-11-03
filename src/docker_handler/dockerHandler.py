@@ -289,6 +289,11 @@ class DockerHandler():
         self.was_stopped_by_user = False
         self.container_name = None
 
+        # Configuración para subprocesos en Windows para evitar la apertura de una consola
+        self.subprocess_kwargs = {}
+        if os.name == 'nt':
+            self.subprocess_kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+
     # def execute_script_in_docker(self, script_name: str):
     #     """
     #     Ejecuta un script dentro de un contenedor Docker y transmite la salida.
@@ -418,17 +423,7 @@ class DockerHandler():
             try:
                 self.process = subprocess.Popen(
                     docker_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                    text=True, bufsize=1, universal_newlines=True
-                )
-            # Configuración para subprocesos en Windows para evitar la apertura de una consola
-            subprocess_kwargs = {}
-            if os.name == 'nt':
-                subprocess_kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
-
-            try:
-                self.process = subprocess.Popen(
-                    docker_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                    text=True, bufsize=1, universal_newlines=True, **subprocess_kwargs
+                    text=True, bufsize=1, universal_newlines=True, **self.subprocess_kwargs
                 )
             except FileNotFoundError:
                 yield "Error: Comando 'docker' no encontrado"
@@ -462,7 +457,7 @@ class DockerHandler():
             
             if self.container_name:
                 logger.info(f"Limpiando el contenedor {self.container_name}...")
-                subprocess.run(["docker", "rm", self.container_name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **subprocess_kwargs)
+                subprocess.run(["docker", "rm", self.container_name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **self.subprocess_kwargs)
 
 
 
@@ -482,7 +477,7 @@ class DockerHandler():
                 ["docker", "stop", self.container_name],
                 capture_output=True,
                 text=True,
-                **subprocess_kwargs
+                **self.subprocess_kwargs
             )
             
             if result.returncode == 0:
@@ -514,7 +509,7 @@ class DockerHandler():
                 check=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                **subprocess_kwargs
+                **self.subprocess_kwargs
             )
             return True
         except FileNotFoundError:
@@ -547,7 +542,7 @@ class DockerHandler():
         ]
 
         try:
-            subprocess.run(docker_command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **subprocess_kwargs)
+            subprocess.run(docker_command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **self.subprocess_kwargs)
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"Error al preparar el caso para ParaView: {e}")
