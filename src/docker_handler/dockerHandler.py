@@ -268,6 +268,7 @@
 
 
 
+import os
 from pathlib import Path
 import subprocess
 import logging
@@ -419,6 +420,16 @@ class DockerHandler():
                     docker_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                     text=True, bufsize=1, universal_newlines=True
                 )
+            # Configuración para subprocesos en Windows para evitar la apertura de una consola
+            subprocess_kwargs = {}
+            if os.name == 'nt':
+                subprocess_kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+
+            try:
+                self.process = subprocess.Popen(
+                    docker_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                    text=True, bufsize=1, universal_newlines=True, **subprocess_kwargs
+                )
             except FileNotFoundError:
                 yield "Error: Comando 'docker' no encontrado"
                 raise DockerNotInstalledError("Docker no está instalado o no se encuentra en el PATH del sistema.")
@@ -451,7 +462,7 @@ class DockerHandler():
             
             if self.container_name:
                 logger.info(f"Limpiando el contenedor {self.container_name}...")
-                subprocess.run(["docker", "rm", self.container_name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(["docker", "rm", self.container_name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **subprocess_kwargs)
 
 
 
@@ -470,7 +481,8 @@ class DockerHandler():
             result = subprocess.run(
                 ["docker", "stop", self.container_name],
                 capture_output=True,
-                text=True
+                text=True,
+                **subprocess_kwargs
             )
             
             if result.returncode == 0:
@@ -501,7 +513,8 @@ class DockerHandler():
                 ["docker", "info"],
                 check=True,
                 stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
+                stderr=subprocess.DEVNULL,
+                **subprocess_kwargs
             )
             return True
         except FileNotFoundError:
@@ -534,7 +547,7 @@ class DockerHandler():
         ]
 
         try:
-            subprocess.run(docker_command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(docker_command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **subprocess_kwargs)
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"Error al preparar el caso para ParaView: {e}")
