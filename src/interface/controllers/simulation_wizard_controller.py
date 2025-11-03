@@ -6,7 +6,7 @@ import json
 from PySide6.QtCore import QCoreApplication, Qt
 
 from src.file_handler.file_handler import FILE_CLASS_MAP
-from config import RUTA_LOCAL
+from src.config import RUTA_LOCAL
 
 ##Esta es la que mas cambio por ahi.
 ##Lo mas importante esta en el ultimo metodo get_data(). Vamos para alla

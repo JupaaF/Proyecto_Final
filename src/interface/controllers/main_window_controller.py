@@ -13,9 +13,9 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtGui import QDesktopServices, QKeySequence, QCursor, QAction
 import json 
 
-from config import RUTA_LOCAL, create_dir
-from docker_handler.dockerHandler import DockerHandler
-from file_handler.file_handler import FileHandler
+from src.config import RUTA_LOCAL, create_dir
+from src.docker_handler.dockerHandler import DockerHandler
+from src.file_handler.file_handler import FileHandler
 
 from .widget_geometria import GeometryView
 from .simulation_wizard_controller import SimulationWizardController
@@ -488,14 +488,12 @@ class MainWindowController(QMainWindow):
         if not docker_handler.is_docker_running():
             QMessageBox.critical(self, "Docker Status", "El servicio de Docker no está en ejecución. Por favor, inicie Docker Desktop.")
             return
-       
-        # Save parameters from the main editor to memory
-        if self.parameter_editor_manager and not self.parameter_editor_manager.save_parameters():
-            return  # Abort if main parameters are invalid
 
-        # Now that all parameters are updated in memory, write all files to disk
+        if self.parameter_editor_manager and not self.parameter_editor_manager.save_parameters():
+            return
+
         self.file_handler.write_files()
-        self.file_handler.save_all_parameters_to_json() # Create a snapshot
+        self.file_handler.save_all_parameters_to_json()
 
         QMessageBox.information(self, "Información", f"Configuración paralela guardada. Ejecutando en paralelo.")
 
@@ -633,9 +631,7 @@ class MainWindowController(QMainWindow):
         self.ui.logPlainTextEdit.appendPlainText(log_line)
 
     def _on_docker_script_finished(self, success: bool, script_name: str):
-        """
-        Handles the completion of a Docker script execution.
-        """
+        """Handles the completion of a Docker script execution."""
         self.is_running_task = False
         self._set_ui_interactive(True) # Restore UI interaction
 
@@ -652,7 +648,7 @@ class MainWindowController(QMainWindow):
                 QTimer.singleShot(100, self._check_mesh_and_visualize)
             # No special action needed for "run_openfoam.sh" on success, message is sufficient
         else:
-            QMessageBox.critical(self, "Error en Ejecución de Docker", f"Falló la ejecución del script '{script_name}'.")
+            QMessageBox.critical(self, "Error en Ejecución de Docker", f"Falló la ejecución del script '{script_name}'. Revisa los logs para más detalles.")
 
     def _set_ui_interactive(self, enabled: bool):
         """
