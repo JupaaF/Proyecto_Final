@@ -4,7 +4,7 @@ import sys
 import os
 import json
 import builtins
-from unittest.mock import mock_open
+from unittest.mock import mock_open, patch
 
 # Add project root to sys.path to allow imports from src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -47,9 +47,19 @@ def mock_templates_json(monkeypatch):
 
 @pytest.fixture
 def file_handler(tmp_path: Path, mock_templates_json) -> FileHandler:
-    """Fixture to create a FileHandler instance with a valid default template."""
+    """
+    Fixture to create a FileHandler instance with a valid default template.
+    We mock load_all_parameters_from_json to prevent it from trying to read
+    default.json (which doesn't exist or shouldn't be read in unit tests).
+    """
     mock_templates_json(VALID_TEMPLATE_CONTENT)
-    return FileHandler(tmp_path, template="default")
+
+    # Patch the class method for the duration of the test using this fixture
+    with patch('src.file_handler.file_handler.FileHandler.load_all_parameters_from_json') as mock_load:
+        fh = FileHandler(tmp_path, template="default")
+        # Ensure it was called (it's called in __init__)
+        assert mock_load.called
+        yield fh
 
 def test_file_handler_initialization(file_handler: FileHandler):
     """
@@ -104,8 +114,14 @@ def test_init_raises_error_on_missing_essential_files(tmp_path, mock_templates_j
         {"id": "default", "files": ["U"]}
     ])
     mock_templates_json(template_missing_essentials)
-    with pytest.raises(TemplateError, match="Template is missing one of the essential files"):
-        FileHandler(tmp_path, template="default")
+
+    # We must also mock load_all_parameters_from_json here because __init__ calls it before checking essentials?
+    # No, __init__ calls _initialize_from_template which calls load_all...
+    # Then __init__ checks essentials.
+    # So if load_all fails, we get FileHandlerError, not TemplateError.
+    with patch('src.file_handler.file_handler.FileHandler.load_all_parameters_from_json'):
+        with pytest.raises(TemplateError, match="Template is missing one of the essential files"):
+            FileHandler(tmp_path, template="default")
 
 def test_create_base_dirs(file_handler: FileHandler):
     """Test that _create_base_dirs creates the required directories."""
@@ -179,10 +195,6 @@ def test_write_files_after_modification(file_handler: FileHandler):
     
     assert u_file_path.is_file()
     file_content = u_file_path.read_text()
-    
-    # The exact format depends on the Jinja2 template.
-    # Let's check for the presence of the values.
-    # assert "9 8 7" in file_content
     assert "internalField   uniform (9 8 7);" in file_content
 
 def test_save_all_parameters_to_json(file_handler: FileHandler):
@@ -209,10 +221,16 @@ def test_save_all_parameters_to_json(file_handler: FileHandler):
     assert "U" in data["parameters"]
     assert data["parameters"]["U"]["internalField"] == new_internal_field
 
-def test_load_all_parameters_from_json(file_handler: FileHandler):
+def test_load_all_parameters_from_json(tmp_path, mock_templates_json):
     """Test that parameters are loaded correctly from a JSON file."""
-    case_path = file_handler.get_case_path()
-    json_path = case_path / file_handler.JSON_PARAMS_FILE
+    mock_templates_json(VALID_TEMPLATE_CONTENT)
+
+    # 1. Init without loading defaults (mocked)
+    with patch('src.file_handler.file_handler.FileHandler.load_all_parameters_from_json'):
+        handler = FileHandler(tmp_path, template="default")
+
+    case_path = handler.get_case_path()
+    json_path = case_path / handler.JSON_PARAMS_FILE
     
     new_u_internal_field = ['uniform', {'value': {'x': 1.1, 'y': 2.2, 'z': 3.3}}]
     new_controlDict_startTime = 10
@@ -227,35 +245,82 @@ def test_load_all_parameters_from_json(file_handler: FileHandler):
     }
     with open(json_path, 'w') as f:
         json.dump(test_data, f)
+
+    # We must patch the recursive calls inside load_all_parameters_from_json if they happen.
+    # When template changes, it calls _initialize_from_template -> load_all_parameters_from_json(template_default_file)
+    # We need to ensure THAT recursive call doesn't fail or doesn't mess up.
+    # But wait, if we call load_all... manually, we want it to work.
+    # The issue is the RECURSIVE call when template changes.
+    # We should probably mock `_initialize_from_template` or just the internal call.
+
+    # However, if we simply mock `load_all_parameters_from_json` again, we defeat the purpose of testing it.
+    # The problem is that `new_template_name` is fake, so it has no `templates_parameters/new_template_name.json`.
+    # So the recursive call WILL fail if unmocked.
+
+    # Solution: We need to intercept the call where it tries to load the template defaults.
+    # OR, we can just ensure that `load_all_parameters_from_json` handles the missing file gracefully? No, it raises.
+
+    # Better Solution: Since we are testing logic, let's just create the fake default parameter file!
+    # `src/file_handler/templates_parameters/new_template_name.json`
+    # We can use `patch('pathlib.Path.exists')` maybe? Or just mock `open`?
+    # Mocking `open` is already done by `mock_templates_json` but it passes through for non-templates.json.
+
+    # Let's create the fake file in the real FS since the code uses `Path(__file__)`.
+    # Actually, that's in `src/...`. We shouldn't write there in tests.
+
+    # Let's use `pyfakefs`? No, not installed.
+    # Let's mock `FileHandler._initialize_from_template` to NOT call `load_all...` but just do the other stuff.
+
+    original_init_template = FileHandler._initialize_from_template
+
+    def side_effect_init_template(self):
+        # Do what original does but SKIP the load_all call
+        template_config = self._get_template_config()
+        self.file_names = template_config.get("files", [])
+        self._initialize_from_names()
+        # SKIP: self.load_all_parameters_from_json(...)
         
-    file_handler.load_all_parameters_from_json()
+    with patch.object(FileHandler, '_initialize_from_template', side_effect=side_effect_init_template, autospec=True):
+        handler.load_all_parameters_from_json()
     
-    assert file_handler.template == "new_template_name"
+    assert handler.template == "new_template_name"
     
-    u_file_obj = file_handler.files["U"]
+    u_file_obj = handler.files["U"]
     assert u_file_obj.internalField == new_u_internal_field
     
-    controlDict_obj = file_handler.files["controlDict"]
+    controlDict_obj = handler.files["controlDict"]
     assert controlDict_obj.get_editable_parameters()['startTime']['current'] == new_controlDict_startTime
 
-def test_load_all_parameters_from_json_raises_error_if_not_found(file_handler: FileHandler):
+def test_load_all_parameters_from_json_raises_error_if_not_found(tmp_path, mock_templates_json):
     """Test that FileHandlerError is raised if the JSON file doesn't exist."""
-    with pytest.raises(FileHandlerError, match="Parameters JSON file not found"):
-        file_handler.load_all_parameters_from_json()
+    mock_templates_json(VALID_TEMPLATE_CONTENT)
+    with patch('src.file_handler.file_handler.FileHandler.load_all_parameters_from_json'):
+        handler = FileHandler(tmp_path, template="default")
 
-def test_load_from_malformed_json_raises_error(file_handler: FileHandler):
+    with pytest.raises(FileHandlerError, match="Parameters JSON file not found"):
+        handler.load_all_parameters_from_json()
+
+def test_load_from_malformed_json_raises_error(tmp_path, mock_templates_json):
     """Test that FileHandlerError is raised for a malformed JSON file."""
-    case_path = file_handler.get_case_path()
-    json_path = case_path / file_handler.JSON_PARAMS_FILE
+    mock_templates_json(VALID_TEMPLATE_CONTENT)
+    with patch('src.file_handler.file_handler.FileHandler.load_all_parameters_from_json'):
+        handler = FileHandler(tmp_path, template="default")
+
+    case_path = handler.get_case_path()
+    json_path = case_path / handler.JSON_PARAMS_FILE
     json_path.write_text("{'this is not valid json',}")
 
     with pytest.raises(FileHandlerError, match="Failed to decode JSON"):
-        file_handler.load_all_parameters_from_json()
+        handler.load_all_parameters_from_json()
 
-def test_load_from_json_with_invalid_params_raises_error(file_handler: FileHandler):
+def test_load_from_json_with_invalid_params_raises_error(tmp_path, mock_templates_json):
     """Test that ParameterError is raised for invalid parameters in the JSON."""
-    case_path = file_handler.get_case_path()
-    json_path = case_path / file_handler.JSON_PARAMS_FILE
+    mock_templates_json(VALID_TEMPLATE_CONTENT)
+    with patch('src.file_handler.file_handler.FileHandler.load_all_parameters_from_json'):
+        handler = FileHandler(tmp_path, template="default")
+
+    case_path = handler.get_case_path()
+    json_path = case_path / handler.JSON_PARAMS_FILE
 
     test_data = {
         "template": "default",
@@ -264,20 +329,20 @@ def test_load_from_json_with_invalid_params_raises_error(file_handler: FileHandl
     json_path.write_text(json.dumps(test_data))
 
     with pytest.raises(ParameterError, match="Invalid parameters for 'U'"):
-        file_handler.load_all_parameters_from_json()
+        handler.load_all_parameters_from_json()
 
 def test_write_files_permission_error(tmp_path, mock_templates_json, monkeypatch):
     """
     Test that FileHandlerError is raised on file write permission errors by mocking
     the 'open' call to raise PermissionError.
     """
-    # 1. Set up a valid FileHandler instance. The conditional mock in the fixture
-    # ensures that the initial file writes during init succeed.
     mock_templates_json(VALID_TEMPLATE_CONTENT)
-    handler = FileHandler(tmp_path, template="default")
+
+    # We need to successfully init first, so we mock the init loader
+    with patch('src.file_handler.file_handler.FileHandler.load_all_parameters_from_json'):
+        handler = FileHandler(tmp_path, template="default")
 
     # 2. Now, patch builtins.open to raise PermissionError for the next call.
-    # This simulates a situation where we lose permissions after initialization.
     m = mock_open()
     m.side_effect = PermissionError("Permission denied for test")
     monkeypatch.setattr(builtins, "open", m)
