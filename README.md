@@ -82,6 +82,9 @@ El software está diseñado siguiendo el patrón **Modelo-Vista-Controlador (MVC
 
 ---
 
+## Links a la documentación
+https://docs.google.com/document/d/17DXq_9VRyhhmLFMLUSxnQbL-2GkSCJR7k2BC4yVquDY/edit?usp=sharing 
+
 ## Contexto para Asistentes de IA
 
 Esta sección está destinada a proporcionar un resumen rápido para agentes de IA (como Gemini CLI) para facilitar el desarrollo.
